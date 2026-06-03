@@ -14,6 +14,7 @@ export default function Sidebar() {
       case 'admin':
         return [
           { name: 'Dashboard Admin', path: '/admin', icon: <Home size={18} className="nav-icon" /> },
+          { name: 'Tahun Akademik', path: '/admin/academic-years', icon: <Calendar size={18} className="nav-icon" /> },
           { name: 'Data Matakuliah', path: '/admin/courses', icon: <BookOpen size={18} className="nav-icon" /> },
           { name: 'Data Kelas', path: '/admin/classes', icon: <LayoutGrid size={18} className="nav-icon" /> },
           { name: 'Data Dosen', path: '/admin/dosen', icon: <UserSquare2 size={18} className="nav-icon" /> },

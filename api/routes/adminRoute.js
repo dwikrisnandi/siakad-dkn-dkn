@@ -222,4 +222,51 @@ router.delete('/fcm-tokens/:id', [verifyToken, verifyRole(['admin'])], async (re
   }
 });
 
+// =====================================================
+// ACADEMIC YEARS MANAGEMENT
+// =====================================================
+router.get('/academic-years', [verifyToken, verifyRole(['admin'])], async (req, res) => {
+  try {
+    const [years] = await query('SELECT * FROM academic_years ORDER BY id DESC');
+    res.json(years);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed fetching academic years' });
+  }
+});
+
+router.post('/academic-years', [verifyToken, verifyRole(['admin'])], async (req, res) => {
+  try {
+    const { name } = req.body;
+    const result = await run('INSERT INTO academic_years (name, is_active) VALUES (?, false)', [name]);
+    res.status(201).json({ message: 'Tahun Akademik dibuat', id: result.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal membuat Tahun Akademik' });
+  }
+});
+
+router.put('/academic-years/:id/activate', [verifyToken, verifyRole(['admin'])], async (req, res) => {
+  try {
+    await run('UPDATE academic_years SET is_active = false');
+    await run('UPDATE academic_years SET is_active = true WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Tahun Akademik diaktifkan' });
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal mengaktifkan Tahun Akademik' });
+  }
+});
+
+router.delete('/academic-years/:id', [verifyToken, verifyRole(['admin'])], async (req, res) => {
+  try {
+    // Check if it's the active one
+    const [year] = await query('SELECT is_active FROM academic_years WHERE id = ?', [req.params.id]);
+    if (year.length > 0 && year[0].is_active) {
+      return res.status(400).json({ error: 'Tidak dapat menghapus Tahun Akademik yang sedang aktif' });
+    }
+    
+    await run('DELETE FROM academic_years WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Tahun Akademik dihapus' });
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal menghapus Tahun Akademik (Mungkin sudah ada jadwal yang terkait)' });
+  }
+});
+
 module.exports = router;

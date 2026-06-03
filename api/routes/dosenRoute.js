@@ -7,13 +7,21 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 router.get('/schedules', [verifyToken], async (req, res) => {
   try {
+    const [activeYearRows] = await query('SELECT id FROM academic_years WHERE is_active = true LIMIT 1');
+    const activeYearId = activeYearRows.length > 0 ? activeYearRows[0].id : null;
+
+    if (!activeYearId) {
+      return res.json([]);
+    }
+
     const [schedules] = await query(`
       SELECT s.*, c.name as course_name, c.code as course_code, cl.name as single_class_name, u.name as dosen_name
       FROM schedules s
       LEFT JOIN classes cl ON s.class_id = cl.id
       JOIN courses c ON s.course_id = c.id
       JOIN users u ON s.dosen_id = u.id
-    `);
+      WHERE s.academic_year_id = ?
+    `, [activeYearId]);
 
     const [allClasses] = await query('SELECT * FROM classes');
     const classMap = {};
@@ -58,9 +66,13 @@ router.post('/schedules', [verifyToken, verifyRole(['admin'])], async (req, res)
     const { class_ids, course_id, dosen_id, day, time_start, time_end, room } = req.body;
     const newClassIds = class_ids || (req.body.class_id ? [parseInt(req.body.class_id)] : []);
     
+    const [activeYearRows] = await query('SELECT id FROM academic_years WHERE is_active = true LIMIT 1');
+    const activeYearId = activeYearRows.length > 0 ? activeYearRows[0].id : null;
+    if (!activeYearId) return res.status(400).json({ error: 'Tidak ada Tahun Akademik yang aktif' });
+
     const result = await run(
-      'INSERT INTO schedules (class_id, class_ids, course_id, dosen_id, day, time_start, time_end, room) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [newClassIds[0] || null, JSON.stringify(newClassIds), course_id, dosen_id, day, time_start, time_end, room]
+      'INSERT INTO schedules (class_id, class_ids, course_id, dosen_id, day, time_start, time_end, room, academic_year_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [newClassIds[0] || null, JSON.stringify(newClassIds), course_id, dosen_id, day, time_start, time_end, room, activeYearId]
     );
     res.status(201).json({ message: 'Schedule created', id: result.id });
   } catch (error) {

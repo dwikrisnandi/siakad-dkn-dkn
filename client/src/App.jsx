@@ -12,6 +12,7 @@ import AdminJadwal from './pages/AdminJadwal';
 import AdminBackup from './pages/AdminBackup';
 import AdminKHS from './pages/AdminKHS';
 import AdminFCMTokens from './pages/AdminFCMTokens';
+import AdminTahunAkademik from './pages/AdminTahunAkademik';
 import DosenDashboard from './pages/DosenDashboard';
 import DosenKehadiran from './pages/DosenKehadiran';
 import DosenMateri from './pages/DosenMateri';
@@ -43,6 +44,7 @@ function AppContent() {
           {/* Admin Routes */}
           <Route path="/admin" element={<MainLayout allowedRoles={['admin']} />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="academic-years" element={<AdminTahunAkademik />} />
             <Route path="courses" element={<AdminMatakuliah />} />
             <Route path="classes" element={<AdminKelas />} />
             <Route path="dosen" element={<AdminUsers roleType="dosen" title="Dosen" />} />
