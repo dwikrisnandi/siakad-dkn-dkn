@@ -127,7 +127,7 @@ export default function AdminTahunAkademik() {
                 <div className="modal-body">
                   <form id="yearForm" onSubmit={handleCreate}>
                     <div className="mb-3">
-                      <label className="form-label small fw-bold">Nama Tahun Akademik (Contoh: 2023/2024 Genap)</label>
+                      <label className="form-label small fw-bold">Nama Tahun Akademik (Contoh: 2025/2026 Genap)</label>
                       <input type="text" className="form-control" value={newYearName} onChange={e => setNewYearName(e.target.value)} required />
                     </div>
                   </form>
