@@ -1,6 +1,6 @@
-# SIAKAD DKN - STMIK PAMITRAN 🎓
+# SIAKAD DKN 🎓
 
-Sistem Informasi Akademik (SIAKAD) modern dan cerdas yang dirancang khusus untuk memenuhi kebutuhan perkuliahan di STMIK Pamitran. Aplikasi ini dilengkapi dengan integrasi Artificial Intelligence (AI) untuk membantu operasional dosen, memandu mahasiswa, dan mempercepat proses akademik.
+Sistem Informasi Akademik (SIAKAD) modern dan cerdas yang dikembangkan oleh **Dwi Krisnandi**. Aplikasi ini dilengkapi dengan integrasi Artificial Intelligence (AI) untuk membantu operasional dosen, memandu mahasiswa, dan mempercepat proses akademik.
 
 ## ✨ Fitur Utama
 
@@ -8,7 +8,7 @@ Sistem Informasi Akademik (SIAKAD) modern dan cerdas yang dirancang khusus untuk
 - **Manajemen Kelas & Jadwal**: Mengelola pertemuan kuliah dan absensi mahasiswa (Hadir, Sakit, Izin, Alpa).
 - **Materi & Tugas**: Modul distribusi materi (RPS) dan pemberian tugas dengan deadline yang terintegrasi.
 - **Computer-Based Testing (CBT)**: Membuat bank soal dan mengadakan ujian UTS/UAS secara online. Mendukung soal Pilihan Ganda, Benar/Salah, dan Essay.
-- **Export DOCX**: Fitur export soal menjadi dokumen Microsoft Word siap cetak dengan format resmi institusi STMIK Pamitran.
+- **Export DOCX**: Fitur export soal menjadi dokumen Microsoft Word siap cetak dengan format header institusi yang dapat disesuaikan.
 - **AI Auto-Grading**: Bantuan AI (Google Gemini) untuk memberikan skor dan feedback instan pada jawaban essay mahasiswa serta mendeteksi indikasi kecurangan (AI-generated text).
 - **AI Exam & Material Generator**: Asisten AI untuk merangkum RPS menjadi buku teks HTML, menghasilkan soal-soal ujian (hingga 50 soal sekaligus), dan menyusun kisi-kisi ujian.
 
@@ -77,4 +77,4 @@ npm run dev
 Aplikasi frontend akan berjalan di `http://localhost:5173`.
 
 ## 📜 Lisensi & Hak Cipta
-Dikembangkan secara khusus untuk **STMIK Pamitran**. Segala hak cipta terkait arsitektur dan source code dilindungi.
+Dikembangkan oleh **Dwi Krisnandi**. Segala hak cipta terkait arsitektur dan source code dilindungi.
