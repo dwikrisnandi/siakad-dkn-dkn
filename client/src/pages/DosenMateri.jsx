@@ -18,6 +18,60 @@ export default function DosenMateri() {
   const [contentMode, setContentMode] = useState('link'); // 'link' or 'html'
   const [formData, setFormData] = useState({ title: '', description: '', file_url: '', content: '' });
 
+  // AI Generator States
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiTopic, setAiTopic] = useState('');
+  const [generatingAi, setGeneratingAi] = useState(false);
+
+  const handleGenerateAI = async (e) => {
+    e.preventDefault();
+    if (!aiTopic.trim()) return;
+
+    setGeneratingAi(true);
+    try {
+      const res = await api.post('/ai-generate-material', {
+        schedule_id: parseInt(selectedSchedule),
+        topic_title: aiTopic
+      });
+      
+      const htmlContent = res.data.generated_content;
+      
+      if (res.data.error) {
+        alert("⚠️ Kesalahan dari Server AI:\n" + res.data.error);
+        setGeneratingAi(false);
+        return;
+      }
+      if (!htmlContent) {
+        alert("⚠️ Gagal! Jawaban AI terpantau kosong (Teks output ditolak atau terpotong).");
+        setGeneratingAi(false);
+        return;
+      }
+      
+      // Auto-fill and switch to Add Material form
+      setShowAiModal(false);
+      
+      // Prepare form 
+      setEditMode(false);
+      setEditingId(null);
+      setContentMode('html');
+      setFormData({ 
+        title: aiTopic, 
+        description: 'Materi ini disusun otomatis secara komprehensif oleh asisten AI.', 
+        file_url: '', 
+        content: htmlContent 
+      });
+      
+      setShowModal(true);
+      setAiTopic('');
+    } catch (err) {
+      console.error("AI Gen Error:", err.response || err);
+      alert(err.response?.data?.error || 'Gagal menghasilkan materi dengan AI. Apakah RPS untuk matakuliah ini sudah diupload dalam format PDF?');
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
+
+
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
@@ -38,9 +92,11 @@ export default function DosenMateri() {
       setLoading(true);
       try {
         const res = await api.get(`/materials/${selectedSchedule}`);
+        console.log("REACT DEBUG RESPONSE:", res);
         setMaterials(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("REACT AXIOS ERROR:", err);
+        alert(`Gagal mengambil materi: ${err.message || 'Error API'}. Silakan cek console F12`);
       } finally {
         setLoading(false);
       }
@@ -130,9 +186,14 @@ export default function DosenMateri() {
              {selectedSchedule && <small className="text-muted">Kelas yang dipilih</small>}
            </div>
            {selectedSchedule && (
-             <button className="btn btn-primary d-flex align-items-center gap-2" onClick={openModal}>
-               <Plus size={18} /> Tambah Materi
-             </button>
+             <div className="d-flex gap-2">
+               <button className="btn btn-outline-primary d-flex align-items-center gap-2 fw-bold bg-white" onClick={() => setShowAiModal(true)}>
+                 💡 Generate via AI (RPS)
+               </button>
+               <button className="btn btn-primary d-flex align-items-center gap-2" onClick={openModal}>
+                 <Plus size={18} /> Tambah Materi
+               </button>
+             </div>
            )}
         </div>
       </div>
@@ -329,6 +390,47 @@ export default function DosenMateri() {
                     sandbox="allow-scripts allow-same-origin allow-popups" />
                 </div>
               </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* MODAL AI GENERATOR */}
+      {showAiModal && (
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1060 }}></div>
+          <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1065 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <form onSubmit={handleGenerateAI} className="modal-content border-0 shadow-lg rounded-4">
+                <div className="modal-header border-bottom-0 pb-0">
+                  <h5 className="modal-title fw-bold">💡 Buat Materi via AI</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowAiModal(false)}></button>
+                </div>
+                <div className="modal-body pb-2">
+                  <div className="alert bg-primary-subtle text-primary border-0 rounded-3 p-3 mb-4 small">
+                    <b>Cara Kerja:</b> AI akan langsung membaca file PDF RPS yang telah Anda unggah pada kelas ini, mempelajari silabusnya, lalu menuliskan modul atau materi ajar berbasis web (HTML) yang sangat mendetail sesuai topik yang Anda ketikkan.
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label text-muted small fw-bold">Masukkan Judul/Topik Pertemuan</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      required
+                      placeholder="Misal: Pertemuan 3: Sejarah Algoritma Pencarian"
+                      value={aiTopic} 
+                      onChange={e => setAiTopic(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer border-0 pt-0">
+                  <button type="button" className="btn btn-light" onClick={() => setShowAiModal(false)} disabled={generatingAi}>Batal</button>
+                  <button type="submit" className="btn btn-primary px-4 d-flex align-items-center" disabled={generatingAi}>
+                    {generatingAi ? (
+                       <><span className="spinner-border spinner-border-sm me-2"></span> AI Sedang Membaca & Menulis...</>
+                    ) : 'Mulai Bikin Materi ✨'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </>

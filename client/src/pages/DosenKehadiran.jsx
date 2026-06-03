@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { CheckSquare } from 'lucide-react';
 
 export default function DosenKehadiran() {
   const { user } = useAuth();
+  const location = useLocation();
   const [schedules, setSchedules] = useState([]);
   const [selectedSchedule, setSelectedSchedule] = useState('');
   
@@ -27,6 +29,13 @@ export default function DosenKehadiran() {
         const res = await api.get('/schedules');
         const mySchedules = res.data.filter(s => s.dosen_id === user.id);
         setSchedules(mySchedules);
+
+        // Auto-select jadwal jika datang dari tombol "Masuk Kelas" di dashboard
+        const incomingId = location.state?.scheduleId;
+        if (incomingId) {
+          const match = mySchedules.find(s => s.id === incomingId);
+          if (match) setSelectedSchedule(String(incomingId));
+        }
       } catch (err) {
         console.error(err);
       }

@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Home, BookOpen, Users, UserSquare2, Calendar, 
-  FileText, CheckSquare, PenTool, LayoutGrid, Award
+  FileText, CheckSquare, PenTool, LayoutGrid, Award, Database, Smartphone, ClipboardList
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -19,6 +19,9 @@ export default function Sidebar() {
           { name: 'Data Dosen', path: '/admin/dosen', icon: <UserSquare2 size={18} className="nav-icon" /> },
           { name: 'Data Mahasiswa', path: '/admin/mahasiswa', icon: <Users size={18} className="nav-icon" /> },
           { name: 'Penjadwalan', path: '/admin/schedules', icon: <Calendar size={18} className="nav-icon" /> },
+          { name: 'KHS Mahasiswa', path: '/admin/khs', icon: <Award size={18} className="nav-icon" /> },
+          { name: 'Backup Data', path: '/admin/backup', icon: <Database size={18} className="nav-icon" /> },
+          { name: 'Perangkat Notifikasi', path: '/admin/fcm-tokens', icon: <Smartphone size={18} className="nav-icon" /> },
         ];
       case 'dosen':
         return [
@@ -27,6 +30,8 @@ export default function Sidebar() {
           { name: 'Input Kehadiran', path: '/dosen/attendance', icon: <CheckSquare size={18} className="nav-icon" /> },
           { name: 'Upload Materi', path: '/dosen/materials', icon: <FileText size={18} className="nav-icon" /> },
           { name: 'Kelola Tugas', path: '/dosen/assignments', icon: <PenTool size={18} className="nav-icon" /> },
+          { name: 'Bank Soal', path: '/dosen/bank-soal', icon: <Database size={18} className="nav-icon" /> },
+          { name: 'Paket Ujian', path: '/dosen/exams', icon: <ClipboardList size={18} className="nav-icon" /> },
           { name: 'Input Nilai', path: '/dosen/grades', icon: <Award size={18} className="nav-icon" /> },
         ];
       case 'mahasiswa':
@@ -35,6 +40,7 @@ export default function Sidebar() {
           { name: 'RPS Perkuliahan', path: '/mahasiswa/rps', icon: <BookOpen size={18} className="nav-icon" /> },
           { name: 'Materi Kuliah', path: '/mahasiswa/materials', icon: <FileText size={18} className="nav-icon" /> },
           { name: 'Tugas Kuliah', path: '/mahasiswa/assignments', icon: <PenTool size={18} className="nav-icon" /> },
+          { name: 'Ujian (UTS/UAS)', path: '/mahasiswa/exams', icon: <ClipboardList size={18} className="nav-icon" /> },
           { name: 'Rekap Absensi', path: '/mahasiswa/attendance', icon: <CheckSquare size={18} className="nav-icon" /> },
           { name: 'Nilai KHS', path: '/mahasiswa/grades', icon: <Award size={18} className="nav-icon" /> },
         ];
@@ -82,9 +88,10 @@ export default function Sidebar() {
                   to={link.path} 
                   end
                   className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  style={{ textAlign: 'left' }}
                 >
                   {link.icon}
-                  <p>
+                  <p style={{ textAlign: 'left', marginBottom: 0 }}>
                     {link.name}
                   </p>
                 </NavLink>

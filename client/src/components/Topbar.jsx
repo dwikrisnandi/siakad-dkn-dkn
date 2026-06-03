@@ -39,13 +39,13 @@ export default function Topbar() {
     navigate('/login');
   };
   
-  const handleNotifClick = (e) => {
+  const handleNotifClick = (e, notif) => {
     e.preventDefault();
     setDropdownOpen(false);
     if (user.role === 'mahasiswa') {
-      navigate('/mahasiswa/assignments');
+      navigate('/mahasiswa/assignments', { state: { schedule_id: notif?.schedule_id, assignment_id: notif?.id } });
     } else if (user.role === 'dosen') {
-      navigate('/dosen/assignments');
+      navigate('/dosen/assignments', { state: { schedule_id: notif?.schedule_id, assignment_id: notif?.assignment_id } });
     }
   };
 
@@ -119,7 +119,7 @@ export default function Topbar() {
               ) : (
                 notifications.items.map((n, i) => (
                   <React.Fragment key={n.id || i}>
-                    <a href="#" className="dropdown-item text-wrap" style={{ whiteSpace: 'normal' }} onClick={handleNotifClick}>
+                    <a href="#" className="dropdown-item text-wrap" style={{ whiteSpace: 'normal' }} onClick={(e) => handleNotifClick(e, n)}>
                       <div className="d-flex align-items-start gap-2">
                         <FileText size={18} className="text-primary mt-1" />
                         <div>
@@ -135,7 +135,7 @@ export default function Topbar() {
                   </React.Fragment>
                 ))
               )}
-              <a href="#" className="dropdown-item dropdown-footer text-center" onClick={handleNotifClick}>
+              <a href="#" className="dropdown-item dropdown-footer text-center" onClick={(e) => handleNotifClick(e, null)}>
                 Lihat Semua Tugas
               </a>
             </div>
@@ -174,7 +174,7 @@ export default function Topbar() {
       {dropdownOpen && (
         <div 
           className="position-fixed w-100 h-100" 
-          style={{ top: 0, left: 0, zIndex: 1000 }} 
+          style={{ top: 0, left: 0, zIndex: 990 }} 
           onClick={() => setDropdownOpen(false)}
         ></div>
       )}

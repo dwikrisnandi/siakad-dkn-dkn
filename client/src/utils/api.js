@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Production: use the live domain. Development: use localhost.
+  // Production: rely on the host serving the origin safely. Development: proxy to local port.
   baseURL: import.meta.env.PROD 
-    ? 'https://siakad.arthavirddhisampada.online/api' 
+    ? '/api' 
     : 'http://localhost:7542/api',
 });
 

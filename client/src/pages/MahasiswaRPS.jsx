@@ -45,19 +45,28 @@ export default function MahasiswaRPS() {
   }, [selectedCourse]);
 
   const handleViewPDF = (rpsDoc) => {
-    if (!rpsDoc?.file_data || !rpsDoc.file_data.startsWith('data:')) {
-      alert('File PDF tidak tersedia.');
+    // Prioritas 1: File fisik di server (struktur baru)
+    if (rpsDoc?.file_url) {
+      const baseUrl = api.defaults.baseURL?.replace('/api', '') || '';
+      window.open(`${baseUrl}${rpsDoc.file_url}`, '_blank');
       return;
     }
-    const arr = rpsDoc.file_data.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    const blob = new Blob([u8arr], { type: mime });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+
+    // Prioritas 2: Base64 data (struktur lama/legacy)
+    if (rpsDoc?.file_data && rpsDoc.file_data.startsWith('data:')) {
+      const arr = rpsDoc.file_data.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) u8arr[n] = bstr.charCodeAt(n);
+      const blob = new Blob([u8arr], { type: mime });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      return;
+    }
+
+    alert('File PDF tidak tersedia.');
   };
 
   return (

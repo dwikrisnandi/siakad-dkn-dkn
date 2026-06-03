@@ -1,4 +1,53 @@
+# Dependencies
 node_modules/
+
+# Environment & Config
 .env
-*.log
+api/.env
+api/serviceAccountKey.json
+
+# Database
+api/database.db
+*.sqlite
+*.db
+
+# Build output
+client/dist/
+
+# Uploads (user data)
+api/uploads/
+
+# PostgreSQL data
+pgsql/
+
+# IDE
+.vscode/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Deploy scripts (contain credentials)
+upload_and_restart.js
+upload_client.js
+deploy_docx.js
+
+# Template files
+Format Soal UAS Multimedia.docx
+format_preview.html
+
+# Binaries
+nssm.exe
+
+# Temp/debug scripts
+check_nginx.js
+find_remote*.js
+fix_remote.js
+run_remote_test.js
+
+# Client build artifacts
+client/eslint_output.txt
+client/eslint_report.json

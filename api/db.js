@@ -1,57 +1,68 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
-// Connect to SQLite DB mapping to a local file
-const dbPath = path.resolve(__dirname, 'siakad.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error connecting to SQLite database:', err.message);
-  } else {
-    console.log('Connected to the SQLite database.');
-  }
+const pool = new Pool({
+  // Gunakan DATABASE_URL dari .env jika ada, atau fallback lokal standar
+  connectionString: process.env.DATABASE_URL || 'postgres://postgres@localhost:8256/siakad',
 });
 
-// Polyfill helper to use promises with SQLite (similar to mysql2/promise)
-const run = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) {
-        console.log('Error running sql ' + sql);
-        console.log(err);
-        reject(err);
-      } else {
-        resolve({ id: this.lastID, changes: this.changes });
-      }
-    });
-  });
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err);
+});
+
+// Helper to convert SQLite `?` to PostgreSQL `$1, $2`
+const convertSql = (sql) => {
+  let i = 1;
+  return sql.replace(/\?/g, () => '$' + (i++));
 };
 
-const get = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) {
-        console.log('Error running sql: ' + sql);
-        console.log(err);
-        reject(err);
-      } else {
-        resolve(row);
-      }
-    });
-  });
+const run = async (sql, params = []) => {
+  let pgSql = convertSql(sql);
+  
+  // PostgreSQL needs RETURNING id to get the inserted id
+  const isInsert = pgSql.trim().toUpperCase().startsWith('INSERT INTO');
+  if (isInsert && !pgSql.toUpperCase().includes('RETURNING')) {
+    pgSql += ' RETURNING id';
+  }
+
+  // SQLite INTEGER PRIMARY KEY AUTOINCREMENT syntax to PostgreSQL SERIAL PRIMARY KEY
+  pgSql = pgSql.replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY');
+  // SQLite datetime fallback
+  pgSql = pgSql.replace(/datetime\('now', 'localtime'\)/g, "CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Jakarta'");
+
+  try {
+    const res = await pool.query(pgSql, params);
+    return { id: res.rows[0]?.id || 0, changes: res.rowCount };
+  } catch (err) {
+    if (err.code !== '42701') { // Ignore "column already exists" error during migrations
+      console.log('Error running sql ' + pgSql);
+      console.log(err.message);
+    }
+    throw err;
+  }
 };
 
-const query = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        console.log('Error running sql: ' + sql);
-        console.log(err);
-        reject(err);
-      } else {
-        resolve([rows]); // Wrapped in array to match mysql2 format `const [users] = await db.query(...)`
-      }
-    });
-  });
+const get = async (sql, params = []) => {
+  const pgSql = convertSql(sql);
+  try {
+    const res = await pool.query(pgSql, params);
+    return res.rows[0];
+  } catch (err) {
+    console.log('Error running sql: ' + pgSql);
+    console.log(err.message);
+    throw err;
+  }
 };
 
-module.exports = { db, run, get, query };
+const query = async (sql, params = []) => {
+  const pgSql = convertSql(sql);
+  try {
+    const res = await pool.query(pgSql, params);
+    return [res.rows];
+  } catch (err) {
+    console.log('Error running sql: ' + pgSql);
+    console.log(err.message);
+    throw err;
+  }
+};
+
+module.exports = { db: pool, run, get, query };

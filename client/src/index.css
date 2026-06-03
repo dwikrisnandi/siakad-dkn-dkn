@@ -109,3 +109,11 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Sidebar menu left-align override */
+.nav-sidebar .nav-link,
+.nav-sidebar .nav-link p,
+.main-sidebar .nav-link,
+.main-sidebar .nav-link p {
+  text-align: left !important;
+}

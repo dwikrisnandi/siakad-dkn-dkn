@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import ChatBot from './ChatBot';
 
 export default function MainLayout({ allowedRoles }) {
   const { user, loading } = useAuth();
@@ -47,10 +48,12 @@ export default function MainLayout({ allowedRoles }) {
       </div>
       <footer className="main-footer">
         <div className="float-right d-none d-sm-inline">
-          Versi 1.0.0
+          Versi 2.1.0
         </div>
         <strong>Copyright &copy; 2024 <a href="#">SIAKAD DKN</a>.</strong> Hak cipta milik Dwi Krisnandi.
       </footer>
+      {/* Tampilkan ChatBot hanya untuk mahasiswa */}
+      {user?.role === 'mahasiswa' && <ChatBot />}
     </div>
   );
 }

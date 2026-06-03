@@ -83,21 +83,19 @@ export default function DosenRPS() {
       alert('Gagal menghapus RPS');
     }
   };
-
   const handleViewPDF = (rpsDoc) => {
-    if (!rpsDoc?.file_data || !rpsDoc.file_data.startsWith('data:')) {
-      alert('File PDF tidak valid atau tidak tersedia.');
+    if (!rpsDoc?.file_url) {
+      alert('File PDF tidak valid atau belum diunggah.');
       return;
     }
-    const arr = rpsDoc.file_data.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    const blob = new Blob([u8arr], { type: mime });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    
+    // Karena API berjalan di port 7542 (dan proxy lokal jika perlu)
+    // rpsDoc.file_url menyimpan URL seperti '/uploads/rps/filename.pdf'
+    // Kita arahkan browser ke URL yang tepat.
+    const baseUrl = window.location.origin.replace('5173', '7542');
+    const fullUrl = rpsDoc.file_url.startsWith('http') ? rpsDoc.file_url : `${baseUrl}${rpsDoc.file_url}`;
+    
+    window.open(fullUrl, '_blank');
   };
 
   const handleSubmit = async (e) => {

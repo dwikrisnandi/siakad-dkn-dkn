@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Users, BookOpen, Clock } from 'lucide-react';
 
 export default function DosenDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [schedules, setSchedules] = useState([]);
   const [stats, setStats] = useState({ activeTasks: 0, totalStudents: 0 });
   const [loading, setLoading] = useState(true);
@@ -112,7 +114,10 @@ export default function DosenDashboard() {
                   <p className="text-muted small mb-0">Ruang: {s.room || 'TBA'}</p>
                 </div>
                 <div className="card-footer bg-white border-0 p-3 pt-0">
-                  <button className="btn btn-outline-primary w-100 btn-sm fw-bold">Masuk Kelas</button>
+                  <button
+                    className="btn btn-outline-primary w-100 btn-sm fw-bold"
+                    onClick={() => navigate('/dosen/attendance', { state: { scheduleId: s.id } })}
+                  >Masuk Kelas</button>
                 </div>
               </div>
             </div>
