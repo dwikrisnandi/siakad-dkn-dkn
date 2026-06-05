@@ -146,6 +146,23 @@ run(`CREATE TABLE IF NOT EXISTS krs_items (
   schedule_id INTEGER NOT NULL
 )`).catch(() => {});
 
+// -- PHASE 3: EDOM & TRANSKRIP --
+run(`CREATE TABLE IF NOT EXISTS edom_questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_text TEXT NOT NULL,
+  aspect TEXT DEFAULT 'Pedagogik' -- Pedagogik, Profesional, Kepribadian, Sosial
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS edom_answers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mahasiswa_id INTEGER NOT NULL,
+  schedule_id INTEGER NOT NULL,
+  question_id INTEGER NOT NULL,
+  score INTEGER NOT NULL, -- 1 to 5
+  comment TEXT,
+  UNIQUE(mahasiswa_id, schedule_id, question_id)
+)`).catch(() => {});
+
 // ── PHASE 3: PERFORMANCE INDEXING ──
 run('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)').catch(()=>{});
 run('CREATE INDEX IF NOT EXISTS idx_users_program ON users(program_id)').catch(()=>{});
@@ -164,6 +181,8 @@ app.use('/api',       require('./routes/masterRoute'));
 app.use('/api',       require('./routes/academicRoute'));
 app.use('/api',       require('./routes/dosenRoute'));
 app.use('/api',       require('./routes/krsRoute'));
+app.use('/api',       require('./routes/edomRoute'));
+app.use('/api',       require('./routes/transkripRoute'));
 app.use('/api',       require('./routes/portalRoute'));
 app.use('/api',       require('./routes/aiRoute'));
 app.use('/api',       require('./routes/examRoute'));

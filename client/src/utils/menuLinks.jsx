@@ -18,6 +18,7 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'Mahasiswa', path: '/admin/mahasiswa', icon: <Users size={size} className="nav-icon" /> },
         { name: 'Penjadwalan', path: '/admin/schedules', icon: <Calendar size={size} className="nav-icon" /> },
         { name: 'KHS Mahasiswa', path: '/admin/khs', icon: <Award size={size} className="nav-icon" /> },
+        { name: 'Transkrip Nilai', path: '/admin/transkrip', icon: <Award size={size} className="nav-icon" /> },
         { name: 'Keuangan (SPP)', path: '/admin/invoices', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Backup Data', path: '/admin/backup', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Notifikasi', path: '/admin/fcm-tokens', icon: <Smartphone size={size} className="nav-icon" /> },
@@ -26,6 +27,7 @@ export const getRoleLinks = (role, size = 24) => {
       return [
         { name: 'Dashboard', path: '/dosen', icon: <Home size={size} className="nav-icon" /> },
         { name: 'Bimbingan Akademik', path: '/dosen/krs', icon: <Users size={size} className="nav-icon" /> },
+        { name: 'Hasil Evaluasi (EDOM)', path: '/dosen/edom', icon: <ClipboardList size={size} className="nav-icon" /> },
         { name: 'RPS', path: '/dosen/rps', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'Kehadiran', path: '/dosen/attendance', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Materi', path: '/dosen/materials', icon: <FileText size={size} className="nav-icon" /> },
@@ -38,12 +40,14 @@ export const getRoleLinks = (role, size = 24) => {
       return [
         { name: 'Dashboard', path: '/mahasiswa', icon: <Home size={size} className="nav-icon" /> },
         { name: 'Pengisian KRS', path: '/mahasiswa/krs', icon: <BookOpen size={size} className="nav-icon" /> },
+        { name: 'Evaluasi Dosen', path: '/mahasiswa/edom', icon: <ClipboardList size={size} className="nav-icon" /> },
         { name: 'RPS', path: '/mahasiswa/rps', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'Materi', path: '/mahasiswa/materials', icon: <FileText size={size} className="nav-icon" /> },
         { name: 'Tugas', path: '/mahasiswa/assignments', icon: <PenTool size={size} className="nav-icon" /> },
         { name: 'Ujian CBT', path: '/mahasiswa/exams', icon: <ClipboardList size={size} className="nav-icon" /> },
         { name: 'Kehadiran', path: '/mahasiswa/attendance', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Nilai KHS', path: '/mahasiswa/grades', icon: <Award size={size} className="nav-icon" /> },
+        { name: 'Transkrip Akademik', path: '/mahasiswa/transkrip', icon: <Award size={size} className="nav-icon" /> },
       ];
     default:
       return [];

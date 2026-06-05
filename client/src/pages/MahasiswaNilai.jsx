@@ -9,6 +9,7 @@ export default function MahasiswaNilai() {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [loading, setLoading] = useState(false);
   const [myGrades, setMyGrades] = useState(null);
+  const [edomCompleted, setEdomCompleted] = useState(null);
 
   const calculateFinal = (g) => Math.round((g.kehadiran * 0.1) + (g.tugas * 0.2) + (g.uts * 0.3) + (g.uas * 0.4));
   const getLetterGrade = (score) => {
@@ -61,8 +62,37 @@ export default function MahasiswaNilai() {
     fetchGrades();
   }, [selectedSchedule, user.id]);
 
+  useEffect(() => {
+    // Check EDOM completion
+    const checkEdom = async () => {
+      try {
+        const res = await api.get('/edom/check-completion');
+        setEdomCompleted(res.data.completed);
+      } catch (err) {
+        console.error('Failed to check EDOM completion', err);
+      }
+    };
+    checkEdom();
+  }, []);
+
   const finalScore = myGrades ? calculateFinal(myGrades) : 0;
   const letterGrade = getLetterGrade(finalScore);
+
+  if (edomCompleted === false) {
+    return (
+      <div className="animate-fade-in">
+        <div className="alert alert-danger shadow-sm rounded-4 p-5 text-center">
+          <Award size={64} className="text-danger mb-3" />
+          <h4 className="fw-bold">Akses KHS Terkunci</h4>
+          <p className="text-muted mb-4">
+            Anda belum menyelesaikan pengisian Evaluasi Dosen Oleh Mahasiswa (EDOM) untuk semester ini.<br/>
+            Silakan isi kuisioner EDOM untuk seluruh matakuliah aktif Anda terlebih dahulu.
+          </p>
+          <a href="/mahasiswa/edom" className="btn btn-danger rounded-pill px-4 fw-bold">Pergi ke Menu EDOM</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
