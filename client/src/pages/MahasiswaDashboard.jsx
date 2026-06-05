@@ -101,13 +101,13 @@ export default function MahasiswaDashboard() {
         {cards.map((card, idx) => (
           <div className="col-12 col-md-4" key={idx}>
             <div className="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
-              <div className="card-body p-4 d-flex align-items-center justify-content-between">
+              <div className="card-body p-3 d-flex align-items-center justify-content-between">
                 <div>
-                  <p className="text-muted mb-1 fw-semibold">{card.title}</p>
-                  <h2 className="fw-bold mb-0 text-dark">{card.value}</h2>
+                  <p className="text-muted mb-1 fw-semibold" style={{ fontSize: '0.8rem' }}>{card.title}</p>
+                  <h4 className="fw-bold mb-0 text-dark">{card.value}</h4>
                 </div>
-                <div className={`${card.bg} p-3 rounded-circle d-flex align-items-center justify-content-center`}>
-                  {card.icon}
+                <div className={`${card.bg} p-2 rounded-circle d-flex align-items-center justify-content-center`} style={{ width: '45px', height: '45px' }}>
+                  {React.cloneElement(card.icon, { size: 22 })}
                 </div>
               </div>
             </div>
@@ -174,14 +174,22 @@ export default function MahasiswaDashboard() {
           schedules.map((s, idx) => (
             <div className="col-md-6 col-lg-4" key={idx}>
               <div className="card shadow-sm border-0 h-100 rounded-4">
-                <div className="card-body p-4">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <span className="badge bg-primary-subtle text-primary border">{s.class_name}</span>
-                    <span className="text-muted small fw-semibold"><Clock size={14} className="me-1 mb-1"/>{s.day}, {s.time_start} - {s.time_end}</span>
+                <div className="card-body p-3">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge bg-primary-subtle text-primary border px-2 py-1">{s.class_name}</span>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', fontWeight: '600' }}>
+                      <Clock size={12} className="me-1 mb-1"/>{s.day}, {s.time_start} - {s.time_end}
+                    </span>
                   </div>
-                  <h5 className="fw-bold mb-1">{s.course_name} <span className="text-muted fs-6">({s.course_code})</span></h5>
-                  <p className="text-muted small mb-2">Dosen: {s.dosen_name}</p>
-                  <p className="text-muted small mb-0">Ruang: {s.room || 'TBA'}</p>
+                  <h6 className="fw-bold mb-1 text-truncate" style={{ fontSize: '0.95rem' }}>
+                    {s.course_name}
+                  </h6>
+                  <div className="d-flex justify-content-between align-items-end mt-2">
+                    <div>
+                      <p className="text-muted mb-0" style={{ fontSize: '0.75rem' }}>Dosen: {s.dosen_name}</p>
+                      <p className="text-muted mb-0" style={{ fontSize: '0.75rem' }}>Ruang: {s.room || 'TBA'} ({s.course_code})</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

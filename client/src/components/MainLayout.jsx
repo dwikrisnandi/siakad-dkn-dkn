@@ -4,6 +4,8 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import ChatBot from './ChatBot';
+import MobileMenuGrid from './MobileMenuGrid';
+import BottomNav from './BottomNav';
 
 export default function MainLayout({ allowedRoles }) {
   const { user, loading } = useAuth();
@@ -28,7 +30,7 @@ export default function MainLayout({ allowedRoles }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -36,22 +38,26 @@ export default function MainLayout({ allowedRoles }) {
   }
 
   return (
-    <div className="wrapper">
+    <div className="wrapper" style={{ paddingBottom: '70px' }}>
       <Topbar />
-      <Sidebar />
+      <div className="d-none d-md-block">
+        <Sidebar />
+      </div>
       <div className="content-wrapper bg-light">
         <section className="content p-4">
           <div className="container-fluid">
+            <MobileMenuGrid role={user.role} />
             <Outlet />
           </div>
         </section>
       </div>
-      <footer className="main-footer">
+      <footer className="main-footer d-none d-md-block">
         <div className="float-right d-none d-sm-inline">
           Versi 2.1.0
         </div>
-        <strong>Copyright &copy; 2024 <a href="#">SIAKAD DKN</a>.</strong> Hak cipta milik Dwi Krisnandi.
+        <strong>Copyright &copy; 2026 <a href="#">SIAKAD DKN</a>.</strong> Hak cipta milik Dwi Krisnandi.
       </footer>
+      <BottomNav />
       {/* Tampilkan ChatBot hanya untuk mahasiswa */}
       {user?.role === 'mahasiswa' && <ChatBot />}
     </div>

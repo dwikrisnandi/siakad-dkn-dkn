@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { ClipboardList, Plus, Trash2, Eye, ArrowLeft, ToggleLeft, ToggleRight, CheckCircle, XCircle, Edit3, Database, Sparkles, Download, FileText } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Eye, ArrowLeft, ToggleLeft, ToggleRight, CheckCircle, XCircle, Edit3, Database, Sparkles, Download, FileText, Users, ShieldAlert } from 'lucide-react';
 
 const EMPTY_EXAM = { title: '', type: 'UTS', description: '', start_time: '', end_time: '', duration_minutes: 90 };
 const EMPTY_Q = { question_type: 'pg', question_text: '', options: ['', '', '', ''], correct_answer: '', points: 10 };
@@ -32,6 +32,7 @@ export default function DosenUjian() {
   const [bankQuestions, setBankQuestions] = useState([]);
   const [selectedBankIds, setSelectedBankIds] = useState([]);
   const [importingBank, setImportingBank] = useState(false);
+  const [students, setStudents] = useState([]);
 
   useEffect(() => {
     api.get('/schedules').then(r => setSchedules(r.data.filter(s => s.dosen_id === user.id))).catch(() => {});
@@ -55,11 +56,32 @@ export default function DosenUjian() {
     setView('manage');
   };
 
-  const openResults = async (exam) => {
+  const openStudents = async (exam) => {
     setActiveExam(exam);
-    const r = await api.get(`/exams/${exam.id}/results`);
-    setResults(r.data);
-    setView('results');
+    setLoading(true);
+    try {
+      const [rStud, rRes] = await Promise.all([
+        api.get(`/exams/${exam.id}/students`),
+        api.get(`/exams/${exam.id}/results`)
+      ]);
+      setStudents(rStud.data || []);
+      setResults(rRes.data);
+      setView('students');
+    } catch (e) {
+      alert('Gagal mengambil daftar peserta & hasil');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleBlock = async (student) => {
+    try {
+      const newBlocked = student.is_blocked ? 0 : 1;
+      await api.post(`/exams/${activeExam.id}/blocks`, { mahasiswa_id: student.id, is_blocked: newBlocked });
+      setStudents(prev => prev.map(s => s.id === student.id ? { ...s, is_blocked: newBlocked } : s));
+    } catch (e) {
+      alert('Gagal mengubah status blokir');
+    }
   };
 
   const handleSaveExam = async (e) => {
@@ -173,98 +195,138 @@ export default function DosenUjian() {
   const typeLabel = { pg: 'Pilihan Ganda', true_false: 'Benar/Salah', essay: 'Essay' };
   const typeBadge = { pg: 'primary', true_false: 'warning', essay: 'success' };
 
-  // ── RESULTS VIEW ──
-  if (view === 'results' && results) return (
+  // ── STUDENTS & RESULTS VIEW ──
+  if (view === 'students') return (
     <div className="animate-fade-in">
       <div className="d-flex align-items-center gap-3 mb-4">
         <button className="btn btn-sm btn-outline-secondary" onClick={() => setView('list')}><ArrowLeft size={16} /></button>
-        <div><h3 className="fw-bold mb-0">Hasil Ujian</h3><small className="text-muted">{activeExam.title}</small></div>
+        <div><h3 className="fw-bold mb-0">Peserta & Hasil Ujian</h3><small className="text-muted">{activeExam?.title}</small></div>
       </div>
-      {results.sessions.length === 0 ? (
-        <div className="text-center text-muted py-5"><ClipboardList size={48} className="mb-3 opacity-50" /><h5>Belum ada mahasiswa yang mengumpulkan</h5></div>
-      ) : (
-        <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th className="px-4 py-3">Mahasiswa</th>
-                  <th className="py-3 text-center">Skor Total</th>
-                  <th className="px-4 py-3 text-end">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.sessions.map(s => {
-                  const essayAnswers = s.answers.filter(a => a.question_type === 'essay');
-                  const essayGraded = essayAnswers.filter(a => a.graded_by_dosen).length;
-                  return (
-                    <React.Fragment key={s.id}>
+      <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div className="table-responsive">
+          <table className="table table-hover align-middle mb-0">
+            <thead className="table-light">
+              <tr>
+                <th className="px-4 py-3">Nama Mahasiswa</th>
+                <th className="py-3 text-center">Blokir</th>
+                <th className="py-3 text-center">Status / Skor</th>
+                <th className="px-4 py-3 text-end">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.length === 0 ? (
+                <tr><td colSpan="4" className="text-center text-muted py-4">Tidak ada mahasiswa yang terdaftar di kelas ini</td></tr>
+              ) : students.map(s => {
+                const session = results?.sessions?.find(res => res.mahasiswa_id === s.id);
+                let essayAnswers = [];
+                let essayGraded = 0;
+                if (session) {
+                  essayAnswers = session.answers.filter(a => a.question_type === 'essay');
+                  essayGraded = essayAnswers.filter(a => a.graded_by_dosen).length;
+                }
+
+                return (
+                  <React.Fragment key={s.id}>
+                    <tr className={s.is_blocked ? 'table-danger' : ''}>
+                      <td className="px-4 py-3">
+                        <div className="fw-bold">{s.name}</div>
+                        <div className="small text-muted">{s.nim}</div>
+                      </td>
+                      <td className="py-3 text-center">
+                        <button 
+                          className={`btn btn-sm fw-bold ${s.is_blocked ? 'btn-success' : 'btn-outline-danger'}`}
+                          onClick={() => handleToggleBlock(s)}
+                        >
+                          {s.is_blocked ? 'Buka Blokir' : 'Blokir'}
+                        </button>
+                      </td>
+                      <td className="py-3 text-center">
+                        {!session ? (
+                          <span className="badge bg-secondary">Belum Mulai</span>
+                        ) : !session.is_submitted ? (
+                          <span className="badge bg-warning text-dark">Mengerjakan</span>
+                        ) : (
+                          <div className="fw-bold text-primary" style={{ fontSize: '1.2rem' }}>{session.total_score ?? '-'}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-end">
+                        <div className="d-flex gap-2 justify-content-end">
+                          {session && (
+                            <>
+                              <button 
+                                className="btn btn-sm btn-outline-warning text-dark fw-bold"
+                                onClick={async () => {
+                                  if (!window.confirm('Yakin ingin membuka kembali ujian untuk mahasiswa ini? Waktu akan berlanjut dan nilai sementara akan di-reset.')) return;
+                                  try {
+                                    await api.post(`/exam-sessions/${session.id}/reopen`);
+                                    alert('Ujian berhasil dibuka kembali.');
+                                    openStudents(activeExam); // Refresh
+                                  } catch (e) {
+                                    alert('Gagal membuka kembali ujian');
+                                  }
+                                }}
+                              >
+                                Buka Kembali
+                              </button>
+                              <button 
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => setOpenDropdowns(p => ({ ...p, [s.id]: !p[s.id] }))}
+                              >
+                                {openDropdowns[s.id] ? 'Tutup Jawaban' : `Koreksi Essay (${essayGraded}/${essayAnswers.length})`}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {openDropdowns[s.id] && session && (
                       <tr>
-                        <td className="px-4 py-3">
-                          <div className="fw-bold">{s.mahasiswa_name}</div>
-                          <div className="small text-muted">{s.mahasiswa_nim}</div>
-                        </td>
-                        <td className="py-3 text-center">
-                          <div className="fw-bold text-primary" style={{ fontSize: '1.2rem' }}>{s.total_score ?? '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 text-end">
-                          <button 
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => setOpenDropdowns(p => ({ ...p, [s.id]: !p[s.id] }))}
-                          >
-                            {openDropdowns[s.id] ? 'Tutup Jawaban' : `Koreksi Essay (${essayGraded}/${essayAnswers.length})`}
-                          </button>
+                        <td colSpan="4" className="p-0 border-0">
+                          <div className="bg-light px-4 py-4 border-bottom shadow-inner">
+                            {essayAnswers.length === 0 ? (
+                              <div className="text-center text-muted small py-3">Tidak ada soal essay untuk mahasiswa ini.</div>
+                            ) : essayAnswers.map((a, i) => (
+                              <div key={a.id} className="p-3 rounded-3 mb-3 border bg-white shadow-sm">
+                                <div className="d-flex gap-2 align-items-start mb-2">
+                                  <span className="badge bg-secondary">{i + 1}</span>
+                                  <span className="badge bg-success">Essay</span>
+                                  <small className="text-muted flex-grow-1">{a.question_text}</small>
+                                </div>
+                                <div className="d-flex flex-column gap-2">
+                                  <div className="p-2 bg-light rounded border small">
+                                    <span className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Jawaban Mahasiswa:</span>
+                                    <strong className="text-dark">{a.answer || '-'}</strong>
+                                  </div>
+                                  <div className="d-flex align-items-center gap-2 flex-wrap mt-2">
+                                    <button className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" onClick={() => handleAIGrade(a)} disabled={gradingAI[a.id]}>
+                                      {gradingAI[a.id] ? <span className="spinner-border spinner-border-sm" /> : <Sparkles size={14} />} Koreksi AI
+                                    </button>
+                                    <div className="ms-auto d-flex align-items-center gap-2 bg-white border p-1 rounded-3">
+                                      <input type="number" className="form-control form-control-sm text-center border-0 fw-bold" style={{ width: '60px', backgroundColor: 'transparent' }} min="0" max={a.points} placeholder={`0-${a.points}`}
+                                        value={essayScores[a.id] !== undefined ? essayScores[a.id] : (a.essay_score ?? '')}
+                                        onChange={ev => setEssayScores(p => ({ ...p, [a.id]: ev.target.value }))} />
+                                      <span className="text-muted small fw-bold">/ {a.points}</span>
+                                      <button className="btn btn-sm btn-success ms-2 rounded-2" onClick={() => handleSaveEssay(a.id)} disabled={savingEssay[a.id]}>
+                                        {savingEssay[a.id] ? '...' : 'Simpan'}
+                                      </button>
+                                    </div>
+                                    {a.graded_by_dosen ? <span className="badge bg-success">Sudah Dinilai</span> : <span className="badge bg-warning text-dark">Belum Dinilai</span>}
+                                  </div>
+                                  {aiFeedbacks[a.id] && <div className="w-100 mt-2 p-2 rounded bg-primary bg-opacity-10 border border-primary border-opacity-25 text-primary small fst-italic">🤖 AI Feedback: {aiFeedbacks[a.id]}</div>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </td>
                       </tr>
-                      {openDropdowns[s.id] && (
-                        <tr>
-                          <td colSpan="3" className="p-0 border-0">
-                            <div className="bg-light px-4 py-4 border-bottom shadow-inner">
-                              {essayAnswers.length === 0 ? (
-                                <div className="text-center text-muted small py-3">Tidak ada soal essay untuk mahasiswa ini.</div>
-                              ) : essayAnswers.map((a, i) => (
-                                <div key={a.id} className="p-3 rounded-3 mb-3 border bg-white shadow-sm">
-                                  <div className="d-flex gap-2 align-items-start mb-2">
-                                    <span className="badge bg-secondary">{i + 1}</span>
-                                    <span className="badge bg-success">Essay</span>
-                                    <small className="text-muted flex-grow-1">{a.question_text}</small>
-                                  </div>
-                                  <div className="d-flex flex-column gap-2">
-                                    <div className="p-2 bg-light rounded border small">
-                                      <span className="text-muted d-block mb-1" style={{ fontSize: '0.75rem' }}>Jawaban Mahasiswa:</span>
-                                      <strong className="text-dark">{a.answer || '-'}</strong>
-                                    </div>
-                                    <div className="d-flex align-items-center gap-2 flex-wrap mt-2">
-                                      <button className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" onClick={() => handleAIGrade(a)} disabled={gradingAI[a.id]}>
-                                        {gradingAI[a.id] ? <span className="spinner-border spinner-border-sm" /> : <Sparkles size={14} />} Koreksi AI
-                                      </button>
-                                      <div className="ms-auto d-flex align-items-center gap-2 bg-white border p-1 rounded-3">
-                                        <input type="number" className="form-control form-control-sm text-center border-0 fw-bold" style={{ width: '60px', backgroundColor: 'transparent' }} min="0" max={a.points} placeholder={`0-${a.points}`}
-                                          value={essayScores[a.id] !== undefined ? essayScores[a.id] : (a.essay_score ?? '')}
-                                          onChange={ev => setEssayScores(p => ({ ...p, [a.id]: ev.target.value }))} />
-                                        <span className="text-muted small fw-bold">/ {a.points}</span>
-                                        <button className="btn btn-sm btn-success ms-2 rounded-2" onClick={() => handleSaveEssay(a.id)} disabled={savingEssay[a.id]}>
-                                          {savingEssay[a.id] ? '...' : 'Simpan'}
-                                        </button>
-                                      </div>
-                                      {a.graded_by_dosen ? <span className="badge bg-success">Sudah Dinilai</span> : <span className="badge bg-warning text-dark">Belum Dinilai</span>}
-                                    </div>
-                                    {aiFeedbacks[a.id] && <div className="w-100 mt-2 p-2 rounded bg-primary bg-opacity-10 border border-primary border-opacity-25 text-primary small fst-italic">🤖 AI Feedback: {aiFeedbacks[a.id]}</div>}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 
@@ -465,8 +527,8 @@ export default function DosenUjian() {
                       {exam.token && <span className="fw-bold text-primary">🔑 Token: {exam.token}</span>}
                     </div>
                     <div className="d-flex flex-wrap gap-2">
+                      <button className="btn btn-sm btn-outline-warning text-dark" onClick={() => openStudents(exam)}><Users size={14} className="me-1" />Peserta & Hasil</button>
                       <button className="btn btn-sm btn-outline-primary" onClick={() => openManage(exam)}><Edit3 size={14} className="me-1" />Kelola Soal</button>
-                      <button className="btn btn-sm btn-outline-info" onClick={() => openResults(exam)}><Eye size={14} className="me-1" />Hasil</button>
                       <button className={`btn btn-sm ${exam.is_active ? 'btn-success' : 'btn-outline-secondary'}`} onClick={() => handleToggle(exam)}>
                         {exam.is_active ? <ToggleRight size={14} className="me-1" /> : <ToggleLeft size={14} className="me-1" />}
                         {exam.is_active ? 'Nonaktifkan' : 'Aktifkan'}

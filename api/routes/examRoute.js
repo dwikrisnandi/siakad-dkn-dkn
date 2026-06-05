@@ -60,6 +60,20 @@ const { Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel, convertInc
   } catch (e) {
     console.warn('[examRoute] Migration warning:', e.message);
   }
+  // Add exam_blocks table
+  try {
+    await run(`CREATE TABLE IF NOT EXISTS exam_blocks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      exam_id INTEGER NOT NULL,
+      mahasiswa_id INTEGER NOT NULL,
+      UNIQUE(exam_id, mahasiswa_id)
+    )`);
+  } catch (e) {
+    console.warn('[examRoute] exam_blocks Migration warning:', e.message);
+  }
+  // Add last_pushed_at column for smart FCM push (avoid duplicate pushes)
+  try { await run('ALTER TABLE exams ADD COLUMN last_pushed_at TIMESTAMP'); } catch (e) { /* column already exists */ }
+  try { await run('ALTER TABLE exams ADD COLUMN last_pushed_hash TEXT'); } catch (e) { /* column already exists */ }
 })();
 
 // ─────────────────────────────────────────────────────────
@@ -171,9 +185,100 @@ router.put('/exams/:id', [verifyToken, verifyRole(['dosen'])], async (req, res) 
 // PATCH toggle aktif/nonaktif ujian
 router.patch('/exams/:id/toggle', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
   try {
-    const [[exam]] = await query('SELECT is_active FROM exams WHERE id = ?', [req.params.id]);
+    const [[exam]] = await query('SELECT * FROM exams WHERE id = ?', [req.params.id]);
     if (!exam) return res.status(404).json({ error: 'Ujian tidak ditemukan' });
-    await run('UPDATE exams SET is_active = ? WHERE id = ?', [exam.is_active ? 0 : 1, req.params.id]);
+    const newActive = exam.is_active ? 0 : 1;
+    await run('UPDATE exams SET is_active = ? WHERE id = ?', [newActive, req.params.id]);
+
+    // ── PUSH EXAM DATA TO STUDENTS VIA FCM WHEN ACTIVATED ──
+    if (newActive === 1) {
+      try {
+        // Get questions (strip correct_answer for security — grading happens server-side on submit)
+        const [questions] = await query(
+          'SELECT id, question_type, question_text, options, points, order_num FROM exam_questions WHERE exam_id = ? ORDER BY order_num, id',
+          [req.params.id]
+        );
+
+        // Create a simple hash of question content to detect changes
+        const questionHash = require('crypto')
+          .createHash('md5')
+          .update(JSON.stringify(questions.map(q => ({ id: q.id, t: q.question_text, o: q.options }))))
+          .digest('hex');
+
+        // Skip push if already pushed with same questions
+        if (exam.last_pushed_at && exam.last_pushed_hash === questionHash) {
+          console.log(`⏭️ Exam ${exam.id} already pushed with same questions, skipping FCM`);
+        } else {
+          const safeQuestions = questions.map(q => ({
+            id: q.id,
+            question_type: q.question_type,
+            question_text: q.question_text,
+            options: q.options ? JSON.parse(q.options) : null,
+            points: q.points,
+            order_num: q.order_num
+          }));
+
+          // Get course info
+          const [[scheduleInfo]] = await query(
+            `SELECT c.name as course_name, c.code as course_code FROM schedules s JOIN courses c ON s.course_id = c.id WHERE s.id = ?`,
+            [exam.schedule_id]
+          );
+
+          // Build exam payload for caching
+          const examPayload = {
+            id: exam.id,
+            title: exam.title,
+            type: exam.type,
+            description: exam.description,
+            duration_minutes: exam.duration_minutes,
+            start_time: exam.start_time,
+            end_time: exam.end_time,
+            token: exam.token,
+            course_name: scheduleInfo?.course_name || '',
+            course_code: scheduleInfo?.course_code || '',
+            questions: safeQuestions
+          };
+
+          // Find all enrolled students' FCM tokens
+          const [studentTokens] = await query(
+            `SELECT DISTINCT uft.token
+             FROM class_enrollments ce
+             JOIN schedules s ON (
+               s.class_id = ce.class_id OR
+               s.class_ids LIKE '%"' || ce.class_id::text || '"%' OR
+               s.class_ids LIKE '%[' || ce.class_id::text || ']%' OR
+               s.class_ids LIKE '%,' || ce.class_id::text || ']%' OR
+               s.class_ids LIKE '%[' || ce.class_id::text || ',%' OR
+               s.class_ids LIKE '%,' || ce.class_id::text || ',%'
+             )
+             JOIN user_fcm_tokens uft ON uft.user_id = ce.mahasiswa_id
+             WHERE s.id = ?`,
+            [exam.schedule_id]
+          );
+
+          if (studentTokens.length > 0) {
+            const { sendMulticastNotification } = require('../utils/fcm');
+            const tokens = studentTokens.map(t => t.token);
+            await sendMulticastNotification(
+              tokens,
+              `📝 Ujian ${exam.type}: ${exam.title}`,
+              `Ujian ${exam.title} (${scheduleInfo?.course_name}) sudah dibuka. Soal sudah di-cache ke perangkat Anda.`,
+              {
+                type: 'exam_push',
+                exam_payload: JSON.stringify(examPayload)
+              }
+            );
+            console.log(`✅ Pushed exam ${exam.id} to ${tokens.length} student device(s)`);
+          }
+
+          // Mark as pushed with current question hash
+          await run('UPDATE exams SET last_pushed_at = CURRENT_TIMESTAMP, last_pushed_hash = ? WHERE id = ?', [questionHash, req.params.id]);
+        }
+      } catch (pushErr) {
+        console.error('⚠️ Failed to push exam data to students (non-blocking):', pushErr.message);
+      }
+    }
+
     res.json({ message: 'Status ujian diperbarui', is_active: !exam.is_active });
   } catch (e) {
     res.status(500).json({ error: 'Gagal mengubah status ujian' });
@@ -846,6 +951,68 @@ router.put('/exam-answers/:id/score', [verifyToken, verifyRole(['dosen'])], asyn
   }
 });
 
+// POST: Dosen buka kembali sesi ujian mahasiswa (Re-open)
+router.post('/exam-sessions/:sessionId/reopen', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
+  try {
+    const sessionId = parseInt(req.params.sessionId);
+    // Kita hapus flag is_submitted dan submitted_at supaya mahasiswa bisa lanjut
+    // total_score kita null-kan sementara sampai dia submit lagi
+    await run(
+      'UPDATE exam_sessions SET is_submitted = 0, submitted_at = NULL, total_score = NULL WHERE id = ?',
+      [sessionId]
+    );
+    res.json({ message: 'Ujian berhasil dibuka kembali untuk mahasiswa ini' });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal membuka kembali ujian' });
+  }
+});
+
+// GET: ambil daftar peserta ujian beserta status blokirnya
+router.get('/exams/:id/students', [verifyToken, verifyRole(['dosen', 'admin'])], async (req, res) => {
+  try {
+    const [[exam]] = await query('SELECT schedule_id FROM exams WHERE id = ?', [req.params.id]);
+    if (!exam) return res.status(404).json({ error: 'Ujian tidak ditemukan' });
+
+    const [students] = await query(
+      `SELECT DISTINCT u.id, u.name, u.nidn_nim as nim, 
+              (CASE WHEN eb.id IS NOT NULL THEN 1 ELSE 0 END) as is_blocked
+       FROM class_enrollments ce
+       JOIN schedules s ON (
+         s.class_id = ce.class_id OR
+         s.class_ids LIKE '%"' || ce.class_id::text || '"%' OR
+         s.class_ids LIKE '%[' || ce.class_id::text || ']%' OR
+         s.class_ids LIKE '%,' || ce.class_id::text || ']%' OR
+         s.class_ids LIKE '%[' || ce.class_id::text || ',%' OR
+         s.class_ids LIKE '%,' || ce.class_id::text || ',%'
+       )
+       JOIN users u ON ce.mahasiswa_id = u.id
+       LEFT JOIN exam_blocks eb ON eb.exam_id = ? AND eb.mahasiswa_id = u.id
+       WHERE s.id = ?
+       ORDER BY u.name`,
+      [req.params.id, exam.schedule_id]
+    );
+
+    res.json(students);
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal mengambil daftar mahasiswa' });
+  }
+});
+
+// POST: ubah status blokir mahasiswa untuk ujian tertentu
+router.post('/exams/:id/blocks', [verifyToken, verifyRole(['dosen', 'admin'])], async (req, res) => {
+  try {
+    const { mahasiswa_id, is_blocked } = req.body;
+    if (is_blocked) {
+      await run('INSERT OR IGNORE INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?)', [req.params.id, mahasiswa_id]);
+    } else {
+      await run('DELETE FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [req.params.id, mahasiswa_id]);
+    }
+    res.json({ message: 'Status blokir berhasil diubah' });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal mengubah status blokir' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────
 // MAHASISWA: Sesi Ujian
 // ─────────────────────────────────────────────────────────
@@ -865,6 +1032,12 @@ router.post('/exam-sessions/:examId/start', [verifyToken, verifyRole(['mahasiswa
     // Validasi token terlebih dahulu (selalu wajib)
     if (exam.token && exam.token !== token) {
       return res.status(403).json({ error: 'Token ujian tidak valid' });
+    }
+
+    // Cek apakah mahasiswa diblokir dari ujian ini
+    const [blocked] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [examId, mahasiswaId]);
+    if (blocked.length > 0) {
+      return res.status(403).json({ error: 'Maaf, Anda tidak diizinkan untuk mengikuti ujian ini' });
     }
 
     // Cek apakah sudah ada sesi
@@ -1002,7 +1175,7 @@ router.get('/exam-sessions/:examId/result', [verifyToken, verifyRole(['mahasiswa
     if (!session || !session.is_submitted) return res.json(null);
 
     const [answers] = await query(
-      `SELECT ea.*, eq.question_text, eq.question_type, eq.correct_answer, eq.points, eq.options
+      `SELECT ea.id, ea.exam_id, ea.session_id, ea.mahasiswa_id, ea.question_id, ea.answer, ea.points_earned, ea.essay_score, ea.graded_by_dosen, ea.is_correct, eq.question_text, eq.question_type, eq.points, eq.options
        FROM exam_answers ea
        JOIN exam_questions eq ON ea.question_id = eq.id
        WHERE ea.session_id = ?

@@ -81,7 +81,7 @@ export default function Topbar() {
     <nav className="main-header navbar navbar-expand navbar-white navbar-light">
       {/* Left navbar links */}
       <ul className="navbar-nav">
-        <li className="nav-item">
+        <li className="nav-item d-none d-md-block">
           <a className="nav-link" data-widget="pushmenu" href="#" role="button">
             <Menu size={20} />
           </a>

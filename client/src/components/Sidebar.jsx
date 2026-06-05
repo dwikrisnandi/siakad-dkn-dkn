@@ -1,56 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Home, BookOpen, Users, UserSquare2, Calendar, 
-  FileText, CheckSquare, PenTool, LayoutGrid, Award, Database, Smartphone, ClipboardList
-} from 'lucide-react';
+import { getRoleLinks } from '../utils/menuLinks';
 
 export default function Sidebar() {
   const { user } = useAuth();
+  const links = getRoleLinks(user?.role, 18);
 
-  const getRoleLinks = () => {
-    switch (user?.role) {
-      case 'admin':
-        return [
-          { name: 'Dashboard Admin', path: '/admin', icon: <Home size={18} className="nav-icon" /> },
-          { name: 'Tahun Akademik', path: '/admin/academic-years', icon: <Calendar size={18} className="nav-icon" /> },
-          { name: 'Data Matakuliah', path: '/admin/courses', icon: <BookOpen size={18} className="nav-icon" /> },
-          { name: 'Data Kelas', path: '/admin/classes', icon: <LayoutGrid size={18} className="nav-icon" /> },
-          { name: 'Data Dosen', path: '/admin/dosen', icon: <UserSquare2 size={18} className="nav-icon" /> },
-          { name: 'Data Mahasiswa', path: '/admin/mahasiswa', icon: <Users size={18} className="nav-icon" /> },
-          { name: 'Penjadwalan', path: '/admin/schedules', icon: <Calendar size={18} className="nav-icon" /> },
-          { name: 'KHS Mahasiswa', path: '/admin/khs', icon: <Award size={18} className="nav-icon" /> },
-          { name: 'Backup Data', path: '/admin/backup', icon: <Database size={18} className="nav-icon" /> },
-          { name: 'Perangkat Notifikasi', path: '/admin/fcm-tokens', icon: <Smartphone size={18} className="nav-icon" /> },
-        ];
-      case 'dosen':
-        return [
-          { name: 'Dashboard Dosen', path: '/dosen', icon: <Home size={18} className="nav-icon" /> },
-          { name: 'RPS Perkuliahan', path: '/dosen/rps', icon: <BookOpen size={18} className="nav-icon" /> },
-          { name: 'Input Kehadiran', path: '/dosen/attendance', icon: <CheckSquare size={18} className="nav-icon" /> },
-          { name: 'Upload Materi', path: '/dosen/materials', icon: <FileText size={18} className="nav-icon" /> },
-          { name: 'Kelola Tugas', path: '/dosen/assignments', icon: <PenTool size={18} className="nav-icon" /> },
-          { name: 'Bank Soal', path: '/dosen/bank-soal', icon: <Database size={18} className="nav-icon" /> },
-          { name: 'Paket Ujian', path: '/dosen/exams', icon: <ClipboardList size={18} className="nav-icon" /> },
-          { name: 'Input Nilai', path: '/dosen/grades', icon: <Award size={18} className="nav-icon" /> },
-        ];
-      case 'mahasiswa':
-        return [
-          { name: 'Dashboard Mahasiswa', path: '/mahasiswa', icon: <Home size={18} className="nav-icon" /> },
-          { name: 'RPS Perkuliahan', path: '/mahasiswa/rps', icon: <BookOpen size={18} className="nav-icon" /> },
-          { name: 'Materi Kuliah', path: '/mahasiswa/materials', icon: <FileText size={18} className="nav-icon" /> },
-          { name: 'Tugas Kuliah', path: '/mahasiswa/assignments', icon: <PenTool size={18} className="nav-icon" /> },
-          { name: 'Ujian (UTS/UAS)', path: '/mahasiswa/exams', icon: <ClipboardList size={18} className="nav-icon" /> },
-          { name: 'Rekap Absensi', path: '/mahasiswa/attendance', icon: <CheckSquare size={18} className="nav-icon" /> },
-          { name: 'Nilai KHS', path: '/mahasiswa/grades', icon: <Award size={18} className="nav-icon" /> },
-        ];
-      default:
-        return [];
-    }
-  };
-
-  const links = getRoleLinks();
 
   return (
     <aside className="main-sidebar sidebar-dark-primary elevation-4 position-fixed" style={{ height: '100vh', overflowY: 'auto' }}>

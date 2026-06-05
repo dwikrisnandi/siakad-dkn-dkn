@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { ClipboardList, ArrowLeft, Clock, CheckCircle, AlertCircle, Send, FileText } from 'lucide-react';
+import { ClipboardList, ArrowLeft, Clock, CheckCircle, AlertCircle, Send, FileText, WifiOff, Wifi, HardDrive } from 'lucide-react';
+import { getCachedExam, getAllCachedExams, removeCachedExam, cacheExamData } from '../utils/examCache';
 
 export default function MahasiswaUjian() {
   const { user } = useAuth();
@@ -19,6 +20,14 @@ export default function MahasiswaUjian() {
   const [currentQ, setCurrentQ] = useState(0);
   const timerRef = useRef(null);
 
+  // Online/Offline State
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [syncStatus, setSyncStatus] = useState('idle'); // idle | syncing | synced | error
+  const pendingQueueRef = useRef([]);
+  const syncingRef = useRef(false);
+  const [offlineMode, setOfflineMode] = useState(false); // true when exam started from cache
+  const [cachedExams, setCachedExams] = useState([]); // exams available from IndexedDB cache
+
   // Token Modal State
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [tokenInput, setTokenInput] = useState('');
@@ -28,18 +37,241 @@ export default function MahasiswaUjian() {
   const [showKisiModal, setShowKisiModal] = useState(false);
   const [activeKisiExam, setActiveKisiExam] = useState(null);
 
+  // ── LOCAL STORAGE HELPERS ──
+  const LS_KEY_PREFIX = 'siakad_exam_answers_';
+  const getLocalAnswers = (examId) => {
+    try {
+      const data = localStorage.getItem(LS_KEY_PREFIX + examId);
+      return data ? JSON.parse(data) : {};
+    } catch { return {}; }
+  };
+  const setLocalAnswers = (examId, answersObj) => {
+    try {
+      localStorage.setItem(LS_KEY_PREFIX + examId, JSON.stringify(answersObj));
+    } catch (e) { console.error('localStorage save error:', e); }
+  };
+  const getPendingQueue = (examId) => {
+    try {
+      const data = localStorage.getItem(LS_KEY_PREFIX + examId + '_pending');
+      return data ? JSON.parse(data) : [];
+    } catch { return []; }
+  };
+  const setPendingQueue = (examId, queue) => {
+    try {
+      localStorage.setItem(LS_KEY_PREFIX + examId + '_pending', JSON.stringify(queue));
+    } catch (e) { console.error('localStorage pending save error:', e); }
+  };
+  const clearLocalExamData = (examId) => {
+    try {
+      localStorage.removeItem(LS_KEY_PREFIX + examId);
+      localStorage.removeItem(LS_KEY_PREFIX + examId + '_pending');
+    } catch (e) { console.error('localStorage clear error:', e); }
+  };
+
+  // ── SYNC PENDING ANSWERS TO SERVER ──
+  const syncPendingAnswers = useCallback(async (examId) => {
+    const eid = examId || activeExam?.id;
+    if (!eid || syncingRef.current) return;
+    const queue = getPendingQueue(eid);
+    if (queue.length === 0) return;
+
+    syncingRef.current = true;
+    setSyncStatus('syncing');
+    const failedQueue = [];
+
+    for (const item of queue) {
+      try {
+        await api.post(`/exam-sessions/${eid}/answer`, { question_id: item.question_id, answer: item.answer });
+      } catch (e) {
+        console.error('Sync error for question', item.question_id, e);
+        failedQueue.push(item);
+      }
+    }
+
+    setPendingQueue(eid, failedQueue);
+    pendingQueueRef.current = failedQueue;
+    syncingRef.current = false;
+    setSyncStatus(failedQueue.length > 0 ? 'error' : 'synced');
+
+    if (failedQueue.length === 0) {
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    }
+  }, [activeExam]);
+
+  // ── SYNC DEFERRED SUBMISSIONS ──
+  const syncDeferredSubmissions = async () => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('siakad_deferred_submit_')) continue;
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        const eid = data.exam_id;
+        if (!eid) continue;
+
+        // Ensure session exists
+        const cachedExam = await getCachedExam(eid);
+        try {
+          await api.post(`/exam-sessions/${eid}/start`, { token: cachedExam?.token || '' });
+        } catch (e) { /* session might already exist */ }
+
+        // Sync all answers
+        const answers = data.answers || getLocalAnswers(eid);
+        for (const [qid, ans] of Object.entries(answers)) {
+          try {
+            await api.post(`/exam-sessions/${eid}/answer`, { question_id: parseInt(qid), answer: ans });
+          } catch (e) { console.error('Deferred sync error for q', qid, e); }
+        }
+
+        // Submit
+        await api.post(`/exam-sessions/${eid}/submit`);
+        // Cleanup
+        clearLocalExamData(eid);
+        removeCachedExam(eid).catch(() => {});
+        localStorage.removeItem(key);
+        console.log('✅ Deferred submission synced for exam', eid);
+      } catch (e) {
+        console.error('Failed to sync deferred submission:', key, e);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchExams();
+    loadCachedExams();
+    // Auto-sync deferred submissions on mount if online
+    if (navigator.onLine) syncDeferredSubmissions();
   }, []);
 
   useEffect(() => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
+  // ── ONLINE/OFFLINE LISTENER ──
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Auto-sync pending answers when back online
+      if (activeExam?.id) {
+        syncPendingAnswers(activeExam.id);
+      }
+      // If in offline exam mode and now back online, try to create session + sync all answers
+      if (offlineMode && activeExam?.id) {
+        (async () => {
+          try {
+            // Create session on server
+            const cachedExam = await getCachedExam(activeExam.id);
+            await api.post(`/exam-sessions/${activeExam.id}/start`, { token: cachedExam?.token || '' });
+            // Sync all localStorage answers as pending
+            const localAnswers = getLocalAnswers(activeExam.id);
+            const allPending = Object.entries(localAnswers).map(([qid, ans]) => ({ question_id: parseInt(qid), answer: ans }));
+            setPendingQueue(activeExam.id, allPending);
+            pendingQueueRef.current = allPending;
+            setOfflineMode(false);
+            syncPendingAnswers(activeExam.id);
+          } catch (e) {
+            console.error('Failed to sync offline exam session:', e);
+          }
+        })();
+      }
+      // Auto-sync any deferred submissions
+      syncDeferredSubmissions();
+      // Refresh exam list
+      fetchExams();
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [activeExam, syncPendingAnswers, offlineMode]);
+
+  const loadCachedExams = async () => {
+    try {
+      const cached = await getAllCachedExams();
+      setCachedExams(cached);
+    } catch (e) { console.error('Failed to load cached exams:', e); }
+  };
+
   const fetchExams = async () => {
     setLoading(true);
-    try { const r = await api.get('/exams/available'); setExams(r.data); }
-    catch (e) { console.error(e); } finally { setLoading(false); }
+    try {
+      if (navigator.onLine) {
+        const r = await api.get('/exams/available');
+        setExams(r.data);
+        // ── PRE-CACHE: silently cache all active exams in background ──
+        preCacheExams(r.data);
+      } else {
+        // Offline: show cached exams as available
+        const cached = await getAllCachedExams();
+        setCachedExams(cached);
+        setExams(cached.map(c => ({
+          id: c.id,
+          title: c.title,
+          type: c.type,
+          description: c.description,
+          duration_minutes: c.duration_minutes,
+          start_time: c.start_time,
+          end_time: c.end_time,
+          course_name: c.course_name,
+          is_submitted: 0,
+          _fromCache: true
+        })));
+      }
+    } catch (e) {
+      console.error(e);
+      // If server unreachable, fall back to cache
+      const cached = await getAllCachedExams();
+      if (cached.length > 0) {
+        setCachedExams(cached);
+        setExams(cached.map(c => ({
+          id: c.id,
+          title: c.title,
+          type: c.type,
+          description: c.description,
+          duration_minutes: c.duration_minutes,
+          start_time: c.start_time,
+          end_time: c.end_time,
+          course_name: c.course_name,
+          is_submitted: 0,
+          _fromCache: true
+        })));
+      }
+    } finally { setLoading(false); }
+  };
+
+  // ── PRE-CACHE ALL ACTIVE EXAMS IN BACKGROUND ──
+  // Saat mahasiswa buka halaman ujian, semua soal ujian yang aktif
+  // (walaupun belum waktunya) akan otomatis di-download dan di-cache.
+  // Jadi saat jadwal tiba, soal sudah ada di perangkat.
+  const preCacheExams = async (examList) => {
+    if (!navigator.onLine || !examList || examList.length === 0) return;
+    const currentCached = await getAllCachedExams();
+    const cachedIds = currentCached.map(c => c.id);
+
+    for (const exam of examList) {
+      // Skip if already submitted or already cached
+      if (exam.is_submitted === 1 || cachedIds.includes(exam.id)) continue;
+      try {
+        const detailRes = await api.get(`/exams/${exam.id}`);
+        if (detailRes.data && Array.isArray(detailRes.data.questions)) {
+          await cacheExamData({
+            ...detailRes.data,
+            token: exam.token || '',
+            duration_minutes: exam.duration_minutes || detailRes.data.duration_minutes || 90,
+            course_name: exam.course_name || '',
+            course_code: exam.course_code || ''
+          });
+          console.log(`✅ Pre-cached exam: ${exam.title} (ID: ${exam.id})`);
+        }
+      } catch (e) {
+        console.warn(`⚠️ Failed to pre-cache exam ${exam.id}:`, e.message);
+      }
+    }
+    // Refresh cached exams state after pre-caching
+    loadCachedExams();
   };
 
   const openTokenPrompt = (exam) => {
@@ -47,6 +279,40 @@ export default function MahasiswaUjian() {
     setTokenInput('');
     setTokenError('');
     setShowTokenModal(true);
+  };
+
+  // ── Deterministic shuffle helper ──
+  const shuffleQuestions = (questions, examId) => {
+    const shuffled = [...questions];
+    let seed = user?.id ? user.id + examId : examId;
+    const random = () => {
+      const x = Math.sin(seed++) * 10000;
+      return x - Math.floor(x);
+    };
+
+    // First, map and shuffle options inside each PG question
+    for (let i = 0; i < shuffled.length; i++) {
+      const q = shuffled[i];
+      if (q.question_type === 'pg' && Array.isArray(q.options)) {
+        let opts = q.options.map((optText, idx) => ({
+          originalLetter: String.fromCharCode(65 + idx),
+          text: optText
+        }));
+        
+        for (let k = opts.length - 1; k > 0; k--) {
+          const j = Math.floor(random() * (k + 1));
+          [opts[k], opts[j]] = [opts[j], opts[k]];
+        }
+        q.shuffledOptions = opts;
+      }
+    }
+
+    // Then shuffle the questions themselves
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   };
 
   const handleStartExam = async (e) => {
@@ -57,7 +323,59 @@ export default function MahasiswaUjian() {
     }
 
     setIsStarting(true);
-    
+
+    // ── OFFLINE MODE: use cached exam data from IndexedDB ──
+    if (!navigator.onLine) {
+      try {
+        const cachedExam = await getCachedExam(targetExam.id);
+        if (!cachedExam) {
+          setTokenError('Soal ujian belum ter-cache di perangkat ini. Hubungkan internet untuk mengunduh soal.');
+          setIsStarting(false);
+          return;
+        }
+
+        // Validate token locally against cached token
+        if (cachedExam.token && cachedExam.token !== tokenInput.trim().toUpperCase()) {
+          setTokenError('Token ujian tidak valid');
+          setIsStarting(false);
+          return;
+        }
+
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(e => console.log('Fullscreen error:', e));
+        }
+
+        setShowTokenModal(false);
+        setOfflineMode(true);
+
+        // Use cached questions
+        const shuffled = shuffleQuestions(cachedExam.questions || [], cachedExam.id);
+        setExamDetail({ ...cachedExam, questions: shuffled });
+        setActiveExam(targetExam);
+
+        // Load answers from localStorage only
+        const localAnswers = getLocalAnswers(targetExam.id);
+        setAnswers(localAnswers);
+
+        // Start timer
+        const durationSec = (targetExam.duration_minutes || cachedExam.duration_minutes || 90) * 60;
+        setTimeLeft(durationSec);
+        timerRef.current = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev <= 1) { clearInterval(timerRef.current); handleSubmit(targetExam.id, true); return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+        setView('exam');
+      } catch (err) {
+        setTokenError('Gagal memuat soal dari cache: ' + err.message);
+      } finally {
+        setIsStarting(false);
+      }
+      return;
+    }
+
+    // ── ONLINE MODE: normal flow ──
     // Trik Jeda Acak (Jitter) 0 hingga 3000 ms untuk menyebar beban traffic
     const randomJitter = Math.floor(Math.random() * 3000);
     await new Promise(resolve => setTimeout(resolve, randomJitter));
@@ -68,31 +386,47 @@ export default function MahasiswaUjian() {
       }
       const startRes = await api.post(`/exam-sessions/${targetExam.id}/start`, { token: tokenInput.trim().toUpperCase() });
       setShowTokenModal(false);
+      setOfflineMode(false);
       
       setSessionId(startRes.data.session_id);
       const detailRes = await api.get(`/exams/${targetExam.id}`);
       
-      // Mengacak urutan soal secara deterministik (konsisten untuk mahasiswa yang sama jika ter-refresh)
+      // Mengacak urutan soal secara deterministik
       if (detailRes.data && Array.isArray(detailRes.data.questions)) {
-        const questions = [...detailRes.data.questions];
-        let seed = user?.id ? user.id + targetExam.id : targetExam.id;
-        const random = () => {
-          const x = Math.sin(seed++) * 10000;
-          return x - Math.floor(x);
-        };
-        for (let i = questions.length - 1; i > 0; i--) {
-          const j = Math.floor(random() * (i + 1));
-          [questions[i], questions[j]] = [questions[j], questions[i]];
-        }
-        detailRes.data.questions = questions;
+        detailRes.data.questions = shuffleQuestions(detailRes.data.questions, targetExam.id);
       }
 
       setExamDetail(detailRes.data);
       setActiveExam(targetExam);
 
-      // Load saved answers
+      // Cache exam data to IndexedDB for offline fallback (even without PWA push)
+      try {
+        await cacheExamData({
+          ...detailRes.data,
+          token: targetExam.token || '',
+          duration_minutes: targetExam.duration_minutes || detailRes.data.duration_minutes || 90,
+          course_name: targetExam.course_name || '',
+          course_code: targetExam.course_code || ''
+        });
+        console.log('✅ Exam cached to IndexedDB on start');
+      } catch (cacheErr) {
+        console.warn('⚠️ Failed to cache exam on start:', cacheErr);
+      }
+
+      // Load saved answers from server, then merge with any localStorage leftovers
       const savedRes = await api.get(`/exam-sessions/${targetExam.id}/answers`);
-      setAnswers(savedRes.data.answers || {});
+      const serverAnswers = savedRes.data.answers || {};
+      const localAnswers = getLocalAnswers(targetExam.id);
+      const mergedAnswers = { ...serverAnswers, ...localAnswers };
+      setAnswers(mergedAnswers);
+      setLocalAnswers(targetExam.id, mergedAnswers);
+
+      // Sync any pending offline answers to server
+      const pending = getPendingQueue(targetExam.id);
+      if (pending.length > 0 && navigator.onLine) {
+        pendingQueueRef.current = pending;
+        syncPendingAnswers(targetExam.id);
+      }
 
       // Start timer
       const durationSec = (targetExam.duration_minutes || 90) * 60;
@@ -105,7 +439,17 @@ export default function MahasiswaUjian() {
       }, 1000);
       setView('exam');
     } catch (e) {
-      setTokenError(e.response?.data?.error || 'Gagal memulai ujian');
+      // If server unreachable, try offline fallback
+      if (!e.response) {
+        const cachedExam = await getCachedExam(targetExam.id);
+        if (cachedExam) {
+          setTokenError('Server tidak dapat dijangkau. Ketuk "Verifikasi" lagi untuk mode offline.');
+        } else {
+          setTokenError('Server tidak dapat dijangkau dan soal belum ter-cache.');
+        }
+      } else {
+        setTokenError(e.response?.data?.error || 'Gagal memulai ujian');
+      }
     } finally {
       setIsStarting(false);
     }
@@ -121,27 +465,106 @@ export default function MahasiswaUjian() {
   };
 
   const saveAnswer = async (questionId, answer) => {
-    setAnswers(prev => ({ ...prev, [questionId]: answer }));
-    try {
-      await api.post(`/exam-sessions/${activeExam?.id}/answer`, { question_id: questionId, answer });
-    } catch (e) { console.error('Auto-save error:', e); }
+    const examId = activeExam?.id;
+    // 1. Update UI state immediately
+    setAnswers(prev => {
+      const updated = { ...prev, [questionId]: answer };
+      // 2. Always save to localStorage first (instant, offline-safe)
+      if (examId) setLocalAnswers(examId, updated);
+      return updated;
+    });
+
+    // 3. Try syncing to server
+    if (navigator.onLine) {
+      try {
+        await api.post(`/exam-sessions/${examId}/answer`, { question_id: questionId, answer });
+      } catch (e) {
+        console.error('Auto-save to server failed, queuing:', e);
+        // Failed even though online — add to pending queue
+        if (examId) {
+          const queue = getPendingQueue(examId);
+          // Replace existing entry for same question or append
+          const idx = queue.findIndex(q => q.question_id === questionId);
+          if (idx >= 0) queue[idx].answer = answer;
+          else queue.push({ question_id: questionId, answer });
+          setPendingQueue(examId, queue);
+          pendingQueueRef.current = queue;
+        }
+      }
+    } else {
+      // Offline — add to pending queue for later sync
+      if (examId) {
+        const queue = getPendingQueue(examId);
+        const idx = queue.findIndex(q => q.question_id === questionId);
+        if (idx >= 0) queue[idx].answer = answer;
+        else queue.push({ question_id: questionId, answer });
+        setPendingQueue(examId, queue);
+        pendingQueueRef.current = queue;
+      }
+    }
   };
 
   const handleSubmit = async (examId, auto = false) => {
+    const eid = examId || activeExam?.id;
     if (!auto && !window.confirm('Yakin ingin mengumpulkan ujian? Jawaban tidak dapat diubah setelah dikumpulkan.')) return;
     if (timerRef.current) clearInterval(timerRef.current);
     if (document.exitFullscreen && document.fullscreenElement) {
       document.exitFullscreen().catch(e => console.log('Exit fullscreen error:', e));
     }
     setSubmitting(true);
+
+    // ── OFFLINE SUBMIT: defer to later ──
+    if (!navigator.onLine || offlineMode) {
+      try {
+        // Mark this exam for deferred submission
+        localStorage.setItem('siakad_deferred_submit_' + eid, JSON.stringify({
+          exam_id: eid,
+          answers: getLocalAnswers(eid),
+          submitted_at: new Date().toISOString()
+        }));
+        alert('Ujian dikumpulkan secara offline. Jawaban Anda tersimpan aman di perangkat dan akan otomatis dikirim ke server saat koneksi kembali.');
+        setView('list');
+        fetchExams();
+      } catch (e) {
+        alert('Gagal menyimpan pengumpulan offline: ' + e.message);
+      } finally { setSubmitting(false); }
+      return;
+    }
+
+    // ── ONLINE SUBMIT ──
     try {
-      const r = await api.post(`/exam-sessions/${examId || activeExam?.id}/submit`);
+      // Sync any remaining pending answers before submitting
+      const queue = getPendingQueue(eid);
+      if (queue.length > 0) {
+        for (const item of queue) {
+          try {
+            await api.post(`/exam-sessions/${eid}/answer`, { question_id: item.question_id, answer: item.answer });
+          } catch (e) { console.error('Final sync error:', e); }
+        }
+      }
+
+      await api.post(`/exam-sessions/${eid}/submit`);
+      // Clean up localStorage after successful submit
+      clearLocalExamData(eid);
+      removeCachedExam(eid).catch(() => {});
+      localStorage.removeItem('siakad_deferred_submit_' + eid);
       await fetchExams();
-      const resultRes = await api.get(`/exam-sessions/${examId || activeExam?.id}/result`);
+      const resultRes = await api.get(`/exam-sessions/${eid}/result`);
       setResult(resultRes.data);
       setView('result');
     } catch (e) {
-      alert(e.response?.data?.error || 'Gagal mengumpulkan ujian');
+      if (!e.response) {
+        // Server unreachable — defer
+        localStorage.setItem('siakad_deferred_submit_' + eid, JSON.stringify({
+          exam_id: eid,
+          answers: getLocalAnswers(eid),
+          submitted_at: new Date().toISOString()
+        }));
+        alert('Server tidak dapat dijangkau. Jawaban disimpan di perangkat dan akan otomatis dikirim saat koneksi kembali.');
+        setView('list');
+      } else {
+        alert(e.response?.data?.error || 'Gagal mengumpulkan ujian');
+      }
     } finally { setSubmitting(false); }
   };
 
@@ -184,42 +607,42 @@ export default function MahasiswaUjian() {
           </div>
         </div>
 
-        {resAnswers.map((a, i) => (
-          <div key={a.id} className={`card shadow-sm border-0 rounded-4 mb-3 border-start border-4 ${a.question_type === 'essay' ? 'border-info' : a.is_correct ? 'border-success' : 'border-danger'}`}>
-            <div className="card-body p-4">
-              <div className="d-flex gap-2 align-items-center mb-2">
-                <span className="badge bg-secondary">#{i + 1}</span>
-                <span className={`badge bg-${typeBg[a.question_type]}`}>{typeLabel[a.question_type]}</span>
-                <span className="badge bg-light text-dark border">{a.points} poin</span>
-                {a.question_type !== 'essay' && (a.is_correct
-                  ? <span className="badge bg-success ms-auto"><CheckCircle size={12} className="me-1" />Benar ({a.points_earned} poin)</span>
-                  : <span className="badge bg-danger ms-auto"><AlertCircle size={12} className="me-1" />Salah (0 poin)</span>)}
-                {a.question_type === 'essay' && (
-                  <span className={`badge ms-auto ${a.graded_by_dosen ? 'bg-success' : 'bg-warning text-dark'}`}>
-                    {a.graded_by_dosen ? `Dinilai: ${a.essay_score} poin` : 'Belum Dinilai'}
-                  </span>
-                )}
-              </div>
-              <p className="fw-semibold mb-2">{a.question_text}</p>
-              {a.question_type === 'pg' && a.options && (
-                <div className="row g-1 mb-2">
-                  {a.options.map((opt, oi) => {
-                    const ltr = String.fromCharCode(65 + oi);
-                    const isMyAnswer = a.answer === ltr;
-                    const isCorrect = a.correct_answer === ltr;
-                    let cls = 'text-muted';
-                    if (isCorrect) cls = 'text-success fw-bold';
-                    if (isMyAnswer && !isCorrect) cls = 'text-danger fw-bold text-decoration-line-through';
-                    return <div key={oi} className={`col-6 small px-2 py-1 rounded ${cls}`}>{ltr}. {opt}</div>;
-                  })}
+        {resAnswers.map((a, i) => {
+          const isPg = a.question_type === 'pg';
+          const myAnswerText = isPg && a.options && a.answer 
+            ? (a.options[a.answer.charCodeAt(0) - 65] || '')
+            : (a.answer || '(tidak dijawab)');
+
+          return (
+            <div key={a.id} className={`card shadow-sm border-0 rounded-4 mb-3 border-start border-4 ${a.question_type === 'essay' ? 'border-info' : a.is_correct ? 'border-success' : 'border-danger'}`}>
+              <div className="card-body p-4">
+                <div className="d-flex gap-2 align-items-center mb-2">
+                  <span className="badge bg-secondary">#{i + 1}</span>
+                  <span className={`badge bg-${typeBg[a.question_type]}`}>{typeLabel[a.question_type]}</span>
+                  <span className="badge bg-light text-dark border">{a.points} poin</span>
+                  
+                  {a.question_type !== 'essay' && (a.is_correct
+                    ? <span className="badge bg-success ms-auto"><CheckCircle size={12} className="me-1" />Benar ({a.points_earned} poin)</span>
+                    : <span className="badge bg-danger ms-auto"><AlertCircle size={12} className="me-1" />Salah (0 poin)</span>)}
+                  
+                  {a.question_type === 'essay' && (
+                    <span className={`badge ms-auto ${a.graded_by_dosen ? 'bg-success' : 'bg-warning text-dark'}`}>
+                      {a.graded_by_dosen ? `Dinilai: ${a.essay_score} poin` : 'Belum Dinilai'}
+                    </span>
+                  )}
                 </div>
-              )}
-              <div className="text-muted small">Jawaban Anda: <strong className={a.is_correct ? 'text-success' : a.question_type === 'essay' ? 'text-dark' : 'text-danger'}>{a.answer || '(tidak dijawab)'}</strong>
-                {a.question_type !== 'essay' && !a.is_correct && <> | Benar: <strong className="text-success">{a.correct_answer}</strong></>}
+                <p className="fw-semibold mb-3">{a.question_text}</p>
+                
+                <div className="p-3 rounded-3" style={{ backgroundColor: '#f8f9fa' }}>
+                  <div className="text-muted small mb-1">Jawaban Anda:</div>
+                  <strong className={a.question_type === 'essay' ? 'text-dark' : a.is_correct ? 'text-success' : 'text-danger'}>
+                    {myAnswerText}
+                  </strong>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   }
@@ -234,11 +657,54 @@ export default function MahasiswaUjian() {
     return (
       <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999, overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '2rem' }}>
         <div className="container" style={{ maxWidth: '1200px' }}>
+
+          {/* Offline Mode Banner */}
+          {offlineMode && (
+            <div className="alert mb-3 py-2 px-3 d-flex align-items-center gap-2 border-0 rounded-3 shadow-sm"
+              style={{ backgroundColor: '#ede9fe', color: '#5b21b6', fontSize: '0.875rem' }}>
+              <HardDrive size={18} style={{ flexShrink: 0 }} />
+              <div>
+                <strong>Mode Offline</strong> — Soal dimuat dari cache perangkat. Jawaban tersimpan lokal dan akan otomatis dikirim ke server saat koneksi kembali.
+              </div>
+            </div>
+          )}
+
+          {/* Offline/Sync Banner */}
+          {!isOnline && !offlineMode && (
+            <div className="alert mb-3 py-2 px-3 d-flex align-items-center gap-2 border-0 rounded-3 shadow-sm animate-fade-in"
+              style={{ backgroundColor: '#fef3c7', color: '#92400e', fontSize: '0.875rem' }}>
+              <WifiOff size={18} style={{ flexShrink: 0 }} />
+              <div>
+                <strong>Koneksi terputus</strong> — Jawaban Anda tetap tersimpan di perangkat ini. Akan otomatis dikirim ke server saat koneksi kembali.
+              </div>
+            </div>
+          )}
+          {isOnline && syncStatus === 'syncing' && (
+            <div className="alert mb-3 py-2 px-3 d-flex align-items-center gap-2 border-0 rounded-3 shadow-sm"
+              style={{ backgroundColor: '#dbeafe', color: '#1e40af', fontSize: '0.875rem' }}>
+              <span className="spinner-border spinner-border-sm" role="status" />
+              <span>Menyinkronkan jawaban offline ke server...</span>
+            </div>
+          )}
+          {isOnline && syncStatus === 'synced' && (
+            <div className="alert mb-3 py-2 px-3 d-flex align-items-center gap-2 border-0 rounded-3 shadow-sm"
+              style={{ backgroundColor: '#d1fae5', color: '#065f46', fontSize: '0.875rem' }}>
+              <Wifi size={18} />
+              <span>Semua jawaban berhasil disinkronkan!</span>
+            </div>
+          )}
+
           {/* Header */}
-          <div className="card shadow-sm border-0 rounded-4 mb-4" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+          <div className="card shadow-sm border-0 rounded-4 mb-4" style={{ background: offlineMode ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
           <div className="card-body p-4 text-white">
             <div className="d-flex justify-content-between align-items-center">
-              <div><h4 className="fw-bold mb-0">{examDetail.title}</h4><small className="opacity-75">{examDetail.type}</small></div>
+              <div>
+                <h4 className="fw-bold mb-0">{examDetail.title}</h4>
+                <div className="d-flex align-items-center gap-2 mt-1">
+                  <small className="opacity-75">{examDetail.type}</small>
+                  {offlineMode && <span className="badge bg-warning text-dark" style={{ fontSize: '0.65rem' }}><HardDrive size={10} className="me-1" />OFFLINE</span>}
+                </div>
+              </div>
               <div className="text-center">
                 <div className={`fw-bold fs-3 ${isLowTime ? 'text-warning' : ''}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
                   <Clock size={18} className="me-1" />{formatTime(timeLeft)}
@@ -273,7 +739,7 @@ export default function MahasiswaUjian() {
           </div>
 
           {/* Question */}
-          <div className="col-md-9">
+          <div className="col-md-9" key={q ? q.id : 'empty'}>
             {q && (
               <div className="card shadow-sm border-0 rounded-4">
                 <div className="card-body p-4">
@@ -285,16 +751,16 @@ export default function MahasiswaUjian() {
                   <p className="fw-semibold mb-4" style={{ fontSize: '1.05rem', lineHeight: 1.6 }}>{q.question_text}</p>
 
                   {/* PG */}
-                  {q.question_type === 'pg' && q.options && (
+                  {q.question_type === 'pg' && q.shuffledOptions && (
                     <div className="d-flex flex-column gap-2">
-                      {q.options.map((opt, oi) => {
-                        const ltr = String.fromCharCode(65 + oi);
-                        const selected = answers[q.id] === ltr;
+                      {q.shuffledOptions.map((optObj, oi) => {
+                        const displayLetter = String.fromCharCode(65 + oi);
+                        const selected = answers[q.id] === optObj.originalLetter;
                         return (
-                          <button key={oi} className={`btn text-start rounded-3 fw-semibold border ${selected ? 'btn-primary border-primary' : 'btn-light border-secondary-subtle'}`}
-                            style={{ padding: '12px 16px' }} onClick={() => saveAnswer(q.id, ltr)}>
-                            <span className={`me-3 badge ${selected ? 'bg-white text-primary' : 'bg-secondary-subtle text-dark'}`}>{ltr}</span>
-                            {opt}
+                          <button key={optObj.originalLetter} className={`btn text-start rounded-3 fw-semibold border ${selected ? 'btn-primary border-primary' : 'btn-light border-secondary-subtle'}`}
+                            style={{ padding: '12px 16px' }} onClick={() => saveAnswer(q.id, optObj.originalLetter)}>
+                            <span className={`me-3 badge ${selected ? 'bg-white text-primary' : 'bg-secondary-subtle text-dark'}`}>{displayLetter}</span>
+                            {optObj.text}
                           </button>
                         );
                       })}
@@ -341,6 +807,15 @@ export default function MahasiswaUjian() {
   return (
     <div className="animate-fade-in">
       <h3 className="fw-bold mb-4">Ujian (UTS & UAS)</h3>
+      {!isOnline && (
+        <div className="alert mb-3 py-2 px-3 d-flex align-items-center gap-2 border-0 rounded-3 shadow-sm"
+          style={{ backgroundColor: '#ede9fe', color: '#5b21b6', fontSize: '0.875rem' }}>
+          <WifiOff size={18} style={{ flexShrink: 0 }} />
+          <div>
+            <strong>Mode Offline</strong> — Menampilkan ujian yang tersimpan di perangkat. Anda tetap bisa mengerjakan ujian yang sudah di-cache.
+          </div>
+        </div>
+      )}
       {loading ? <div className="text-center py-5 text-muted">Memuat...</div>
         : exams.length === 0 ? (
           <div className="text-center text-muted py-5"><ClipboardList size={48} className="mb-3 opacity-50" /><h5>Belum ada ujian tersedia</h5></div>
@@ -371,12 +846,20 @@ export default function MahasiswaUjian() {
                 badgeColor = 'bg-success';
               }
 
+              // Check if this exam has a deferred submission pending
+              const hasDeferredSubmit = !!localStorage.getItem('siakad_deferred_submit_' + exam.id);
+              // Check if this exam is cached in IndexedDB
+              const isCached = cachedExams.some(c => c.id === exam.id);
+
               return (
                 <div key={exam.id} className="col-md-6 col-lg-4">
                   <div className="card shadow-sm border-0 rounded-4 h-100">
                     <div className="card-body p-4">
                       <div className="d-flex justify-content-between align-items-start mb-3">
-                        <span className={`badge ${exam.type === 'UTS' ? 'bg-warning text-dark' : 'bg-danger'}`}>{exam.type}</span>
+                        <div className="d-flex gap-1 flex-wrap">
+                          <span className={`badge ${exam.type === 'UTS' ? 'bg-warning text-dark' : 'bg-danger'}`}>{exam.type}</span>
+                          {isCached && <span className="badge text-white" style={{ backgroundColor: '#7c3aed', fontSize: '0.65rem' }}><HardDrive size={10} className="me-1" />Cached</span>}
+                        </div>
                         <span className={`badge ${badgeColor}`}>
                           {statusText}
                         </span>
@@ -391,6 +874,11 @@ export default function MahasiswaUjian() {
                         {exam.start_time && exam.end_time && (
                           <div className="text-primary fw-bold">
                             📅 {start.toLocaleString('id-ID', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})} - {end.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}
+                          </div>
+                        )}
+                        {hasDeferredSubmit && (
+                          <div className="text-warning fw-bold">
+                            ⏳ Menunggu sinkronisasi ke server...
                           </div>
                         )}
                       </div>
