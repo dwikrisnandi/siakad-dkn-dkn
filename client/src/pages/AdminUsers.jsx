@@ -7,12 +7,13 @@ export default function AdminUsers({ roleType, title }) {
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
   const [programs, setPrograms] = useState([]);
+  const [dosens, setDosens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [formData, setFormData] = useState({ nidn_nim: '', name: '', password: '', program_id: '' });
-  const [editFormData, setEditFormData] = useState({ id: '', nidn_nim: '', name: '', password: '', class_id: '', program_id: '' });
+  const [formData, setFormData] = useState({ nidn_nim: '', name: '', password: '', program_id: '', dpa_id: '' });
+  const [editFormData, setEditFormData] = useState({ id: '', nidn_nim: '', name: '', password: '', class_id: '', program_id: '', dpa_id: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -33,8 +34,12 @@ export default function AdminUsers({ roleType, title }) {
       setPrograms(resPrograms.data);
       
       if (roleType === 'mahasiswa') {
-        const clsRes = await api.get('/classes');
+        const [clsRes, dsnRes] = await Promise.all([
+          api.get('/classes'),
+          api.get('/users?role=dosen')
+        ]);
         setClasses(clsRes.data);
+        setDosens(dsnRes.data);
       }
     } catch (err) {
       console.error(err);
@@ -68,7 +73,8 @@ export default function AdminUsers({ roleType, title }) {
       name: user.name, 
       password: '', 
       class_id: user.class_id || '',
-      program_id: user.program_id || '' 
+      program_id: user.program_id || '',
+      dpa_id: user.dpa_id || ''
     });
     setShowEditModal(true);
     setError(''); setSuccess('');
@@ -190,6 +196,7 @@ export default function AdminUsers({ roleType, title }) {
                     <th className="ps-4 py-3">{roleType === 'dosen' ? 'NIDN' : 'NIM'}</th>
                     <th className="py-3">Nama Lengkap</th>
                     <th className="py-3">Program Studi</th>
+                    {roleType === 'mahasiswa' && <th className="py-3">Dosen PA</th>}
                     {roleType === 'mahasiswa' && <th className="py-3">Kelas</th>}
                     <th className="py-3">Tanggal Terdaftar</th>
                     <th className="pe-4 py-3 text-end">Aksi</th>
@@ -206,6 +213,9 @@ export default function AdminUsers({ roleType, title }) {
                         <td className="ps-4 fw-semibold text-muted">{u.nidn_nim}</td>
                         <td>{u.name}</td>
                         <td>{u.nama_prodi || <span className="text-muted small">Belum diplot</span>}</td>
+                        {roleType === 'mahasiswa' && (
+                          <td>{u.dpa_name ? <span className="text-primary fw-semibold">{u.dpa_name}</span> : <span className="text-muted small">Belum ada</span>}</td>
+                        )}
                         {roleType === 'mahasiswa' && (
                           <td>
                             {u.class_name ? (
@@ -264,6 +274,17 @@ export default function AdminUsers({ roleType, title }) {
                         ))}
                       </select>
                     </div>
+                    {roleType === 'mahasiswa' && (
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">Dosen Pembimbing Akademik (DPA)</label>
+                        <select className="form-select" value={formData.dpa_id} onChange={e => setFormData({...formData, dpa_id: e.target.value})}>
+                          <option value="">-- Belum Ada DPA --</option>
+                          {dosens.map(d => (
+                            <option key={d.id} value={d.id}>{d.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <div className="mb-3">
                       <label className="form-label text-muted small fw-bold">Password Login</label>
                       <input type="password" className="form-control" required minLength="6" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
@@ -311,6 +332,17 @@ export default function AdminUsers({ roleType, title }) {
                         ))}
                       </select>
                     </div>
+                    {roleType === 'mahasiswa' && (
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">Dosen Pembimbing Akademik (DPA)</label>
+                        <select className="form-select" value={editFormData.dpa_id} onChange={e => setEditFormData({...editFormData, dpa_id: e.target.value})}>
+                          <option value="">-- Belum Ada DPA --</option>
+                          {dosens.map(d => (
+                            <option key={d.id} value={d.id}>{d.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <div className="mb-3">
                       <label className="form-label text-muted small fw-bold">Password Login (Kosongkan jika tidak ingin diubah)</label>
                       <input type="password" className="form-control" minLength="6" placeholder="Opsional" value={editFormData.password} onChange={e => setEditFormData({...editFormData, password: e.target.value})} />

@@ -110,20 +110,24 @@ router.get('/khs/:mahasiswaId', [verifyToken, verifyRole(['admin'])], async (req
 router.get('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   const { role } = req.query; // 'dosen' or 'mahasiswa'
   let sql = `
-    SELECT u.id, u.nidn_nim, u.name, u.role, u.created_at, u.program_id, p.nama_prodi 
+    SELECT u.id, u.nidn_nim, u.name, u.role, u.created_at, u.program_id, p.nama_prodi,
+           u.dpa_id, dosen.name as dpa_name
     FROM users u 
     LEFT JOIN programs p ON u.program_id = p.id
+    LEFT JOIN users dosen ON u.dpa_id = dosen.id
   `;
   const params = [];
 
   if (role === 'mahasiswa') {
     sql = `
       SELECT u.id, u.nidn_nim, u.name, u.role, u.created_at, u.program_id, p.nama_prodi,
+             u.dpa_id, dosen.name as dpa_name,
              ce.class_id, c.name as class_name 
       FROM users u 
       LEFT JOIN class_enrollments ce ON u.id = ce.mahasiswa_id
       LEFT JOIN classes c ON ce.class_id = c.id
       LEFT JOIN programs p ON u.program_id = p.id
+      LEFT JOIN users dosen ON u.dpa_id = dosen.id
       WHERE u.role = 'mahasiswa'
     `;
   } else if (role) {
@@ -141,7 +145,7 @@ router.get('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => {
 
 router.post('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const { nidn_nim, name, role, password, program_id } = req.body;
+    const { nidn_nim, name, role, password, program_id, dpa_id } = req.body;
     // Basic validation
     if (!nidn_nim || !name || !role || !password) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -149,8 +153,8 @@ router.post('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => 
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await run(
-      'INSERT INTO users (nidn_nim, name, role, password, program_id) VALUES (?, ?, ?, ?, ?)',
-      [nidn_nim, name, role, hashedPassword, program_id || null]
+      'INSERT INTO users (nidn_nim, name, role, password, program_id, dpa_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [nidn_nim, name, role, hashedPassword, program_id || null, dpa_id || null]
     );
     res.status(201).json({ message: 'User created successfully', id: result.id });
   } catch (error) {
@@ -160,10 +164,10 @@ router.post('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => 
 
 router.put('/users/:id', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const { nidn_nim, name, password, program_id } = req.body;
-    let sql = 'UPDATE users SET nidn_nim = ?, name = ?, program_id = ?';
-    const params = [nidn_nim, name, program_id || null];
-
+    const { nidn_nim, name, password, program_id, dpa_id } = req.body;
+    let sql = 'UPDATE users SET nidn_nim = ?, name = ?, program_id = ?, dpa_id = ?';
+    const params = [nidn_nim, name, program_id || null, dpa_id || null];
+    
     if (password) {
       sql += ', password = ?';
       const hashedPassword = await bcrypt.hash(password, 10);

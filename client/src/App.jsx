@@ -31,7 +31,9 @@ import MahasiswaKehadiran from './pages/MahasiswaKehadiran';
 import MahasiswaRPS from './pages/MahasiswaRPS';
 import DosenUjian from './pages/DosenUjian';
 import DosenBankSoal from './pages/DosenBankSoal';
+import DosenKRS from './pages/DosenKRS';
 import MahasiswaUjian from './pages/MahasiswaUjian';
+import MahasiswaKRS from './pages/MahasiswaKRS';
 
 import { useFCM } from './hooks/useFCM';
 import InstallPWA from './components/InstallPWA';
@@ -66,6 +68,7 @@ function AppContent() {
           {/* Dosen Routes */}
           <Route path="/dosen" element={<MainLayout allowedRoles={['dosen']} />}>
             <Route index element={<DosenDashboard />} />
+            <Route path="krs" element={<DosenKRS />} />
             <Route path="rps" element={<DosenRPS />} />
             <Route path="attendance" element={<DosenKehadiran />} />
             <Route path="materials" element={<DosenMateri />} />
@@ -78,6 +81,7 @@ function AppContent() {
           {/* Mahasiswa Routes */}
           <Route path="/mahasiswa" element={<MainLayout allowedRoles={['mahasiswa']} />}>
             <Route index element={<MahasiswaDashboard />} />
+            <Route path="krs" element={<MahasiswaKRS />} />
             <Route path="rps" element={<MahasiswaRPS />} />
             <Route path="materials" element={<MahasiswaMateri />} />
             <Route path="assignments" element={<MahasiswaTugas />} />

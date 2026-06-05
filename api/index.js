@@ -130,12 +130,29 @@ run(`CREATE TABLE IF NOT EXISTS invoices (
   tanggal_bayar TIMESTAMP
 )`).catch(() => {});
 
+// -- PHASE 2: KRS & DPA --
+run("ALTER TABLE users ADD COLUMN dpa_id INTEGER").catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS krs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mahasiswa_id INTEGER NOT NULL,
+  academic_year_id INTEGER NOT NULL,
+  status_approval TEXT DEFAULT 'Pending' -- 'Pending', 'Approved', 'Rejected'
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS krs_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  krs_id INTEGER NOT NULL,
+  schedule_id INTEGER NOT NULL
+)`).catch(() => {});
+
 // ── ROUTES ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',  require('./routes/authRoute'));
 app.use('/api',       require('./routes/adminRoute'));
 app.use('/api',       require('./routes/masterRoute'));
 app.use('/api',       require('./routes/academicRoute'));
 app.use('/api',       require('./routes/dosenRoute'));
+app.use('/api',       require('./routes/krsRoute'));
 app.use('/api',       require('./routes/portalRoute'));
 app.use('/api',       require('./routes/aiRoute'));
 app.use('/api',       require('./routes/examRoute'));

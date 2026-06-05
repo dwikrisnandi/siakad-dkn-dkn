@@ -25,6 +25,7 @@ export const getRoleLinks = (role, size = 24) => {
     case 'dosen':
       return [
         { name: 'Dashboard', path: '/dosen', icon: <Home size={size} className="nav-icon" /> },
+        { name: 'Bimbingan Akademik', path: '/dosen/krs', icon: <Users size={size} className="nav-icon" /> },
         { name: 'RPS', path: '/dosen/rps', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'Kehadiran', path: '/dosen/attendance', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Materi', path: '/dosen/materials', icon: <FileText size={size} className="nav-icon" /> },
@@ -36,6 +37,7 @@ export const getRoleLinks = (role, size = 24) => {
     case 'mahasiswa':
       return [
         { name: 'Dashboard', path: '/mahasiswa', icon: <Home size={size} className="nav-icon" /> },
+        { name: 'Pengisian KRS', path: '/mahasiswa/krs', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'RPS', path: '/mahasiswa/rps', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'Materi', path: '/mahasiswa/materials', icon: <FileText size={size} className="nav-icon" /> },
         { name: 'Tugas', path: '/mahasiswa/assignments', icon: <PenTool size={size} className="nav-icon" /> },
