@@ -855,7 +855,9 @@ export default function MahasiswaUjian() {
               // Check if this exam has a deferred submission pending
               const hasDeferredSubmit = !!localStorage.getItem('siakad_deferred_submit_' + exam.id);
               // Check if this exam is cached in IndexedDB
-              const isCached = cachedExams.some(c => c.id === exam.id);
+              const cachedExamData = cachedExams.find(c => c.id === exam.id);
+              const isCached = !!cachedExamData;
+              const cachedQCount = isCached && cachedExamData.questions ? cachedExamData.questions.length : 0;
 
               return (
                 <div key={exam.id} className="col-md-6 col-lg-4">
@@ -864,7 +866,11 @@ export default function MahasiswaUjian() {
                       <div className="d-flex justify-content-between align-items-start mb-3">
                         <div className="d-flex gap-1 flex-wrap">
                           <span className={`badge ${exam.type === 'UTS' ? 'bg-warning text-dark' : 'bg-danger'}`}>{exam.type}</span>
-                          {isCached && <span className="badge text-white" style={{ backgroundColor: '#7c3aed', fontSize: '0.65rem' }}><HardDrive size={10} className="me-1" />Cached</span>}
+                          {isCached && (
+                            <span className="badge text-white" style={{ backgroundColor: '#7c3aed', fontSize: '0.65rem' }}>
+                              <HardDrive size={10} className="me-1" />Tersimpan Offline ({cachedQCount} Soal)
+                            </span>
+                          )}
                         </div>
                         <span className={`badge ${badgeColor}`}>
                           {statusText}
