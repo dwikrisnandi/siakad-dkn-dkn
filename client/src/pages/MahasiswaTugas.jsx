@@ -3,7 +3,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { PenTool, UploadCloud, CheckCircle, XCircle, Clock, ArrowLeft, FileText, Trash2 } from 'lucide-react';
+import { PenTool, UploadCloud, CheckCircle, XCircle, Clock, ArrowLeft, FileText, Trash2, ChevronRight } from 'lucide-react';
 
 import { useLocation } from 'react-router-dom';
 
@@ -101,6 +101,7 @@ export default function MahasiswaTugas() {
   const [answerText, setAnswerText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
+  const [viewDescription, setViewDescription] = useState(null);
 
   // Build Quill modules with custom image handler
   const quillModules = useCallback(() => ({
@@ -308,9 +309,15 @@ export default function MahasiswaTugas() {
                       </div>
                       <p className="text-muted small mb-1 d-flex align-items-center gap-1"><Clock size={13} /> Batas: {new Date(a.deadline).toLocaleString('id-ID')}</p>
 
-                      {/* Render Quill HTML description */}
-                      <div className="text-muted small mt-3 border-bottom pb-3 mb-3 ql-snow flex-grow-1" style={{ maxHeight: '160px', overflowY: 'auto' }}>
-                        <div className="ql-editor p-0" style={{ minHeight: 'unset' }} dangerouslySetInnerHTML={{ __html: a.description }} />
+                      {/* Render Quill HTML description with See More */}
+                      <div className="text-muted small mt-3 border-bottom pb-3 mb-3 flex-grow-1">
+                        <div className="ql-snow position-relative" style={{ maxHeight: '60px', overflow: 'hidden' }}>
+                          <div className="ql-editor p-0" style={{ minHeight: 'unset' }} dangerouslySetInnerHTML={{ __html: a.description }} />
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '30px', background: 'linear-gradient(transparent, white)' }} />
+                        </div>
+                        <button className="btn btn-link p-0 text-primary small fw-bold mt-1 text-decoration-none" onClick={() => setViewDescription(a)}>
+                          Lihat Detail <ChevronRight size={14} />
+                        </button>
                       </div>
 
                       {isSubmitted && (
@@ -424,6 +431,28 @@ export default function MahasiswaTugas() {
                       </div>
                     </form>
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      {/* DESCRIPTION MODAL */}
+      {viewDescription && (
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }} />
+          <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div className="modal-content border-0 shadow">
+                <div className="modal-header border-0 pb-0">
+                  <h5 className="modal-title fw-bold mb-0">{viewDescription.title}</h5>
+                  <button type="button" className="btn-close" onClick={() => setViewDescription(null)} />
+                </div>
+                <div className="modal-body ql-snow pt-3">
+                  <div className="ql-editor p-0" dangerouslySetInnerHTML={{ __html: viewDescription.description }} />
+                </div>
+                <div className="modal-footer border-0">
+                  <button type="button" className="btn btn-primary" onClick={() => setViewDescription(null)}>Tutup</button>
                 </div>
               </div>
             </div>
