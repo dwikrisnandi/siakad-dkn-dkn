@@ -1003,7 +1003,7 @@ router.post('/exams/:id/blocks', [verifyToken, verifyRole(['dosen', 'admin'])], 
   try {
     const { mahasiswa_id, is_blocked } = req.body;
     if (is_blocked) {
-      await run('INSERT OR IGNORE INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?)', [req.params.id, mahasiswa_id]);
+      await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?) ON CONFLICT (exam_id, mahasiswa_id) DO NOTHING', [req.params.id, mahasiswa_id]);
     } else {
       await run('DELETE FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [req.params.id, mahasiswa_id]);
     }

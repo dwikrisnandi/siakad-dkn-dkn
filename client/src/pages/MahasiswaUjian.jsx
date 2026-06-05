@@ -252,8 +252,8 @@ export default function MahasiswaUjian() {
     const cachedIds = currentCached.map(c => c.id);
 
     for (const exam of examList) {
-      // Skip if already submitted or already cached
-      if (exam.is_submitted === 1 || cachedIds.includes(exam.id)) continue;
+      // Skip if already submitted
+      if (exam.is_submitted === 1) continue;
       try {
         const detailRes = await api.get(`/exams/${exam.id}`);
         if (detailRes.data && Array.isArray(detailRes.data.questions)) {
@@ -740,7 +740,13 @@ export default function MahasiswaUjian() {
 
           {/* Question */}
           <div className="col-md-9" key={q ? q.id : 'empty'}>
-            {q && (
+            {questions.length === 0 ? (
+               <div className="card shadow-sm border-0 rounded-4 h-100 d-flex flex-column align-items-center justify-content-center p-5 text-center" style={{ minHeight: '400px' }}>
+                 <ClipboardList size={64} className="mb-3 text-muted opacity-50" />
+                 <h4 className="fw-bold text-dark">Soal belum tersedia</h4>
+                 <p className="text-muted">Dosen belum memasukkan soal ke dalam ujian ini. Silakan hubungi dosen Anda.</p>
+               </div>
+            ) : q && (
               <div className="card shadow-sm border-0 rounded-4">
                 <div className="card-body p-4">
                   <div className="d-flex gap-2 align-items-center mb-3">
