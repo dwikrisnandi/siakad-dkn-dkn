@@ -1,42 +1,50 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
-import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const Login = React.lazy(() => import('./pages/Login'));
 import MainLayout from './components/MainLayout';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminPrograms from './pages/AdminPrograms';
-import AdminCurriculums from './pages/AdminCurriculums';
-import AdminInvoices from './pages/AdminInvoices';
-import AdminMatakuliah from './pages/AdminMatakuliah';
-import AdminKelas from './pages/AdminKelas';
-import AdminUsers from './pages/AdminUsers';
-import AdminJadwal from './pages/AdminJadwal';
-import AdminBackup from './pages/AdminBackup';
-import AdminKHS from './pages/AdminKHS';
-import AdminFCMTokens from './pages/AdminFCMTokens';
-import AdminTahunAkademik from './pages/AdminTahunAkademik';
-import DosenDashboard from './pages/DosenDashboard';
-import DosenKehadiran from './pages/DosenKehadiran';
-import DosenMateri from './pages/DosenMateri';
-import DosenTugas from './pages/DosenTugas';
-import DosenNilai from './pages/DosenNilai';
-import DosenRPS from './pages/DosenRPS';
-import MahasiswaDashboard from './pages/MahasiswaDashboard';
-import MahasiswaMateri from './pages/MahasiswaMateri';
-import MahasiswaTugas from './pages/MahasiswaTugas';
-import MahasiswaNilai from './pages/MahasiswaNilai';
-import MahasiswaKehadiran from './pages/MahasiswaKehadiran';
-import MahasiswaRPS from './pages/MahasiswaRPS';
-import DosenUjian from './pages/DosenUjian';
-import DosenBankSoal from './pages/DosenBankSoal';
-import DosenKRS from './pages/DosenKRS';
-import MahasiswaUjian from './pages/MahasiswaUjian';
-import MahasiswaKRS from './pages/MahasiswaKRS';
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminPrograms = React.lazy(() => import('./pages/AdminPrograms'));
+const AdminCurriculums = React.lazy(() => import('./pages/AdminCurriculums'));
+const AdminInvoices = React.lazy(() => import('./pages/AdminInvoices'));
+const AdminMatakuliah = React.lazy(() => import('./pages/AdminMatakuliah'));
+const AdminKelas = React.lazy(() => import('./pages/AdminKelas'));
+const AdminUsers = React.lazy(() => import('./pages/AdminUsers'));
+const AdminJadwal = React.lazy(() => import('./pages/AdminJadwal'));
+const AdminBackup = React.lazy(() => import('./pages/AdminBackup'));
+const AdminKHS = React.lazy(() => import('./pages/AdminKHS'));
+const AdminFCMTokens = React.lazy(() => import('./pages/AdminFCMTokens'));
+const AdminTahunAkademik = React.lazy(() => import('./pages/AdminTahunAkademik'));
+const DosenDashboard = React.lazy(() => import('./pages/DosenDashboard'));
+const DosenKehadiran = React.lazy(() => import('./pages/DosenKehadiran'));
+const DosenMateri = React.lazy(() => import('./pages/DosenMateri'));
+const DosenTugas = React.lazy(() => import('./pages/DosenTugas'));
+const DosenNilai = React.lazy(() => import('./pages/DosenNilai'));
+const DosenRPS = React.lazy(() => import('./pages/DosenRPS'));
+const MahasiswaDashboard = React.lazy(() => import('./pages/MahasiswaDashboard'));
+const MahasiswaMateri = React.lazy(() => import('./pages/MahasiswaMateri'));
+const MahasiswaTugas = React.lazy(() => import('./pages/MahasiswaTugas'));
+const MahasiswaNilai = React.lazy(() => import('./pages/MahasiswaNilai'));
+const MahasiswaKehadiran = React.lazy(() => import('./pages/MahasiswaKehadiran'));
+const MahasiswaRPS = React.lazy(() => import('./pages/MahasiswaRPS'));
+const DosenUjian = React.lazy(() => import('./pages/DosenUjian'));
+const DosenBankSoal = React.lazy(() => import('./pages/DosenBankSoal'));
+const DosenKRS = React.lazy(() => import('./pages/DosenKRS'));
+const MahasiswaUjian = React.lazy(() => import('./pages/MahasiswaUjian'));
+const MahasiswaKRS = React.lazy(() => import('./pages/MahasiswaKRS'));
 
 import { useFCM } from './hooks/useFCM';
 import InstallPWA from './components/InstallPWA';
+
+const LoadingFallback = () => (
+  <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+);
 
 function AppContent() {
   useFCM();
@@ -44,7 +52,8 @@ function AppContent() {
     <>
       <InstallPWA />
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           
@@ -93,6 +102,7 @@ function AppContent() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </>
   );

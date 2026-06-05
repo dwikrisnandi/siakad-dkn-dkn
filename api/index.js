@@ -146,6 +146,17 @@ run(`CREATE TABLE IF NOT EXISTS krs_items (
   schedule_id INTEGER NOT NULL
 )`).catch(() => {});
 
+// ── PHASE 3: PERFORMANCE INDEXING ──
+run('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_users_program ON users(program_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_users_dpa ON users(dpa_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_courses_curr ON courses(curriculum_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_schedules_course ON schedules(course_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_schedules_dosen ON schedules(dosen_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_class_enroll_class ON class_enrollments(class_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_class_enroll_mhs ON class_enrollments(mahasiswa_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_krs_mhs ON krs(mahasiswa_id)').catch(()=>{});
+
 // ── ROUTES ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',  require('./routes/authRoute'));
 app.use('/api',       require('./routes/adminRoute'));
