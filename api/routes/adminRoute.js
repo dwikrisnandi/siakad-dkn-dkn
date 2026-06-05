@@ -131,7 +131,7 @@ router.get('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => {
       WHERE u.role = 'mahasiswa'
     `;
   } else if (role) {
-    sql += ' WHERE role = ?';
+    sql += ' WHERE u.role = ?';
     params.push(role);
   }
 
