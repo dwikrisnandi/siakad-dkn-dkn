@@ -321,8 +321,16 @@ export default function MahasiswaTugas() {
                             <span className="text-truncate text-decoration-underline fw-bold">{submission.file_url}</span>
                           </div>
                           <p className="text-muted mb-0 mt-2" style={{ fontSize: '11px' }}>Waktu kumpul: {new Date(submission.submitted_at).toLocaleString('id-ID')}</p>
-                          {submission.nilai !== null && submission.nilai !== undefined && submission.nilai !== '' && (
-                            <p className="mt-2 mb-0 fw-bold text-success">Nilai: {submission.nilai}</p>
+                          {submission.nilai !== null && submission.nilai !== undefined && submission.nilai !== '' ? (
+                            <div className="mt-3 p-2 rounded-3 bg-success-subtle border border-success-subtle text-success-emphasis d-flex align-items-center justify-content-between">
+                              <span className="fw-bold small">Nilai Tugas:</span>
+                              <span className="fw-bold fs-5">{submission.nilai}</span>
+                            </div>
+                          ) : (
+                            <div className="mt-3 p-2 rounded-3 bg-warning-subtle border border-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-between">
+                              <span className="fw-bold small">Status Penilaian:</span>
+                              <span className="fw-bold small fst-italic">Belum Dinilai</span>
+                            </div>
                           )}
                         </div>
                       )}
