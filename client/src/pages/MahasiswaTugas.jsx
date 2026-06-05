@@ -298,7 +298,7 @@ export default function MahasiswaTugas() {
               return (
                 <div className="col-md-6 col-lg-4" key={a.id}>
                   <div className={`card shadow-sm border-0 h-100 rounded-4 border-top border-3 border-${isSubmitted ? 'primary' : status.color}`}>
-                    <div className="card-body p-4 pb-2">
+                    <div className="card-body p-4 pb-2 d-flex flex-column">
                       <div className="d-flex justify-content-between align-items-start mb-2">
                         <h5 className="fw-bold mb-1">{a.title}</h5>
                         {isSubmitted
@@ -309,12 +309,12 @@ export default function MahasiswaTugas() {
                       <p className="text-muted small mb-1 d-flex align-items-center gap-1"><Clock size={13} /> Batas: {new Date(a.deadline).toLocaleString('id-ID')}</p>
 
                       {/* Render Quill HTML description */}
-                      <div className="text-muted small mt-3 border-bottom pb-3 mb-3 ql-snow">
+                      <div className="text-muted small mt-3 border-bottom pb-3 mb-3 ql-snow flex-grow-1" style={{ maxHeight: '160px', overflowY: 'auto' }}>
                         <div className="ql-editor p-0" style={{ minHeight: 'unset' }} dangerouslySetInnerHTML={{ __html: a.description }} />
                       </div>
 
                       {isSubmitted && (
-                        <div className="bg-light p-3 rounded-3 mb-2 border">
+                        <div className="bg-light p-3 rounded-3 mb-2 border mt-auto">
                           <p className="fw-bold small mb-1">Jawaban Terkirim:</p>
                           <div className="d-flex align-items-center gap-2 text-primary small" style={{ cursor: 'pointer' }} onClick={() => handleViewSubmission(submission)}>
                             <FileText size={16} />
