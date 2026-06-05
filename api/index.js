@@ -103,9 +103,37 @@ run(`CREATE TABLE IF NOT EXISTS user_fcm_tokens (
   UNIQUE(user_id, token)
 )`).catch(() => {});
 
+// -- PHASE 1: MASTER DATA & KEUANGAN --
+run("ALTER TABLE users ADD COLUMN program_id INTEGER").catch(() => {});
+run("ALTER TABLE courses ADD COLUMN curriculum_id INTEGER").catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS programs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nama_prodi TEXT NOT NULL,
+  fakultas TEXT NOT NULL,
+  kode_prodi TEXT NOT NULL
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS curriculums (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  program_id INTEGER NOT NULL,
+  tahun_berlaku TEXT NOT NULL,
+  status_aktif BOOLEAN DEFAULT true
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS invoices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mahasiswa_id INTEGER NOT NULL,
+  academic_year_id INTEGER NOT NULL,
+  nominal INTEGER NOT NULL,
+  status_lunas BOOLEAN DEFAULT false,
+  tanggal_bayar TIMESTAMP
+)`).catch(() => {});
+
 // ── ROUTES ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',  require('./routes/authRoute'));
 app.use('/api',       require('./routes/adminRoute'));
+app.use('/api',       require('./routes/masterRoute'));
 app.use('/api',       require('./routes/academicRoute'));
 app.use('/api',       require('./routes/dosenRoute'));
 app.use('/api',       require('./routes/portalRoute'));
