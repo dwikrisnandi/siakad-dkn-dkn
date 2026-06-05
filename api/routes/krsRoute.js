@@ -223,7 +223,7 @@ router.post('/dpa/krs/:krsId/approve', [verifyToken, verifyRole(['dosen'])], asy
       }
     }
 
-    res.json({ message: \`KRS berhasil di-\${action}\` });
+    res.json({ message: `KRS berhasil di-${action}` });
   } catch (error) {
     res.status(500).json({ error: 'Gagal merubah status KRS' });
   }
