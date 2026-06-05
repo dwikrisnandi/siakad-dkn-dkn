@@ -6,6 +6,9 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import MainLayout from './components/MainLayout';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminPrograms from './pages/AdminPrograms';
+import AdminCurriculums from './pages/AdminCurriculums';
+import AdminInvoices from './pages/AdminInvoices';
 import AdminMatakuliah from './pages/AdminMatakuliah';
 import AdminKelas from './pages/AdminKelas';
 import AdminUsers from './pages/AdminUsers';
@@ -46,6 +49,8 @@ function AppContent() {
           {/* Admin Routes */}
           <Route path="/admin" element={<MainLayout allowedRoles={['admin']} />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="programs" element={<AdminPrograms />} />
+            <Route path="curriculums" element={<AdminCurriculums />} />
             <Route path="academic-years" element={<AdminTahunAkademik />} />
             <Route path="courses" element={<AdminMatakuliah />} />
             <Route path="classes" element={<AdminKelas />} />
@@ -53,6 +58,7 @@ function AppContent() {
             <Route path="mahasiswa" element={<AdminUsers roleType="mahasiswa" title="Mahasiswa" />} />
             <Route path="schedules" element={<AdminJadwal />} />
             <Route path="khs" element={<AdminKHS />} />
+            <Route path="invoices" element={<AdminInvoices />} />
             <Route path="backup" element={<AdminBackup />} />
             <Route path="fcm-tokens" element={<AdminFCMTokens />} />
           </Route>

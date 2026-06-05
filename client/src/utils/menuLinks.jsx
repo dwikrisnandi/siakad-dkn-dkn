@@ -9,6 +9,8 @@ export const getRoleLinks = (role, size = 24) => {
     case 'admin':
       return [
         { name: 'Dashboard Admin', path: '/admin', icon: <Home size={size} className="nav-icon" /> },
+        { name: 'Program Studi', path: '/admin/programs', icon: <Database size={size} className="nav-icon" /> },
+        { name: 'Kurikulum', path: '/admin/curriculums', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'Thn Akademik', path: '/admin/academic-years', icon: <Calendar size={size} className="nav-icon" /> },
         { name: 'Matakuliah', path: '/admin/courses', icon: <BookOpen size={size} className="nav-icon" /> },
         { name: 'Data Kelas', path: '/admin/classes', icon: <LayoutGrid size={size} className="nav-icon" /> },
@@ -16,6 +18,7 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'Mahasiswa', path: '/admin/mahasiswa', icon: <Users size={size} className="nav-icon" /> },
         { name: 'Penjadwalan', path: '/admin/schedules', icon: <Calendar size={size} className="nav-icon" /> },
         { name: 'KHS Mahasiswa', path: '/admin/khs', icon: <Award size={size} className="nav-icon" /> },
+        { name: 'Keuangan (SPP)', path: '/admin/invoices', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Backup Data', path: '/admin/backup', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Notifikasi', path: '/admin/fcm-tokens', icon: <Smartphone size={size} className="nav-icon" /> },
       ];
