@@ -51,3 +51,6 @@ run_remote_test.js
 # Client build artifacts
 client/eslint_output.txt
 client/eslint_report.json
+
+# Internal Documentation
+ROADMAP.md
