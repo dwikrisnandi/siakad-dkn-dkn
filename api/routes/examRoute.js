@@ -71,6 +71,18 @@ const { Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel, convertInc
   } catch (e) {
     console.warn('[examRoute] exam_blocks Migration warning:', e.message);
   }
+  // Add exam_caches table
+  try {
+    await run(`CREATE TABLE IF NOT EXISTS exam_caches (
+      id SERIAL PRIMARY KEY,
+      exam_id INTEGER NOT NULL,
+      mahasiswa_id INTEGER NOT NULL,
+      cached_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(exam_id, mahasiswa_id)
+    )`);
+  } catch (e) {
+    console.warn('[examRoute] exam_caches Migration warning:', e.message);
+  }
   // Add last_pushed_at column for smart FCM push (avoid duplicate pushes)
   try { await run('ALTER TABLE exams ADD COLUMN last_pushed_at TIMESTAMP'); } catch (e) { /* column already exists */ }
   try { await run('ALTER TABLE exams ADD COLUMN last_pushed_hash TEXT'); } catch (e) { /* column already exists */ }
@@ -975,7 +987,8 @@ router.get('/exams/:id/students', [verifyToken, verifyRole(['dosen', 'admin'])],
 
     const [students] = await query(
       `SELECT DISTINCT u.id, u.name, u.nidn_nim as nim, 
-              (CASE WHEN eb.id IS NOT NULL THEN 1 ELSE 0 END) as is_blocked
+              (CASE WHEN eb.id IS NOT NULL THEN 1 ELSE 0 END) as is_blocked,
+              (CASE WHEN ec.id IS NOT NULL THEN 1 ELSE 0 END) as is_cached
        FROM class_enrollments ce
        JOIN schedules s ON (
          s.class_id = ce.class_id OR
@@ -987,9 +1000,10 @@ router.get('/exams/:id/students', [verifyToken, verifyRole(['dosen', 'admin'])],
        )
        JOIN users u ON ce.mahasiswa_id = u.id
        LEFT JOIN exam_blocks eb ON eb.exam_id = ? AND eb.mahasiswa_id = u.id
+       LEFT JOIN exam_caches ec ON ec.exam_id = ? AND ec.mahasiswa_id = u.id
        WHERE s.id = ?
        ORDER BY u.name`,
-      [req.params.id, exam.schedule_id]
+      [req.params.id, req.params.id, exam.schedule_id]
     );
 
     res.json(students);
@@ -1010,6 +1024,26 @@ router.post('/exams/:id/blocks', [verifyToken, verifyRole(['dosen', 'admin'])], 
     res.json({ message: 'Status blokir berhasil diubah' });
   } catch (e) {
     res.status(500).json({ error: 'Gagal mengubah status blokir' });
+  }
+});
+
+// POST: Lapor bahwa mahasiswa sudah berhasil mengunduh cache offline
+router.post('/exams/:id/cache-status', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
+  try {
+    await run('INSERT INTO exam_caches (exam_id, mahasiswa_id) VALUES (?, ?) ON CONFLICT (exam_id, mahasiswa_id) DO NOTHING', [req.params.id, req.userId]);
+    res.json({ message: 'Status cache berhasil dicatat' });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal mencatat status cache' });
+  }
+});
+
+// DELETE: Hapus status cache mahasiswa (misal saat submit/hapus cache lokal)
+router.delete('/exams/:id/cache-status', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
+  try {
+    await run('DELETE FROM exam_caches WHERE exam_id = ? AND mahasiswa_id = ?', [req.params.id, req.userId]);
+    res.json({ message: 'Status cache berhasil dihapus' });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal menghapus status cache' });
   }
 });
 

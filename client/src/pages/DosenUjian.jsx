@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { ClipboardList, Plus, Trash2, Eye, ArrowLeft, ToggleLeft, ToggleRight, CheckCircle, XCircle, Edit3, Database, Sparkles, Download, FileText, Users, ShieldAlert } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Eye, ArrowLeft, ToggleLeft, ToggleRight, CheckCircle, XCircle, Edit3, Database, Sparkles, Download, FileText, Users, ShieldAlert, HardDrive } from 'lucide-react';
 
 const EMPTY_EXAM = { title: '', type: 'UTS', description: '', start_time: '', end_time: '', duration_minutes: 90 };
 const EMPTY_Q = { question_type: 'pg', question_text: '', options: ['', '', '', ''], correct_answer: '', points: 10 };
@@ -231,6 +231,13 @@ export default function DosenUjian() {
                       <td className="px-4 py-3">
                         <div className="fw-bold">{s.name}</div>
                         <div className="small text-muted">{s.nim}</div>
+                        {s.is_cached === 1 && (
+                          <div className="mt-1">
+                            <span className="badge text-white" style={{ backgroundColor: '#7c3aed', fontSize: '0.65rem' }}>
+                              <HardDrive size={10} className="me-1" />Siap Offline
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="py-3 text-center">
                         <button 

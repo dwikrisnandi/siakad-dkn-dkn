@@ -265,6 +265,7 @@ export default function MahasiswaUjian() {
             course_code: exam.course_code || ''
           });
           console.log(`✅ Pre-cached exam: ${exam.title} (ID: ${exam.id})`);
+          try { await api.post(`/exams/${exam.id}/cache-status`); } catch(e) {}
         }
       } catch (e) {
         console.warn(`⚠️ Failed to pre-cache exam ${exam.id}:`, e.message);
@@ -409,6 +410,7 @@ export default function MahasiswaUjian() {
           course_code: targetExam.course_code || ''
         });
         console.log('✅ Exam cached to IndexedDB on start');
+        try { await api.post(`/exams/${targetExam.id}/cache-status`); } catch(e) {}
       } catch (cacheErr) {
         console.warn('⚠️ Failed to cache exam on start:', cacheErr);
       }
@@ -548,6 +550,8 @@ export default function MahasiswaUjian() {
       clearLocalExamData(eid);
       removeCachedExam(eid).catch(() => {});
       localStorage.removeItem('siakad_deferred_submit_' + eid);
+      try { await api.delete(`/exams/${eid}/cache-status`); } catch(e) {}
+      
       await fetchExams();
       const resultRes = await api.get(`/exam-sessions/${eid}/result`);
       setResult(resultRes.data);
