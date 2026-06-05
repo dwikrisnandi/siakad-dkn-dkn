@@ -6,12 +6,13 @@ import { Plus, Edit2, Trash2, Upload, FileSpreadsheet, CheckCircle, XCircle } fr
 export default function AdminUsers({ roleType, title }) {
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [formData, setFormData] = useState({ nidn_nim: '', name: '', password: '' });
-  const [editFormData, setEditFormData] = useState({ id: '', nidn_nim: '', name: '', password: '', class_id: '' });
+  const [formData, setFormData] = useState({ nidn_nim: '', name: '', password: '', program_id: '' });
+  const [editFormData, setEditFormData] = useState({ id: '', nidn_nim: '', name: '', password: '', class_id: '', program_id: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -24,8 +25,13 @@ export default function AdminUsers({ roleType, title }) {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/users?role=${roleType}`);
-      setUsers(res.data);
+      const [resUsers, resPrograms] = await Promise.all([
+        api.get(`/users?role=${roleType}`),
+        api.get('/programs')
+      ]);
+      setUsers(resUsers.data);
+      setPrograms(resPrograms.data);
+      
       if (roleType === 'mahasiswa') {
         const clsRes = await api.get('/classes');
         setClasses(clsRes.data);
@@ -47,7 +53,7 @@ export default function AdminUsers({ roleType, title }) {
     try {
       await api.post('/users', { ...formData, role: roleType });
       setShowModal(false);
-      setFormData({ nidn_nim: '', name: '', password: '' });
+      setFormData({ nidn_nim: '', name: '', password: '', program_id: '' });
       setSuccess(`Data ${title} berhasil ditambahkan`);
       fetchUsers();
     } catch (err) {
@@ -56,7 +62,14 @@ export default function AdminUsers({ roleType, title }) {
   };
 
   const openEditModal = (user) => {
-    setEditFormData({ id: user.id, nidn_nim: user.nidn_nim, name: user.name, password: '', class_id: user.class_id || '' });
+    setEditFormData({ 
+      id: user.id, 
+      nidn_nim: user.nidn_nim, 
+      name: user.name, 
+      password: '', 
+      class_id: user.class_id || '',
+      program_id: user.program_id || '' 
+    });
     setShowEditModal(true);
     setError(''); setSuccess('');
   };
@@ -176,6 +189,7 @@ export default function AdminUsers({ roleType, title }) {
                   <tr>
                     <th className="ps-4 py-3">{roleType === 'dosen' ? 'NIDN' : 'NIM'}</th>
                     <th className="py-3">Nama Lengkap</th>
+                    <th className="py-3">Program Studi</th>
                     {roleType === 'mahasiswa' && <th className="py-3">Kelas</th>}
                     <th className="py-3">Tanggal Terdaftar</th>
                     <th className="pe-4 py-3 text-end">Aksi</th>
@@ -191,6 +205,7 @@ export default function AdminUsers({ roleType, title }) {
                       <tr key={u.id}>
                         <td className="ps-4 fw-semibold text-muted">{u.nidn_nim}</td>
                         <td>{u.name}</td>
+                        <td>{u.nama_prodi || <span className="text-muted small">Belum diplot</span>}</td>
                         {roleType === 'mahasiswa' && (
                           <td>
                             {u.class_name ? (
@@ -241,6 +256,15 @@ export default function AdminUsers({ roleType, title }) {
                       <input type="text" className="form-control" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                     </div>
                     <div className="mb-3">
+                      <label className="form-label text-muted small fw-bold">Program Studi</label>
+                      <select className="form-select" required value={formData.program_id} onChange={e => setFormData({...formData, program_id: e.target.value})}>
+                        <option value="">-- Pilih Program Studi --</option>
+                        {programs.map(p => (
+                          <option key={p.id} value={p.id}>{p.nama_prodi}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
                       <label className="form-label text-muted small fw-bold">Password Login</label>
                       <input type="password" className="form-control" required minLength="6" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
                     </div>
@@ -277,6 +301,15 @@ export default function AdminUsers({ roleType, title }) {
                     <div className="mb-3">
                       <label className="form-label text-muted small fw-bold">Nama Lengkap</label>
                       <input type="text" className="form-control" required value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label text-muted small fw-bold">Program Studi</label>
+                      <select className="form-select" required value={editFormData.program_id} onChange={e => setEditFormData({...editFormData, program_id: e.target.value})}>
+                        <option value="">-- Pilih Program Studi --</option>
+                        {programs.map(p => (
+                          <option key={p.id} value={p.id}>{p.nama_prodi}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-muted small fw-bold">Password Login (Kosongkan jika tidak ingin diubah)</label>

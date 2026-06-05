@@ -5,7 +5,12 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 router.get('/courses', [verifyToken], async (req, res) => {
   try {
-    const [courses] = await query('SELECT * FROM courses');
+    const [courses] = await query(`
+      SELECT c.*, curr.tahun_berlaku as curriculum_name, p.nama_prodi 
+      FROM courses c 
+      LEFT JOIN curriculums curr ON c.curriculum_id = curr.id
+      LEFT JOIN programs p ON curr.program_id = p.id
+    `);
     res.json(courses);
   } catch (error) {
     res.status(500).json({ error: 'Failed fetching courses' });
@@ -14,10 +19,10 @@ router.get('/courses', [verifyToken], async (req, res) => {
 
 router.post('/courses', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const { code, name, sks, semester } = req.body;
+    const { code, name, sks, semester, curriculum_id } = req.body;
     const result = await run(
-      'INSERT INTO courses (code, name, sks, semester) VALUES (?, ?, ?, ?)',
-      [code, name, sks, semester]
+      'INSERT INTO courses (code, name, sks, semester, curriculum_id) VALUES (?, ?, ?, ?, ?)',
+      [code, name, sks, semester, curriculum_id || null]
     );
     res.status(201).json({ message: 'Course created successfully', id: result.id });
   } catch (error) {
@@ -27,10 +32,10 @@ router.post('/courses', [verifyToken, verifyRole(['admin'])], async (req, res) =
 
 router.put('/courses/:id', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const { code, name, sks, semester } = req.body;
+    const { code, name, sks, semester, curriculum_id } = req.body;
     await run(
-      'UPDATE courses SET code = ?, name = ?, sks = ?, semester = ? WHERE id = ?',
-      [code, name, sks, semester, req.params.id]
+      'UPDATE courses SET code = ?, name = ?, sks = ?, semester = ?, curriculum_id = ? WHERE id = ?',
+      [code, name, sks, semester, curriculum_id || null, req.params.id]
     );
     res.json({ message: 'Course updated successfully' });
   } catch (error) {
