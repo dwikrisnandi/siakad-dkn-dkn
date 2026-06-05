@@ -19,6 +19,8 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'Penjadwalan', path: '/admin/schedules', icon: <Calendar size={size} className="nav-icon" /> },
         { name: 'KHS Mahasiswa', path: '/admin/khs', icon: <Award size={size} className="nav-icon" /> },
         { name: 'Transkrip Nilai', path: '/admin/transkrip', icon: <Award size={size} className="nav-icon" /> },
+        { name: 'Skripsi / TA', path: '/admin/skripsi', icon: <BookOpen size={size} className="nav-icon" /> },
+        { name: 'Export Feeder PDDikti', path: '/admin/feeder', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Keuangan (SPP)', path: '/admin/invoices', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Backup Data', path: '/admin/backup', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Notifikasi', path: '/admin/fcm-tokens', icon: <Smartphone size={size} className="nav-icon" /> },
@@ -35,6 +37,7 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'Bank Soal', path: '/dosen/bank-soal', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Ujian', path: '/dosen/exams', icon: <ClipboardList size={size} className="nav-icon" /> },
         { name: 'Input Nilai', path: '/dosen/grades', icon: <Award size={size} className="nav-icon" /> },
+        { name: 'Bimbingan Skripsi', path: '/dosen/skripsi', icon: <Users size={size} className="nav-icon" /> },
       ];
     case 'mahasiswa':
       return [
@@ -48,6 +51,7 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'Kehadiran', path: '/mahasiswa/attendance', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Nilai KHS', path: '/mahasiswa/grades', icon: <Award size={size} className="nav-icon" /> },
         { name: 'Transkrip Akademik', path: '/mahasiswa/transkrip', icon: <Award size={size} className="nav-icon" /> },
+        { name: 'Tugas Akhir', path: '/mahasiswa/skripsi', icon: <BookOpen size={size} className="nav-icon" /> },
       ];
     default:
       return [];

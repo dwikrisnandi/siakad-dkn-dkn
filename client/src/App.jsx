@@ -16,6 +16,8 @@ const AdminJadwal = React.lazy(() => import('./pages/AdminJadwal'));
 const AdminBackup = React.lazy(() => import('./pages/AdminBackup'));
 const AdminKHS = React.lazy(() => import('./pages/AdminKHS'));
 const AdminTranskrip = React.lazy(() => import('./pages/AdminTranskrip'));
+const AdminSkripsi = React.lazy(() => import('./pages/AdminSkripsi'));
+const AdminFeeder = React.lazy(() => import('./pages/AdminFeeder'));
 const AdminFCMTokens = React.lazy(() => import('./pages/AdminFCMTokens'));
 const AdminTahunAkademik = React.lazy(() => import('./pages/AdminTahunAkademik'));
 const DosenDashboard = React.lazy(() => import('./pages/DosenDashboard'));
@@ -34,10 +36,12 @@ const DosenUjian = React.lazy(() => import('./pages/DosenUjian'));
 const DosenBankSoal = React.lazy(() => import('./pages/DosenBankSoal'));
 const DosenKRS = React.lazy(() => import('./pages/DosenKRS'));
 const DosenEDOM = React.lazy(() => import('./pages/DosenEDOM'));
+const DosenSkripsi = React.lazy(() => import('./pages/DosenSkripsi'));
 const MahasiswaUjian = React.lazy(() => import('./pages/MahasiswaUjian'));
 const MahasiswaKRS = React.lazy(() => import('./pages/MahasiswaKRS'));
 const MahasiswaEDOM = React.lazy(() => import('./pages/MahasiswaEDOM'));
 const MahasiswaTranskrip = React.lazy(() => import('./pages/MahasiswaTranskrip'));
+const MahasiswaSkripsi = React.lazy(() => import('./pages/MahasiswaSkripsi'));
 
 import { useFCM } from './hooks/useFCM';
 import InstallPWA from './components/InstallPWA';
@@ -74,6 +78,8 @@ function AppContent() {
             <Route path="schedules" element={<AdminJadwal />} />
             <Route path="khs" element={<AdminKHS />} />
             <Route path="transkrip" element={<AdminTranskrip />} />
+            <Route path="skripsi" element={<AdminSkripsi />} />
+            <Route path="feeder" element={<AdminFeeder />} />
             <Route path="invoices" element={<AdminInvoices />} />
             <Route path="backup" element={<AdminBackup />} />
             <Route path="fcm-tokens" element={<AdminFCMTokens />} />
@@ -91,6 +97,7 @@ function AppContent() {
             <Route path="grades" element={<DosenNilai />} />
             <Route path="exams" element={<DosenUjian />} />
             <Route path="bank-soal" element={<DosenBankSoal />} />
+            <Route path="skripsi" element={<DosenSkripsi />} />
           </Route>
 
           {/* Mahasiswa Routes */}
@@ -103,6 +110,7 @@ function AppContent() {
             <Route path="assignments" element={<MahasiswaTugas />} />
             <Route path="grades" element={<MahasiswaNilai />} />
             <Route path="transkrip" element={<MahasiswaTranskrip />} />
+            <Route path="skripsi" element={<MahasiswaSkripsi />} />
             <Route path="attendance" element={<MahasiswaKehadiran />} />
             <Route path="exams" element={<MahasiswaUjian />} />
           </Route>

@@ -163,6 +163,39 @@ run(`CREATE TABLE IF NOT EXISTS edom_answers (
   UNIQUE(mahasiswa_id, schedule_id, question_id)
 )`).catch(() => {});
 
+// -- PHASE 4: SKRIPSI / TUGAS AKHIR --
+run(`CREATE TABLE IF NOT EXISTS skripsi (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  mahasiswa_id INTEGER NOT NULL,
+  title_1 TEXT NOT NULL,
+  title_2 TEXT,
+  title_3 TEXT,
+  approved_title TEXT,
+  status TEXT DEFAULT 'Pending', -- Pending, Approved, Bimbingan, Sidang, Lulus, Revisi
+  pembimbing_1_id INTEGER,
+  pembimbing_2_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS skripsi_logbooks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  skripsi_id INTEGER NOT NULL,
+  date TEXT NOT NULL,
+  activity TEXT NOT NULL,
+  note TEXT,
+  status_validation TEXT DEFAULT 'Pending' -- Pending, Approved, Rejected
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS skripsi_sidang (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  skripsi_id INTEGER NOT NULL,
+  schedule_date DATETIME,
+  penguji_1_id INTEGER,
+  penguji_2_id INTEGER,
+  score REAL,
+  status TEXT DEFAULT 'Scheduled' -- Scheduled, Passed, Failed
+)`).catch(() => {});
+
 // ── PHASE 3: PERFORMANCE INDEXING ──
 run('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)').catch(()=>{});
 run('CREATE INDEX IF NOT EXISTS idx_users_program ON users(program_id)').catch(()=>{});
@@ -183,6 +216,8 @@ app.use('/api',       require('./routes/dosenRoute'));
 app.use('/api',       require('./routes/krsRoute'));
 app.use('/api',       require('./routes/edomRoute'));
 app.use('/api',       require('./routes/transkripRoute'));
+app.use('/api',       require('./routes/skripsiRoute'));
+app.use('/api',       require('./routes/feederRoute'));
 app.use('/api',       require('./routes/portalRoute'));
 app.use('/api',       require('./routes/aiRoute'));
 app.use('/api',       require('./routes/examRoute'));
