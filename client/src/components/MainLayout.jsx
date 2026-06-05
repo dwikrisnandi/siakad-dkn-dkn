@@ -55,7 +55,7 @@ export default function MainLayout({ allowedRoles }) {
         <div className="float-right d-none d-sm-inline">
           Versi 5 Juni 2026
         </div>
-        <strong>Copyright &copy; 2026 <a href="#">SIAKAD DKN</a>.</strong> Hak cipta milik Dwi Krisnandi.
+        <strong id="dkn-cr">Copyright &copy; 2026 <a href="#">SIAKAD DKN</a>. Hak cipta milik Dwi Krisnandi.</strong>
       </footer>
       <BottomNav />
       {/* Tampilkan ChatBot hanya untuk mahasiswa */}
