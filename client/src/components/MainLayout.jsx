@@ -53,7 +53,7 @@ export default function MainLayout({ allowedRoles }) {
       </div>
       <footer className="main-footer d-none d-md-block">
         <div className="float-right d-none d-sm-inline">
-          Versi 2.1.0
+          Versi 5 Juni 2026
         </div>
         <strong>Copyright &copy; 2026 <a href="#">SIAKAD DKN</a>.</strong> Hak cipta milik Dwi Krisnandi.
       </footer>
