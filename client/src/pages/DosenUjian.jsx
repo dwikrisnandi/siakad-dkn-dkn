@@ -520,8 +520,10 @@ export default function DosenUjian() {
                       </div>
                       <span className={`badge ${exam.is_active ? 'bg-success' : 'bg-secondary'}`}>{exam.is_active ? 'Aktif' : 'Nonaktif'}</span>
                     </div>
-                    <div className="d-flex gap-3 text-muted small mb-4">
-                      <span>📝 {exam.total_questions} soal</span>
+                    <div className="d-flex flex-wrap gap-3 text-muted small mb-4">
+                      <span className={exam.total_questions === 0 ? "text-danger fw-bold" : "text-success fw-bold"}>
+                        {exam.total_questions === 0 ? "⚠️ 0 Soal (Kosong)" : `📝 ${exam.total_questions} Soal Tersedia`}
+                      </span>
                       <span>👥 {exam.total_submitted} dikumpulkan</span>
                       <span>⏱ {exam.duration_minutes} menit</span>
                       {exam.token && <span className="fw-bold text-primary">🔑 Token: {exam.token}</span>}
