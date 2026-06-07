@@ -203,7 +203,7 @@ export default function MahasiswaUjian() {
         
         if (violations >= 3) {
           alert('🚨 PELANGGARAN FATAL!\n\nAnda terdeteksi keluar dari layar ujian atau membuka aplikasi lain lebih dari 3 kali. Ujian Anda dihentikan paksa dan dianggap curang.');
-          handleSubmit(eid, true); // Auto submit
+          handleSubmit(eid, true, true); // Auto submit with violation flag
         } else {
           alert(`⚠️ PERINGATAN KECURANGAN (${violations}/3)!\n\nSistem mendeteksi Anda meninggalkan layar ujian (membuka aplikasi/tab lain, seperti kamera, galeri, WA, atau AI). Jika Anda keluar layar sampai 3 kali, ujian akan dihentikan paksa secara otomatis.`);
         }
@@ -563,7 +563,7 @@ export default function MahasiswaUjian() {
     }
   };
 
-  const handleSubmit = async (examId, auto = false) => {
+  const handleSubmit = async (examId, auto = false, isViolation = false) => {
     const eid = examId || activeExam?.id;
     if (!auto && !window.confirm('Yakin ingin mengumpulkan ujian? Jawaban tidak dapat diubah setelah dikumpulkan.')) return;
     if (timerRef.current) clearInterval(timerRef.current);
@@ -602,7 +602,7 @@ export default function MahasiswaUjian() {
         }
       }
 
-      await api.post(`/exam-sessions/${eid}/submit`);
+      await api.post(`/exam-sessions/${eid}/submit`, { is_violation: isViolation });
       // Clean up localStorage after successful submit
       clearLocalExamData(eid);
       removeCachedExam(eid).catch(() => {});

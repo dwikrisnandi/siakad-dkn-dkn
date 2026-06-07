@@ -1183,6 +1183,7 @@ router.post('/exam-sessions/:examId/submit', [verifyToken, verifyRole(['mahasisw
   try {
     const examId = parseInt(req.params.examId);
     const mahasiswaId = req.userId;
+    const { is_violation } = req.body || {};
 
     const [[session]] = await query(
       'SELECT * FROM exam_sessions WHERE exam_id = ? AND mahasiswa_id = ?',
@@ -1201,13 +1202,22 @@ router.post('/exam-sessions/:examId/submit', [verifyToken, verifyRole(['mahasisw
       [examId]
     );
     const totalPoints = allQuestions[0].total || 1;
-    const earned = allAnswers.reduce((acc, a) => acc + (parseFloat(a.points_earned) || 0), 0);
-    const totalScore = Math.round((earned / totalPoints) * 100);
+    let earned = allAnswers.reduce((acc, a) => acc + (parseFloat(a.points_earned) || 0), 0);
+    
+    // Jika submit karena curang/violation, skor auto 0
+    let totalScore = Math.round((earned / totalPoints) * 100);
+    if (is_violation) {
+      totalScore = 0;
+    }
 
     await run(
       'UPDATE exam_sessions SET is_submitted = 1, submitted_at = CURRENT_TIMESTAMP, total_score = ? WHERE id = ?',
       [totalScore, session.id]
     );
+
+    if (is_violation) {
+      await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?) ON CONFLICT (exam_id, mahasiswa_id) DO NOTHING', [examId, mahasiswaId]);
+    }
 
     res.json({ message: 'Ujian berhasil dikumpulkan', total_score: totalScore });
   } catch (e) {
