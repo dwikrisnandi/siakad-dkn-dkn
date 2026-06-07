@@ -174,6 +174,15 @@ To ensure **High Availability (HA)** and enterprise-grade security during peak t
 - **Client-Side Request Jittering & Optimization:** Implemented deterministic request jittering and exponential backoff mechanisms in the React frontend. This effectively mitigates the "Thundering Herd" problem when hundreds of students log in or submit exams at the exact same millisecond.
 - **Zero-Tolerance Anti-Cheat Engine:** Engineered a reactive event-listener architecture to mitigate cheating vectors. It features strict browser-level DOM manipulation locks (disabling copy, paste, drag-and-drop), Window Focus/Visibility tracking with a 3-strike Auto-Submit penalty, and an AI-driven NLP pipeline to detect LLM-generated semantic patterns in essay responses.
 
+## 🛡️ API & Security Defense Layers
+
+To guarantee academic integrity and protect the application from sophisticated network-level exploits, the system utilizes a multi-layered defense architecture:
+
+1. **Payload Data Stripping (Anti-Leak):** The `GET` endpoints are strictly sanitized. When a student fetches their exam data, the `correct_answer` field is mathematically purged from the JSON payload at the Node.js level. It is physically impossible to find answers via Browser DevTools or Network Inspections.
+2. **Server-Side Scoring Verification:** Points calculation is strictly handled by the backend. The frontend merely sends the selected option (A/B/C/D). The backend dynamically validates this against the database to prevent payload manipulation (e.g., stopping attackers from injecting `{"score": 100}`).
+3. **Role-Based Access Control (RBAC) & JWT Integrity:** All sensitive endpoints (e.g., Grading, Exam Controls) are shielded by JWT middlewares that decode and verify the cryptographic signature. A student token attempting to hit a Lecturer endpoint will immediately result in a `403 Forbidden` drop.
+4. **Prepared Statement Architecture (Anti-SQLi):** The PostgreSQL database interaction strictly utilizes parameterized queries across the entire codebase, inherently neutralizing 100% of SQL Injection attempts (`1' OR '1'='1`).
+
 ## 🛠️ Tech Stack
 
 **Frontend (Client)**
