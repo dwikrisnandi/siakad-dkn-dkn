@@ -18,6 +18,7 @@ const AdminKHS = React.lazy(() => import('./pages/AdminKHS'));
 const AdminTranskrip = React.lazy(() => import('./pages/AdminTranskrip'));
 const AdminSkripsi = React.lazy(() => import('./pages/AdminSkripsi'));
 const AdminFeeder = React.lazy(() => import('./pages/AdminFeeder'));
+const AdminBKD = React.lazy(() => import('./pages/AdminBKD'));
 const AdminFCMTokens = React.lazy(() => import('./pages/AdminFCMTokens'));
 const AdminTahunAkademik = React.lazy(() => import('./pages/AdminTahunAkademik'));
 const DosenDashboard = React.lazy(() => import('./pages/DosenDashboard'));
@@ -37,6 +38,7 @@ const DosenBankSoal = React.lazy(() => import('./pages/DosenBankSoal'));
 const DosenKRS = React.lazy(() => import('./pages/DosenKRS'));
 const DosenEDOM = React.lazy(() => import('./pages/DosenEDOM'));
 const DosenSkripsi = React.lazy(() => import('./pages/DosenSkripsi'));
+const DosenBKD = React.lazy(() => import('./pages/DosenBKD'));
 const MahasiswaUjian = React.lazy(() => import('./pages/MahasiswaUjian'));
 const MahasiswaKRS = React.lazy(() => import('./pages/MahasiswaKRS'));
 const MahasiswaEDOM = React.lazy(() => import('./pages/MahasiswaEDOM'));
@@ -80,6 +82,7 @@ function AppContent() {
             <Route path="transkrip" element={<AdminTranskrip />} />
             <Route path="skripsi" element={<AdminSkripsi />} />
             <Route path="feeder" element={<AdminFeeder />} />
+            <Route path="bkd" element={<AdminBKD />} />
             <Route path="invoices" element={<AdminInvoices />} />
             <Route path="backup" element={<AdminBackup />} />
             <Route path="fcm-tokens" element={<AdminFCMTokens />} />
@@ -98,6 +101,7 @@ function AppContent() {
             <Route path="exams" element={<DosenUjian />} />
             <Route path="bank-soal" element={<DosenBankSoal />} />
             <Route path="skripsi" element={<DosenSkripsi />} />
+            <Route path="bkd" element={<DosenBKD />} />
           </Route>
 
           {/* Mahasiswa Routes */}

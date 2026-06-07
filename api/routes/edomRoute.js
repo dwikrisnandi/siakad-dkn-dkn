@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { get, all, run } = require('../db');
+const { get, query, run } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 // Seed default questions if none exist
@@ -24,7 +24,7 @@ seedQuestions();
 // GET all questions
 router.get('/edom/questions', [verifyToken], async (req, res) => {
   try {
-    const questions = await all('SELECT * FROM edom_questions ORDER BY id ASC');
+    const [questions] = await query('SELECT * FROM edom_questions ORDER BY id ASC');
     res.json(questions);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch questions' });
@@ -51,7 +51,7 @@ router.get('/edom/schedules', [verifyToken, verifyRole(['mahasiswa'])], async (r
       JOIN users u ON s.dosen_id = u.id
       WHERE ce.mahasiswa_id = ? AND s.academic_year_id = ?
     `;
-    const schedules = await all(sql, [mahasiswaId, mahasiswaId, activeYear.id]);
+    const [schedules] = await query(sql, [mahasiswaId, mahasiswaId, activeYear.id]);
     res.json(schedules);
   } catch (err) {
     console.error(err);
@@ -97,7 +97,7 @@ router.get('/edom/check-completion', [verifyToken, verifyRole(['mahasiswa'])], a
       JOIN schedules s ON cl.id = s.class_id
       WHERE ce.mahasiswa_id = ? AND s.academic_year_id = ?
     `;
-    const schedules = await all(sql, [mahasiswaId, mahasiswaId, activeYear.id]);
+    const [schedules] = await query(sql, [mahasiswaId, mahasiswaId, activeYear.id]);
     
     // If any schedule has 0 answers filled, it's not completed
     const notCompleted = schedules.some(s => s.is_filled === 0);
@@ -126,10 +126,10 @@ router.get('/edom/summary/:scheduleId', [verifyToken, verifyRole(['dosen', 'admi
       LEFT JOIN edom_answers ea ON q.id = ea.question_id AND ea.schedule_id = ?
       GROUP BY q.id
     `;
-    const summary = await all(sql, [scheduleId]);
+    const [summary] = await query(sql, [scheduleId]);
 
     const commentsSql = `SELECT comment FROM edom_answers WHERE schedule_id = ? AND comment != '' GROUP BY comment`;
-    const comments = await all(commentsSql, [scheduleId]);
+    const [comments] = await query(commentsSql, [scheduleId]);
 
     res.json({
       summary,

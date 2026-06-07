@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Home, BookOpen, Users, UserSquare2, Calendar, 
-  FileText, CheckSquare, PenTool, LayoutGrid, Award, Database, Smartphone, ClipboardList
+  FileText, CheckSquare, PenTool, LayoutGrid, Award, Database, Smartphone, ClipboardList, Briefcase
 } from 'lucide-react';
 
 export const getRoleLinks = (role, size = 24) => {
@@ -20,7 +20,8 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'KHS Mahasiswa', path: '/admin/khs', icon: <Award size={size} className="nav-icon" /> },
         { name: 'Transkrip Nilai', path: '/admin/transkrip', icon: <Award size={size} className="nav-icon" /> },
         { name: 'Skripsi / TA', path: '/admin/skripsi', icon: <BookOpen size={size} className="nav-icon" /> },
-        { name: 'Export Feeder PDDikti', path: '/admin/feeder', icon: <Database size={size} className="nav-icon" /> },
+        { name: 'BKD & Jabatan', path: '/admin/bkd', icon: <Briefcase size={size} className="nav-icon" /> },
+        { name: 'Export Feeder', path: '/admin/feeder', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Keuangan (SPP)', path: '/admin/invoices', icon: <CheckSquare size={size} className="nav-icon" /> },
         { name: 'Backup Data', path: '/admin/backup', icon: <Database size={size} className="nav-icon" /> },
         { name: 'Notifikasi', path: '/admin/fcm-tokens', icon: <Smartphone size={size} className="nav-icon" /> },
@@ -38,6 +39,7 @@ export const getRoleLinks = (role, size = 24) => {
         { name: 'Ujian', path: '/dosen/exams', icon: <ClipboardList size={size} className="nav-icon" /> },
         { name: 'Input Nilai', path: '/dosen/grades', icon: <Award size={size} className="nav-icon" /> },
         { name: 'Bimbingan Skripsi', path: '/dosen/skripsi', icon: <Users size={size} className="nav-icon" /> },
+        { name: 'Repository BKD', path: '/dosen/bkd', icon: <Briefcase size={size} className="nav-icon" /> },
       ];
     case 'mahasiswa':
       return [

@@ -1047,6 +1047,16 @@ router.delete('/exams/:id/cache-status', [verifyToken, verifyRole(['mahasiswa'])
   }
 });
 
+// GET: cek apakah diblokir
+router.get('/exams/:id/check-block', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
+  try {
+    const [blocked] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [req.params.id, req.userId]);
+    res.json({ blocked: blocked.length > 0 });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal mengecek status' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────
 // MAHASISWA: Sesi Ujian
 // ─────────────────────────────────────────────────────────
@@ -1127,6 +1137,12 @@ router.post('/exam-sessions/:examId/answer', [verifyToken, verifyRole(['mahasisw
     const { question_id, answer } = req.body;
     const examId = parseInt(req.params.examId);
     const mahasiswaId = req.userId;
+
+    // Cek apakah mahasiswa diblokir dari ujian ini
+    const [blocked] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [examId, mahasiswaId]);
+    if (blocked.length > 0) {
+      return res.status(403).json({ error: 'Ujian dihentikan karena terdeteksi pelanggaran (Curang)', blocked: true });
+    }
 
     const [[session]] = await query(
       'SELECT * FROM exam_sessions WHERE exam_id = ? AND mahasiswa_id = ?',

@@ -196,6 +196,48 @@ run(`CREATE TABLE IF NOT EXISTS skripsi_sidang (
   status TEXT DEFAULT 'Scheduled' -- Scheduled, Passed, Failed
 )`).catch(() => {});
 
+// -- PHASE 5: BKD & REPOSITORY SISTER --
+run(`CREATE TABLE IF NOT EXISTS structural_roles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nama_jabatan TEXT NOT NULL,
+  sks_ekuivalen INTEGER DEFAULT 0
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS dosen_tugas_tambahan (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  dosen_id INTEGER NOT NULL,
+  structural_role_id INTEGER NOT NULL,
+  nomor_sk TEXT,
+  tgl_mulai DATE,
+  tgl_selesai DATE,
+  file_sk TEXT
+)`).catch(() => {});
+
+run(`CREATE TABLE IF NOT EXISTS bkd_documents (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  dosen_id INTEGER NOT NULL,
+  category TEXT NOT NULL, -- Pendidikan, Penelitian, Pengabdian, Penunjang
+  title TEXT NOT NULL,
+  file_url TEXT NOT NULL,
+  academic_year_id INTEGER,
+  uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`).catch(() => {});
+
+// Seed default structural roles
+const seedRoles = async () => {
+  try {
+    const { get } = require('./db');
+    const c = await get("SELECT COUNT(*) as c FROM structural_roles");
+    if (c.c === 0) {
+      await run("INSERT INTO structural_roles (nama_jabatan, sks_ekuivalen) VALUES ('Rektor', 12)");
+      await run("INSERT INTO structural_roles (nama_jabatan, sks_ekuivalen) VALUES ('Dekan', 10)");
+      await run("INSERT INTO structural_roles (nama_jabatan, sks_ekuivalen) VALUES ('Kaprodi', 8)");
+      await run("INSERT INTO structural_roles (nama_jabatan, sks_ekuivalen) VALUES ('Kepala Laboratorium', 6)");
+    }
+  } catch(e){}
+};
+seedRoles();
+
 // ── PHASE 3: PERFORMANCE INDEXING ──
 run('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)').catch(()=>{});
 run('CREATE INDEX IF NOT EXISTS idx_users_program ON users(program_id)').catch(()=>{});
@@ -206,6 +248,12 @@ run('CREATE INDEX IF NOT EXISTS idx_schedules_dosen ON schedules(dosen_id)').cat
 run('CREATE INDEX IF NOT EXISTS idx_class_enroll_class ON class_enrollments(class_id)').catch(()=>{});
 run('CREATE INDEX IF NOT EXISTS idx_class_enroll_mhs ON class_enrollments(mahasiswa_id)').catch(()=>{});
 run('CREATE INDEX IF NOT EXISTS idx_krs_mhs ON krs(mahasiswa_id)').catch(()=>{});
+
+// ── PHASE 4 & 5: ADDITIONAL PERFORMANCE INDEXING ──
+run('CREATE INDEX IF NOT EXISTS idx_course_grades_mhs ON course_grades(mahasiswa_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_course_grades_sched ON course_grades(schedule_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_edom_answers_sched ON edom_answers(schedule_id)').catch(()=>{});
+run('CREATE INDEX IF NOT EXISTS idx_skripsi_mhs ON skripsi(mahasiswa_id)').catch(()=>{});
 
 // ── ROUTES ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',  require('./routes/authRoute'));
@@ -218,12 +266,17 @@ app.use('/api',       require('./routes/edomRoute'));
 app.use('/api',       require('./routes/transkripRoute'));
 app.use('/api',       require('./routes/skripsiRoute'));
 app.use('/api',       require('./routes/feederRoute'));
+app.use('/api',       require('./routes/bkdRoute'));
 app.use('/api',       require('./routes/portalRoute'));
 app.use('/api',       require('./routes/aiRoute'));
 app.use('/api',       require('./routes/examRoute'));
 
-// ── SERVE REACT FRONTEND (Production) ────────────────────────────────────────
-app.use(express.static(path.join(__dirname, '../client/dist')));
+// ── SERVE STATIC FILES ───────────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, '../client/dist'), {
+  maxAge: '1y',
+  etag: true
+}));
+
 app.use((req, res, next) => {
   if (path.extname(req.path) !== '') return next();
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));

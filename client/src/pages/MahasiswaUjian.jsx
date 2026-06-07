@@ -188,6 +188,34 @@ export default function MahasiswaUjian() {
     };
   }, [activeExam, syncPendingAnswers, offlineMode]);
 
+  // ── TAB SWITCH / APP SWITCH DETECTION (Anti-Cheat) ──
+  useEffect(() => {
+    if (view !== 'exam' || !activeExam) return;
+    
+    const eid = activeExam.id;
+    const lsKey = `siakad_violations_${eid}`;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        let violations = parseInt(localStorage.getItem(lsKey) || '0');
+        violations++;
+        localStorage.setItem(lsKey, violations.toString());
+        
+        if (violations >= 3) {
+          alert('🚨 PELANGGARAN FATAL!\n\nAnda terdeteksi keluar dari layar ujian atau membuka aplikasi lain lebih dari 3 kali. Ujian Anda dihentikan paksa dan dianggap curang.');
+          handleSubmit(eid, true); // Auto submit
+        } else {
+          alert(`⚠️ PERINGATAN KECURANGAN (${violations}/3)!\n\nSistem mendeteksi Anda meninggalkan layar ujian (membuka aplikasi/tab lain, seperti kamera, galeri, WA, atau AI). Jika Anda keluar layar sampai 3 kali, ujian akan dihentikan paksa secara otomatis.`);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [view, activeExam]);
+
   const loadCachedExams = async () => {
     try {
       const cached = await getAllCachedExams();
@@ -361,11 +389,23 @@ export default function MahasiswaUjian() {
         // Start timer
         const durationSec = (targetExam.duration_minutes || cachedExam.duration_minutes || 90) * 60;
         setTimeLeft(durationSec);
+        let pollCounter = 0;
         timerRef.current = setInterval(() => {
           setTimeLeft(prev => {
             if (prev <= 1) { clearInterval(timerRef.current); handleSubmit(targetExam.id, true); return 0; }
             return prev - 1;
           });
+          
+          pollCounter++;
+          if (pollCounter % 10 === 0 && navigator.onLine) {
+            api.get(`/exams/${targetExam.id}/check-block`).then(res => {
+              if (res.data.blocked) {
+                alert('Ujian dihentikan karena terdeteksi pelanggaran (Curang)');
+                clearInterval(timerRef.current);
+                handleSubmit(targetExam.id, true);
+              }
+            }).catch(() => {});
+          }
         }, 1000);
         setView('exam');
       } catch (err) {
@@ -433,11 +473,23 @@ export default function MahasiswaUjian() {
       // Start timer
       const durationSec = (targetExam.duration_minutes || 90) * 60;
       setTimeLeft(durationSec);
+      let pollCounter2 = 0;
       timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) { clearInterval(timerRef.current); handleSubmit(targetExam.id, true); return 0; }
           return prev - 1;
         });
+
+        pollCounter2++;
+        if (pollCounter2 % 10 === 0 && navigator.onLine) {
+          api.get(`/exams/${targetExam.id}/check-block`).then(res => {
+            if (res.data.blocked) {
+              alert('Ujian dihentikan karena terdeteksi pelanggaran (Curang)');
+              clearInterval(timerRef.current);
+              handleSubmit(targetExam.id, true);
+            }
+          }).catch(() => {});
+        }
       }, 1000);
       setView('exam');
     } catch (e) {
@@ -481,6 +533,11 @@ export default function MahasiswaUjian() {
       try {
         await api.post(`/exam-sessions/${examId}/answer`, { question_id: questionId, answer });
       } catch (e) {
+        if (e.response && e.response.status === 403 && e.response.data.blocked) {
+          alert(e.response.data.error);
+          handleSubmit(examId, true);
+          return;
+        }
         console.error('Auto-save to server failed, queuing:', e);
         // Failed even though online — add to pending queue
         if (examId) {
@@ -792,6 +849,13 @@ export default function MahasiswaUjian() {
                     <textarea className="form-control" rows="6" placeholder="Tulis jawaban essay Anda di sini..."
                       value={answers[q.id] || ''}
                       onChange={e => saveAnswer(q.id, e.target.value)}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        alert('Tindakan paste (tempel) dinonaktifkan untuk menjaga kejujuran akademik.');
+                      }}
+                      onDrop={(e) => e.preventDefault()}
+                      autoComplete="off"
+                      spellCheck="false"
                       style={{ resize: 'vertical' }} />
                   )}
 

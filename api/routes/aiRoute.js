@@ -273,6 +273,11 @@ Jawaban Mahasiswa: ${student_answer || '-'}
 
 Poin maksimal untuk soal ini adalah: ${max_points}
 
+Tugas Tambahan: Deteksi apakah jawaban mahasiswa merupakan hasil generate AI (ChatGPT, Gemini, dll) yang disalin-tempel.
+Ciri-ciri AI: Terlalu kaku, menggunakan poin-poin yang terlalu rapi, bahasa robotik, tidak natural untuk ukuran mahasiswa.
+Jika kamu sangat yakin itu adalah hasil AI, MAKA SKOR WAJIB DIBERIKAN 0 (NOL), dan pada feedback tuliskan "Terdeteksi hasil AI/Copy Paste".
+
+Jika bukan AI:
 Berikan penilaian kemiripan/kebenaran secara proporsional. Jika jawaban mahasiswa sempurna, beri nilai ${max_points}. Jika setengah benar, beri nilai setengah dari ${max_points}. Jika melenceng/salah, beri nilai 0. 
 Berikan juga feedback super singkat (maksimal 1-2 kalimat) yang membangun.
 

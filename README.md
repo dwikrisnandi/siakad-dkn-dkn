@@ -7,14 +7,14 @@ Sistem Informasi Akademik (SIAKAD) modern dan cerdas yang dikembangkan oleh **Dw
 ### 🧑‍🏫 Modul Dosen
 - **Manajemen Kelas & Jadwal**: Mengelola pertemuan kuliah dan absensi mahasiswa (Hadir, Sakit, Izin, Alpa).
 - **Materi & Tugas**: Modul distribusi materi (RPS) dan pemberian tugas dengan deadline yang terintegrasi.
-- **Computer-Based Testing (CBT)**: Membuat bank soal dan mengadakan ujian UTS/UAS secara online. Mendukung soal Pilihan Ganda, Benar/Salah, dan Essay.
+- **Computer-Based Testing (CBT) & Anti-Cheat**: Membuat bank soal dan mengadakan ujian online. Mendukung soal Pilihan Ganda, Benar/Salah, dan Essay. Dilengkapi sistem pengamanan ketat (Anti Tab-Switch/App-Switch, pelarangan *Copy-Paste*, dan *Live Kicking* bagi pelaku kecurangan).
 - **Export DOCX**: Fitur export soal menjadi dokumen Microsoft Word siap cetak dengan format header institusi yang dapat disesuaikan.
-- **AI Auto-Grading**: Bantuan AI (Google Gemini) untuk memberikan skor dan feedback instan pada jawaban essay mahasiswa serta mendeteksi indikasi kecurangan (AI-generated text).
+- **AI Auto-Grading**: Bantuan AI (Google Gemini) untuk memberikan skor dan feedback instan pada jawaban essay mahasiswa serta mendeteksi secara otomatis indikasi jawaban *copy-paste* buatan AI (AI-generated text).
 - **AI Exam & Material Generator**: Asisten AI untuk merangkum RPS menjadi buku teks HTML, menghasilkan soal-soal ujian (hingga 50 soal sekaligus), dan menyusun kisi-kisi ujian.
 
 ### 👨‍🎓 Modul Mahasiswa
 - **Dashboard Akademik**: Melihat jadwal, presensi, materi perkuliahan, dan kalender tugas.
-- **Ujian Online**: Mengikuti ujian dengan tampilan antarmuka yang modern, responsif, dan aman.
+- **Ujian Online yang Terlindungi**: Mengikuti ujian dengan tampilan yang modern dan responsif. Sistem ujian otomatis memblokir kecurangan apabila mahasiswa mencoba membuka *tab*/aplikasi lain atau melakukan *paste* jawaban dari luar.
 - **Chatbot Asisten Akademik "Pak Dwi"**: Fitur pendampingan AI yang dirancang bertindak sebagai dosen pembimbing. Bot ini diprogram secara khusus untuk membantu pemahaman materi, dan memiliki filter ketat untuk menolak permintaan penyelesaian tugas/pekerjaan rumah dari mahasiswa secara langsung.
 
 ### 🛡️ Modul Admin

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { get, all, run } = require('../db');
+const { get, query, run } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 // GET all skripsi for admin/kaprodi
@@ -15,7 +15,7 @@ router.get('/skripsi', [verifyToken, verifyRole(['admin'])], async (req, res) =>
       LEFT JOIN users p2 ON s.pembimbing_2_id = p2.id
       ORDER BY s.created_at DESC
     `;
-    const data = await all(sql);
+    const [data] = await query(sql);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed fetching skripsi' });
@@ -82,7 +82,7 @@ router.get('/skripsi/bimbingan', [verifyToken, verifyRole(['dosen'])], async (re
       JOIN users u ON s.mahasiswa_id = u.id
       WHERE (s.pembimbing_1_id = ? OR s.pembimbing_2_id = ?) AND s.status != 'Pending'
     `;
-    const data = await all(sql, [req.user.id, req.user.id]);
+    const [data] = await query(sql, [req.user.id, req.user.id]);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed fetching bimbingan' });
@@ -92,7 +92,7 @@ router.get('/skripsi/bimbingan', [verifyToken, verifyRole(['dosen'])], async (re
 // GET logbooks
 router.get('/skripsi/:id/logbooks', [verifyToken], async (req, res) => {
   try {
-    const data = await all('SELECT * FROM skripsi_logbooks WHERE skripsi_id = ? ORDER BY id DESC', [req.params.id]);
+    const [data] = await query('SELECT * FROM skripsi_logbooks WHERE skripsi_id = ? ORDER BY id DESC', [req.params.id]);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed fetching logbooks' });

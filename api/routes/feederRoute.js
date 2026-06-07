@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { get, all } = require('../db');
+const { get, query } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 const generateCsv = (headers, rows) => {
@@ -13,7 +13,7 @@ const generateCsv = (headers, rows) => {
 
 router.get('/feeder/mahasiswa', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const data = await all(`
+    const [data] = await query(`
       SELECT nidn_nim as NIM, name as Nama_Mahasiswa, email as Email,
              (SELECT nama_prodi FROM programs WHERE id = program_id) as Program_Studi,
              gender as Jenis_Kelamin, date_of_birth as Tanggal_Lahir
@@ -30,7 +30,7 @@ router.get('/feeder/mahasiswa', [verifyToken, verifyRole(['admin'])], async (req
 
 router.get('/feeder/krs', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const data = await all(`
+    const [data] = await query(`
       SELECT 
         u.nidn_nim as NIM,
         u.name as Nama_Mahasiswa,
@@ -55,7 +55,7 @@ router.get('/feeder/krs', [verifyToken, verifyRole(['admin'])], async (req, res)
 
 router.get('/feeder/nilai', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   try {
-    const data = await all(`
+    const [data] = await query(`
       SELECT 
         u.nidn_nim as NIM,
         u.name as Nama_Mahasiswa,

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { get, all } = require('../db');
+const { get, query } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 // Complex Query for Cumulative Transcript
@@ -20,7 +20,7 @@ const getTranscriptData = async (mahasiswaId) => {
     GROUP BY c.id
     ORDER BY c.semester ASC, c.name ASC
   `;
-  const records = await all(sql, [mahasiswaId]);
+  const [records] = await query(sql, [mahasiswaId]);
 
   // Transform scores to letters
   const getLetterGrade = (score) => {
