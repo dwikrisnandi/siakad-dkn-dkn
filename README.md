@@ -174,7 +174,7 @@ To ensure **High Availability (HA)** and enterprise-grade security during peak t
 - **Client-Side Request Jittering & Optimization:** Implemented deterministic request jittering and exponential backoff mechanisms in the React frontend. This effectively mitigates the "Thundering Herd" problem when hundreds of students log in or submit exams at the exact same millisecond.
 - **Zero-Tolerance Anti-Cheat Engine:** Engineered a reactive event-listener architecture to mitigate cheating vectors. It features strict browser-level DOM manipulation locks (disabling copy, paste, drag-and-drop), Window Focus/Visibility tracking with a 3-strike Auto-Submit penalty, and an AI-driven NLP pipeline to detect LLM-generated semantic patterns in essay responses.
 
-## 🛡️ API & Security Defense Layers
+## 🛡️ API & AI Security Defense Layers
 
 To guarantee academic integrity and protect the application from sophisticated network-level exploits, the system utilizes a multi-layered defense architecture:
 
