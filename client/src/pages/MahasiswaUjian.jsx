@@ -1015,6 +1015,13 @@ export default function MahasiswaUjian() {
                     <p className="text-center text-muted small mb-3">
                       Masukkan token ujian untuk {targetExam?.session_id ? 'melanjutkan' : 'memulai'} <strong className="text-dark">{targetExam?.title}</strong>
                     </p>
+                    <div className="alert alert-danger border-0 bg-danger bg-opacity-10 text-dark small px-3 py-2 mb-3 rounded-3 shadow-sm d-flex align-items-start gap-2 text-start">
+                      <AlertCircle size={16} className="text-danger mt-1 flex-shrink-0" />
+                      <div>
+                        <strong>PERHATIAN! SISTEM ANTI-CURANG AKTIF.</strong><br/>
+                        Ujian akan <b>dihentikan paksa (Skor 0)</b> jika terdeteksi keluar layar, membuka aplikasi/tab lain, atau Copy-Paste jawaban AI.
+                      </div>
+                    </div>
                     <div className="mb-3">
                       <input 
                         type="text" 
