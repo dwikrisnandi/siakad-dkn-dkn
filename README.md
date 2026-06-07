@@ -81,37 +81,41 @@ erDiagram
 The following state diagram demonstrates the flow of the online examination, highlighting the strict Zero-Cheating logic:
 
 ```mermaid
-stateDiagram-v2
-    [*] --> StartExam: Student Starts Exam
-    StartExam --> Answering: Exam UI Rendered
+flowchart TD
+    Start[Student Starts Exam] --> Render[Exam UI Rendered]
+    Render --> Answering
     
-    state Answering {
-        [*] --> Input
-        Input --> DetectTabSwitch: Student switches tab/app
-        Input --> DetectPaste: Student tries to Paste
+    subgraph Answering [Exam Session]
+        Input[Student Input]
+        TabSwitch{Switches Tab/App?}
+        Paste{Tries to Paste?}
+        Violation[Increment Violation Count]
+        Warn[Show Warning]
+        ForceSubmit[Auto-Submit Exam]
+        Blocked[Action Blocked]
         
-        DetectPaste --> Blocked: Action Rejected
-        Blocked --> Input
+        Input --> TabSwitch
+        Input --> Paste
         
-        DetectTabSwitch --> Violation: Increment Violation Count
-        Violation --> Warn: Count < 3
-        Warn --> Input: Return to Exam
+        Paste -->|Yes| Blocked --> Input
+        TabSwitch -->|Yes| Violation
         
-        Violation --> ForceSubmit: Count >= 3 (Fatal)
-    }
+        Violation -->|Count < 3| Warn --> Input
+        Violation -->|Count >= 3| ForceSubmit
+    end
     
-    ForceSubmit --> SubmitToAPI: Auto-Submit Exam
-    Answering --> SubmitToAPI: Manual Submit
+    Answering -->|Manual Submit| Submit[Submit to API]
+    ForceSubmit -->|Fatal Violation| Submit
     
-    SubmitToAPI --> AutoGrade: Calculate PG/TF Scores
-    AutoGrade --> AIGrading: Send Essays to Gemini
+    Submit --> Calc[Calculate PG/TF Scores]
+    Calc --> AI_Eval[Send Essays to Gemini AI]
     
-    AIGrading --> ZeroScore: AI Detects AI-Generated Answer
-    AIGrading --> NormalScore: AI Grades Legitimate Answer
+    AI_Eval --> AI_Check{Is AI-Generated / Copied?}
+    AI_Check -->|Yes| Score0[Give Score 0]
+    AI_Check -->|No| ScoreNormal[Calculate Normal Score]
     
-    ZeroScore --> Done
-    NormalScore --> Done
-    Done --> [*]
+    Score0 --> Finish[Done]
+    ScoreNormal --> Finish
 ```
 
 ## 🔄 Activity Diagram: AI-Powered Material Generation
@@ -119,16 +123,14 @@ stateDiagram-v2
 This diagram shows how lecturers can use the built-in AI assistant to generate comprehensive course materials based on syllabuses (RPS):
 
 ```mermaid
-stateDiagram-v2
-    [*] --> UploadRPS: Lecturer inputs Syllabus (RPS) topic
-    UploadRPS --> Processing: Request sent to Backend API
-    Processing --> GeminiAI: Send engineered prompt to Google Gemini
-    GeminiAI --> Structuring: AI generates formatted HTML textbook content
-    Structuring --> SaveDB: Save generated material to Database
-    SaveDB --> Display: Show draft to Lecturer
-    Display --> Edit: Lecturer manually refines/edits (Optional)
-    Edit --> Publish: Material published to Students
-    Publish --> [*]
+flowchart TD
+    Start[Lecturer inputs Syllabus Topic] --> API[Backend API Processing]
+    API --> Gemini[Send Prompt to Google Gemini AI]
+    Gemini --> Generate[Generate Formatted HTML Textbook]
+    Generate --> DB[Save to Database]
+    DB --> Draft[Show Draft to Lecturer]
+    Draft --> Edit[Lecturer Refines / Edits]
+    Edit --> Publish[Publish Material to Students]
 ```
 
 ## 🔄 Activity Diagram: AI-Powered Assignment Grading
@@ -136,25 +138,31 @@ stateDiagram-v2
 This diagram details the workflow of how lecturers utilize AI to grade student assignments and essays instantly:
 
 ```mermaid
-stateDiagram-v2
-    [*] --> SubmitTask: Student submits Assignment (File/Text)
-    SubmitTask --> LecturerReview: Lecturer opens grading panel
-    LecturerReview --> AIGradeRequest: Lecturer clicks "AI Auto-Grade"
-    AIGradeRequest --> GeminiEval: Send student answer & Answer Key to Gemini
+flowchart TD
+    Start[Student Submits Assignment] --> Panel[Lecturer Opens Grading Panel]
+    Panel --> Click[Clicks 'AI Auto-Grade']
+    Click --> Send[Send Answer & Key to Gemini AI]
     
-    state GeminiEval {
-        [*] --> CheckPlagiarism: Analyze for AI/Copy-Paste patterns
-        CheckPlagiarism --> ScoreZero: If AI/Plagiarized detected
-        CheckPlagiarism --> AnalyzeContent: If original
-        AnalyzeContent --> GenerateScore: Calculate score based on accuracy
-        GenerateScore --> GenerateFeedback: Create constructive feedback
-    }
+    subgraph GeminiEval [Gemini AI Evaluation]
+        Check[Analyze for AI/Copy-Paste]
+        Decision{Is Plagiarized?}
+        Score0[Assign Score 0]
+        Analyze[Analyze Content Accuracy]
+        Score[Calculate Objective Score]
+        Feedback[Generate Constructive Feedback]
+        
+        Check --> Decision
+        Decision -->|Yes| Score0
+        Decision -->|No| Analyze --> Score --> Feedback
+    end
     
-    GeminiEval --> ReturnResult: API receives JSON Score & Feedback
-    ReturnResult --> DisplayLecturer: Show suggested score to Lecturer
-    DisplayLecturer --> Approve: Lecturer approves or adjusts score
-    Approve --> SaveScore: Save final score to Database
-    SaveScore --> [*]
+    Send --> GeminiEval
+    Score0 --> API_Return[Return JSON Result to API]
+    Feedback --> API_Return
+    
+    API_Return --> Display[Show Suggested Score to Lecturer]
+    Display --> Approve[Lecturer Approves/Adjusts]
+    Approve --> Save[Save Final Score to Database]
 ```
 
 ## 🛠️ Tech Stack
