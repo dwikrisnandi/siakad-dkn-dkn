@@ -27,26 +27,26 @@ A modern and intelligent Academic Information System (SIAKAD) developed by **Dwi
 This diagram illustrates the high-level architecture and interactions between the system components:
 
 ```mermaid
-graph TD
-    subgraph Client Side
+flowchart TD
+    subgraph ClientSide [Client Side]
         Client[React.js SPA / PWA]
         LocalDB[(Local Storage / Cache)]
         Client -.->|Offline Mode| LocalDB
     end
 
-    subgraph Server Side
+    subgraph ServerSide [Server Side]
         API[Node.js / Express API]
         DB[(PostgreSQL)]
         API -->|Read/Write| DB
     end
 
-    subgraph External Services
+    subgraph ExternalServices [External Services]
         AI[Google Gemini AI]
         FCM[Firebase Cloud Messaging]
     end
 
-    Client <==>|REST API / JWT Auth| API
-    API <==>|API Calls / Prompts| AI
+    Client <-->|REST API / JWT Auth| API
+    API <-->|API Calls / Prompts| AI
     API -.->|Push Notifications| FCM
     FCM -.->|Alerts| Client
 ```
@@ -57,23 +57,23 @@ The following diagram illustrates the core database architecture of the SIAKAD D
 
 ```mermaid
 erDiagram
-    USERS ||--o{ CLASS_ENROLLMENTS : "enrolled in"
-    USERS ||--o{ EXAM_SESSIONS : "takes"
-    FACULTIES ||--o{ PROGRAMS : "has"
-    PROGRAMS ||--o{ COURSES : "offers"
-    COURSES ||--o{ CLASSES : "scheduled as"
-    USERS ||--o{ CLASSES : "teaches (Lecturer)"
-    CLASSES ||--o{ CLASS_ENROLLMENTS : "contains"
-    CLASSES ||--o{ SCHEDULES : "has sessions"
-    CLASSES ||--o{ MATERIALS : "has"
-    CLASSES ||--o{ ASSIGNMENTS : "has"
-    SCHEDULES ||--o{ ATTENDANCES : "records"
-    SCHEDULES ||--o{ EXAMS : "hosts"
-    EXAMS ||--o{ EXAM_QUESTIONS : "contains"
-    EXAMS ||--o{ EXAM_SESSIONS : "has"
-    EXAMS ||--o{ EXAM_BLOCKS : "blocks"
-    EXAM_SESSIONS ||--o{ EXAM_ANSWERS : "submits"
-    EXAM_QUESTIONS ||--o{ EXAM_ANSWERS : "answered in"
+    USERS ||--o{ CLASS_ENROLLMENTS : enrolled_in
+    USERS ||--o{ EXAM_SESSIONS : takes
+    FACULTIES ||--o{ PROGRAMS : has
+    PROGRAMS ||--o{ COURSES : offers
+    COURSES ||--o{ CLASSES : scheduled_as
+    USERS ||--o{ CLASSES : teaches
+    CLASSES ||--o{ CLASS_ENROLLMENTS : contains
+    CLASSES ||--o{ SCHEDULES : has_sessions
+    CLASSES ||--o{ MATERIALS : has
+    CLASSES ||--o{ ASSIGNMENTS : has
+    SCHEDULES ||--o{ ATTENDANCES : records
+    SCHEDULES ||--o{ EXAMS : hosts
+    EXAMS ||--o{ EXAM_QUESTIONS : contains
+    EXAMS ||--o{ EXAM_SESSIONS : has
+    EXAMS ||--o{ EXAM_BLOCKS : blocks
+    EXAM_SESSIONS ||--o{ EXAM_ANSWERS : submits
+    EXAM_QUESTIONS ||--o{ EXAM_ANSWERS : answered_in
 ```
 
 ## 🔄 Activity Diagram: Anti-Cheat Exam Workflow
