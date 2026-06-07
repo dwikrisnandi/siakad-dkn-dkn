@@ -22,6 +22,35 @@ A modern and intelligent Academic Information System (SIAKAD) developed by **Dwi
 - **Curriculum Management**: Organize Faculties, Study Programs, Courses, and Classes.
 - **Transcripts & Grading (KHS)**: System-based generation and validation of official graduation documents.
 
+## 🏛️ System Architecture (Block Diagram)
+
+This diagram illustrates the high-level architecture and interactions between the system components:
+
+```mermaid
+graph TD
+    subgraph Client Side
+        Client[React.js SPA / PWA]
+        LocalDB[(Local Storage / Cache)]
+        Client -.->|Offline Mode| LocalDB
+    end
+
+    subgraph Server Side
+        API[Node.js / Express API]
+        DB[(PostgreSQL)]
+        API -->|Read/Write| DB
+    end
+
+    subgraph External Services
+        AI[Google Gemini AI]
+        FCM[Firebase Cloud Messaging]
+    end
+
+    Client <==>|REST API / JWT Auth| API
+    API <==>|API Calls / Prompts| AI
+    API -.->|Push Notifications| FCM
+    FCM -.->|Alerts| Client
+```
+
 ## 🗄️ Entity-Relationship Diagram (ERD)
 
 The following diagram illustrates the core database architecture of the SIAKAD DKN system:
@@ -45,6 +74,44 @@ erDiagram
     EXAMS ||--o{ EXAM_BLOCKS : "blocks"
     EXAM_SESSIONS ||--o{ EXAM_ANSWERS : "submits"
     EXAM_QUESTIONS ||--o{ EXAM_ANSWERS : "answered in"
+```
+
+## 🔄 Activity Diagram: Anti-Cheat Exam Workflow
+
+The following state diagram demonstrates the flow of the online examination, highlighting the strict Zero-Cheating logic:
+
+```mermaid
+stateDiagram-v2
+    [*] --> StartExam: Student Starts Exam
+    StartExam --> Answering: Exam UI Rendered
+    
+    state Answering {
+        [*] --> Input
+        Input --> DetectTabSwitch: Student switches tab/app
+        Input --> DetectPaste: Student tries to Paste
+        
+        DetectPaste --> Blocked: Action Rejected
+        Blocked --> Input
+        
+        DetectTabSwitch --> Violation: Increment Violation Count
+        Violation --> Warn: Count < 3
+        Warn --> Input: Return to Exam
+        
+        Violation --> ForceSubmit: Count >= 3 (Fatal)
+    }
+    
+    ForceSubmit --> SubmitToAPI: Auto-Submit Exam
+    Answering --> SubmitToAPI: Manual Submit
+    
+    SubmitToAPI --> AutoGrade: Calculate PG/TF Scores
+    AutoGrade --> AIGrading: Send Essays to Gemini
+    
+    AIGrading --> ZeroScore: AI Detects AI-Generated Answer
+    AIGrading --> NormalScore: AI Grades Legitimate Answer
+    
+    ZeroScore --> Done
+    NormalScore --> Done
+    Done --> [*]
 ```
 
 ## 🛠️ Tech Stack
