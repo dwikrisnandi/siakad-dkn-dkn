@@ -7,14 +7,14 @@ Sistem Informasi Akademik (SIAKAD) modern dan cerdas yang dikembangkan oleh **Dw
 ### 🧑‍🏫 Modul Dosen
 - **Manajemen Kelas & Jadwal**: Mengelola pertemuan kuliah dan absensi mahasiswa (Hadir, Sakit, Izin, Alpa).
 - **Materi & Tugas**: Modul distribusi materi (RPS) dan pemberian tugas dengan deadline yang terintegrasi.
-- **Computer-Based Testing (CBT) & Anti-Cheat**: Membuat bank soal dan mengadakan ujian online. Mendukung soal Pilihan Ganda, Benar/Salah, dan Essay. Dilengkapi sistem pengamanan ketat (Anti Tab-Switch/App-Switch, pelarangan *Copy-Paste*, dan *Live Kicking* bagi pelaku kecurangan).
+- **Computer-Based Testing (CBT) & Sistem Anti-Mencontek**: Membuat bank soal dan mengadakan ujian online. Mendukung soal Pilihan Ganda, Benar/Salah, dan Essay. Dilengkapi pengamanan super ketat untuk mencegah mahasiswa mencontek (mendeteksi jika mahasiswa berpindah aplikasi/tab untuk mencari jawaban, memblokir total akses *Copy-Paste*, dan dosen dapat memblokir mahasiswa curang secara *real-time* dari dashboard).
 - **Export DOCX**: Fitur export soal menjadi dokumen Microsoft Word siap cetak dengan format header institusi yang dapat disesuaikan.
-- **AI Auto-Grading**: Bantuan AI (Google Gemini) untuk memberikan skor dan feedback instan pada jawaban essay mahasiswa serta mendeteksi secara otomatis indikasi jawaban *copy-paste* buatan AI (AI-generated text).
+- **AI Auto-Grading**: Bantuan AI (Google Gemini) untuk memberikan skor dan feedback instan pada jawaban essay mahasiswa. AI juga dilatih khusus untuk secara otomatis **memberikan nilai 0** jika mendeteksi jawaban mahasiswa adalah hasil salin-tempel (copy-paste) buatan AI.
 - **AI Exam & Material Generator**: Asisten AI untuk merangkum RPS menjadi buku teks HTML, menghasilkan soal-soal ujian (hingga 50 soal sekaligus), dan menyusun kisi-kisi ujian.
 
 ### 👨‍🎓 Modul Mahasiswa
 - **Dashboard Akademik**: Melihat jadwal, presensi, materi perkuliahan, dan kalender tugas.
-- **Ujian Online yang Terlindungi**: Mengikuti ujian dengan tampilan yang modern dan responsif. Sistem ujian otomatis memblokir kecurangan apabila mahasiswa mencoba membuka *tab*/aplikasi lain atau melakukan *paste* jawaban dari luar.
+- **Ujian Online Anti-Curang (Zero-Cheating System)**: Mengikuti ujian dengan antarmuka modern yang secara otomatis memblokir segala bentuk upaya mencontek. Mahasiswa tidak bisa mem-*paste* jawaban dari luar, dan sistem akan **menghentikan ujian secara paksa (Auto-Submit)** apabila mahasiswa terdeteksi keluar dari layar ujian lebih dari 3 kali (misal: untuk mengambil *screenshot*, membuka WhatsApp, atau melihat Google/AI).
 - **Chatbot Asisten Akademik "Pak Dwi"**: Fitur pendampingan AI yang dirancang bertindak sebagai dosen pembimbing. Bot ini diprogram secara khusus untuk membantu pemahaman materi, dan memiliki filter ketat untuk menolak permintaan penyelesaian tugas/pekerjaan rumah dari mahasiswa secara langsung.
 
 ### 🛡️ Modul Admin
