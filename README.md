@@ -1,30 +1,30 @@
 # SIAKAD DKN 🎓
 
-A modern and intelligent Academic Information System (SIAKAD) developed by **Dwi Krisnandi**. This application is equipped with Artificial Intelligence (AI) integration to streamline lecturers' operations, guide students, and accelerate academic processes.
+Sistem Informasi Akademik (SIAKAD) berbasis web yang dikembangkan oleh **Dwi Krisnandi**. Aplikasi ini dilengkapi dengan integrasi AI (Artificial Intelligence) dasar untuk membantu mempermudah operasional dosen, mahasiswa, dan proses akademik.
 
-## ✨ Key Features
+## ✨ Fitur Utama
 
-### 🧑‍🏫 Lecturer Module
-- **Class & Schedule Management**: Manage lectures and track student attendance (Present, Sick, Excused, Absent).
-- **Materials & Assignments**: Distribute course materials (Syllabus/RPS) and assign tasks with integrated deadline tracking.
-- **Computer-Based Testing (CBT) & Zero-Cheating System**: Create question banks and conduct online exams. Supports Multiple Choice, True/False, and Essay questions. Equipped with a rigorous anti-cheating system (detects App/Tab switching, completely blocks Copy-Paste, and allows lecturers to kick out cheating students in real-time).
-- **DOCX Export**: Export exam questions into a ready-to-print Microsoft Word document with customizable institutional headers.
-- **AI Auto-Grading**: AI-powered assistance (Google Gemini) to provide instant scores and constructive feedback on student essays. The AI is specifically trained to automatically **assign a score of 0** if it detects AI-generated or copy-pasted answers.
-- **AI Exam & Material Generator**: An AI assistant to summarize syllabuses into HTML textbooks, bulk-generate exam questions (up to 50 at once), and compile exam outlines.
+### 🧑‍🏫 Modul Dosen
+- **Manajemen Kelas & Jadwal**: Mengelola jadwal perkuliahan dan mencatat presensi mahasiswa (Hadir, Sakit, Izin, Alpa).
+- **Materi & Tugas**: Mendistribusikan materi kelas dan memberikan tugas perkuliahan.
+- **Ujian Online (CBT)**: Membuat bank soal dan mengadakan ujian secara online (Pilihan Ganda, Benar/Salah, dan Essay). Dilengkapi sistem deteksi kecurangan dasar (mendeteksi perpindahan tab browser dan memblokir fungsi *copy-paste*).
+- **Export DOCX**: Menyimpan soal ujian ke format dokumen Microsoft Word yang siap dicetak.
+- **Bantuan Koreksi AI (Auto-Grading)**: Menggunakan integrasi Google Gemini untuk membantu memberikan saran nilai dan masukan singkat pada jawaban essay mahasiswa secara otomatis.
+- **Generator AI**: Asisten AI untuk membantu merangkum silabus (RPS) menjadi materi bacaan dan menghasilkan draf soal ujian secara masal.
 
-### 👨‍🎓 Student Module
-- **Academic Dashboard**: View schedules, attendance records, course materials, and assignment calendars.
-- **Secure Online Exams (Zero-Cheating System)**: Take exams through a modern, responsive interface that automatically blocks any cheating attempts. Students cannot paste answers from external sources, and the system will **automatically force-submit the exam** if a student is detected leaving the exam screen more than 3 times (e.g., to take screenshots, open WhatsApp, or consult AI).
-- **Academic Assistant Chatbot "Pak Dwi"**: An AI companion designed to act as a 24/7 academic advisor. This bot is specially programmed to aid in understanding course materials while adhering to strict ethical filters that refuse requests to complete assignments directly.
+### 👨‍🎓 Modul Mahasiswa
+- **Dashboard Akademik**: Melihat jadwal kelas, riwayat kehadiran, materi, dan kalender tugas.
+- **Ujian Online**: Mengerjakan ujian melalui antarmuka responsif. Terdapat batasan peringatan; jika mahasiswa sering berpindah tab atau keluar dari halaman ujian, sistem akan otomatis mengumpulkan jawaban ujian mereka.
+- **Chatbot Asisten "Pak Dwi"**: Fitur *chatbot* berbasis AI yang dapat digunakan mahasiswa untuk bertanya dan berdiskusi terkait materi perkuliahan.
 
-### 🛡️ Admin Module
-- **Role Management**: Manage comprehensive user data (Lecturers, Students, Admins).
-- **Curriculum Management**: Organize Faculties, Study Programs, Courses, and Classes.
-- **Transcripts & Grading (KHS)**: System-based generation and validation of official graduation documents.
+### 🛡️ Modul Admin
+- **Manajemen Pengguna**: Mengelola data Dosen, Mahasiswa, dan Admin.
+- **Manajemen Kurikulum**: Mengelola Fakultas, Program Studi, Mata Kuliah, dan Kelas.
+- **Transkrip & Nilai (KHS)**: Pembuatan dokumen hasil ujian dan laporan kelulusan mahasiswa.
 
-## 🏛️ System Architecture (Block Diagram)
+## 🏛️ Arsitektur Sistem (Block Diagram)
 
-This diagram illustrates the high-level architecture and interactions between the system components:
+Diagram berikut mengilustrasikan arsitektur tingkat tinggi dari komponen sistem:
 
 ```mermaid
 flowchart TD
@@ -53,7 +53,7 @@ flowchart TD
 
 ## 🗄️ Entity-Relationship Diagram (ERD)
 
-The following diagram illustrates the core database architecture of the SIAKAD DKN system:
+Struktur inti database dari SIAKAD DKN:
 
 ```mermaid
 erDiagram
@@ -76,130 +76,96 @@ erDiagram
     EXAM_QUESTIONS ||--o{ EXAM_ANSWERS : answered_in
 ```
 
-## 🔄 Activity Diagram: Anti-Cheat Exam Workflow
+## 🔄 Activity Diagram: Alur Ujian Mahasiswa
 
-The following state diagram demonstrates the flow of the online examination, highlighting the strict Zero-Cheating logic:
+Alur pengerjaan ujian online, termasuk logika pemantauan tab/layar saat ujian berlangsung:
 
 ```mermaid
 flowchart TD
-    Start[Student Starts Exam] --> Render[Exam UI Rendered]
+    Start[Mahasiswa Memulai Ujian] --> Render[Tampilan Ujian Terbuka]
     Render --> Answering
     
-    subgraph Answering [Exam Session]
-        Input[Student Input]
-        TabSwitch{Switches Tab/App?}
-        Paste{Tries to Paste?}
-        Violation[Increment Violation Count]
-        Warn[Show Warning]
-        ForceSubmit[Auto-Submit Exam]
-        Blocked[Action Blocked]
+    subgraph Answering [Sesi Ujian]
+        Input[Input Jawaban]
+        TabSwitch{Pindah Tab/Aplikasi?}
+        Paste{Mencoba Paste?}
+        Violation[Hitung Pelanggaran]
+        Warn[Tampilkan Peringatan]
+        ForceSubmit[Kumpul Otomatis]
+        Blocked[Aksi Diblokir]
         
         Input --> TabSwitch
         Input --> Paste
         
-        Paste -->|Yes| Blocked --> Input
-        TabSwitch -->|Yes| Violation
+        Paste -->|Ya| Blocked --> Input
+        TabSwitch -->|Ya| Violation
         
-        Violation -->|Count < 3| Warn --> Input
-        Violation -->|Count >= 3| ForceSubmit
+        Violation -->|Jumlah < 3| Warn --> Input
+        Violation -->|Jumlah >= 3| ForceSubmit
     end
     
-    Answering -->|Manual Submit| Submit[Submit to API]
-    ForceSubmit -->|Fatal Violation| Submit
+    Answering -->|Kumpul Manual| Submit[Kirim ke API]
+    ForceSubmit -->|Pelanggaran Maksimal| Submit
     
-    Submit --> Calc[Calculate PG/TF Scores]
-    Calc --> AI_Eval[Send Essays to Gemini AI]
+    Submit --> Calc[Hitung Nilai PG/Benar-Salah]
+    Calc --> AI_Eval[Kirim Essay ke AI]
     
-    AI_Eval --> AI_Check{Is AI-Generated / Copied?}
-    AI_Check -->|Yes| Score0[Give Score 0]
-    AI_Check -->|No| ScoreNormal[Calculate Normal Score]
-    
-    Score0 --> Finish[Done]
-    ScoreNormal --> Finish
+    AI_Eval --> Finish[Selesai]
 ```
 
-## 🔄 Activity Diagram: AI-Powered Material Generation
+## 🔄 Activity Diagram: Bantuan Penilaian AI (Auto-Grading)
 
-This diagram shows how lecturers can use the built-in AI assistant to generate comprehensive course materials based on syllabuses (RPS):
+Alur penggunaan AI oleh dosen untuk membantu memberikan penilaian jawaban essay mahasiswa:
 
 ```mermaid
 flowchart TD
-    Start[Lecturer inputs Syllabus Topic] --> API[Backend API Processing]
-    API --> Gemini[Send Prompt to Google Gemini AI]
-    Gemini --> Generate[Generate Formatted HTML Textbook]
-    Generate --> DB[Save to Database]
-    DB --> Draft[Show Draft to Lecturer]
-    Draft --> Edit[Lecturer Refines / Edits]
-    Edit --> Publish[Publish Material to Students]
-```
-
-## 🔄 Activity Diagram: AI-Powered Assignment Grading
-
-This diagram details the workflow of how lecturers utilize AI to grade student assignments and essays instantly:
-
-```mermaid
-flowchart TD
-    Start[Student Submits Assignment] --> Panel[Lecturer Opens Grading Panel]
-    Panel --> Click[Clicks 'AI Auto-Grade']
-    Click --> Send[Send Answer & Key to Gemini AI]
+    Start[Mahasiswa Mengumpulkan Tugas] --> Panel[Dosen Membuka Penilaian]
+    Panel --> Click[Klik 'Gunakan AI']
+    Click --> Send[Kirim Jawaban & Kunci ke AI]
     
-    subgraph GeminiEval [Gemini AI Evaluation]
-        Check[Analyze for AI/Copy-Paste]
-        Decision{Is Plagiarized?}
-        Score0[Assign Score 0]
-        Analyze[Analyze Content Accuracy]
-        Score[Calculate Objective Score]
-        Feedback[Generate Constructive Feedback]
+    subgraph GeminiEval [Evaluasi AI]
+        Analyze[Analisis Kesesuaian Konteks]
+        Score[Saran Nilai Objektif]
+        Feedback[Buat Masukan Singkat]
         
-        Check --> Decision
-        Decision -->|Yes| Score0
-        Decision -->|No| Analyze --> Score --> Feedback
+        Analyze --> Score --> Feedback
     end
     
     Send --> GeminiEval
-    Score0 --> API_Return[Return JSON Result to API]
-    Feedback --> API_Return
+    Feedback --> API_Return[Kembalikan Hasil ke API]
     
-    API_Return --> Display[Show Suggested Score to Lecturer]
-    Display --> Approve[Lecturer Approves/Adjusts]
-    Approve --> Save[Save Final Score to Database]
+    API_Return --> Display[Tampilkan Saran Nilai ke Dosen]
+    Display --> Approve[Dosen Menyetujui/Mengubah]
+    Approve --> Save[Simpan Nilai Akhir ke Database]
 ```
 
-## 📈 Performance & Security Benchmarks
+## ⚙️ System Design & Security Posture
 
-To ensure **High Availability (HA)** and enterprise-grade security during peak traffic events (such as concurrent university-wide examinations), the system architecture has been stress-tested and hardened with the following results:
+Sistem ini dirancang dengan mengutamakan prinsip *defense-in-depth* dan *fault tolerance* untuk memastikan reliabilitas saat menghadapi beban konkuren tinggi (misalnya saat ujian serentak) serta memitigasi celah keamanan standar.
 
-- **High Throughput & Concurrency:** Benchmarked using `autocannon`, the Nginx reverse-proxy and Node.js API sustained **~3,000 requests in 12 seconds** (~291 Req/Sec) under a sustained heavy payload with a median latency of **243ms** and a **0% Error Rate**.
-- **DDoS Mitigation & WAF Integration:** Successfully demonstrated Layer 7 volumetric attack resilience. When simulating a flood of 3,000 concurrent socket connections from a single IP origin, the Cloudflare infrastructure actively dropped the traffic (Timeouts/Connection Refused) to shield the origin server, ensuring legitimate connections remained uninterrupted.
-- **Client-Side Request Jittering & Optimization:** Implemented deterministic request jittering and exponential backoff mechanisms in the React frontend. This effectively mitigates the "Thundering Herd" problem when hundreds of students log in or submit exams at the exact same millisecond.
-- **Zero-Tolerance Anti-Cheat Engine:** Engineered a reactive event-listener architecture to mitigate cheating vectors. It features strict browser-level DOM manipulation locks (disabling copy, paste, drag-and-drop), Window Focus/Visibility tracking with a 3-strike Auto-Submit penalty, and an AI-driven NLP pipeline to detect LLM-generated semantic patterns in essay responses.
-
-## 🛡️ API & AI Security Defense Layers
-
-To guarantee academic integrity and protect the application from sophisticated network-level exploits, the system utilizes a multi-layered defense architecture:
-
-1. **Payload Data Stripping (Anti-Leak):** The `GET` endpoints are strictly sanitized. When a student fetches their exam data, the `correct_answer` field is mathematically purged from the JSON payload at the Node.js level. It is physically impossible to find answers via Browser DevTools or Network Inspections.
-2. **Server-Side Scoring Verification:** Points calculation is strictly handled by the backend. The frontend merely sends the selected option (A/B/C/D). The backend dynamically validates this against the database to prevent payload manipulation (e.g., stopping attackers from injecting `{"score": 100}`).
-3. **Role-Based Access Control (RBAC) & JWT Integrity:** All sensitive endpoints (e.g., Grading, Exam Controls) are shielded by JWT middlewares that decode and verify the cryptographic signature. A student token attempting to hit a Lecturer endpoint will immediately result in a `403 Forbidden` drop.
-4. **Prepared Statement Architecture (Anti-SQLi):** The PostgreSQL database interaction strictly utilizes parameterized queries across the entire codebase, inherently neutralizing 100% of SQL Injection attempts (`1' OR '1'='1`).
+- **Mitigasi *Thundering Herd* (Client-Side Jittering)**: Diimplementasikan algoritma *randomized jitter* pada *frontend* saat ratusan klien memulai ujian secara bersamaan. Hal ini mendistribusikan *request rate* secara merata dalam rentang waktu tertentu, mencegah *CPU spike* dan *connection timeout* pada API Gateway.
+- **Data Minimization & DTO Mapping**: Proses *serialization* data ujian menggunakan pemetaan *Data Transfer Object* (DTO) yang ketat pada *service layer*. *Field* sensitif seperti `correct_answer` secara sistematis di-*strip* (dihapus) sebelum *payload* dikirim melalui jaringan, menjamin *zero-leakage* melalui inspeksi *Network Tab* klien.
+- **Offline-First Resilience**: Untuk menanggulangi *intermittent network partitions* (koneksi terputus tiba-tiba), *client architecture* memanfaatkan IndexedDB dan *localStorage* untuk menyimpan *state* ujian sementara. *Payload* jawaban dimasukkan ke dalam antrean lokal (*queue*) dan akan di-*sync* (rekonsiliasi state) secara asinkron ketika konektivitas pulih.
+- **State Integrity & Zero Trust**: Menggunakan pendekatan *zero-trust* terhadap input dari klien. Seluruh *state mutation* kritikal (seperti perhitungan skor) dieksekusi secara eksklusif di *server-side*. Klien hanya mengirimkan *event action* (abjad jawaban), sehingga manipulasi *client-side state* tidak akan memengaruhi *ground truth* di database.
+- **Access Control & Sanitization**: Otentikasi dan otorisasi ditegakkan pada tingkat *middleware* menggunakan JWT (*stateless auth*) dengan RBAC (*Role-Based Access Control*). *Data Access Layer* menggunakan *parameterized queries* secara komprehensif untuk mencegah kerentanan injeksi SQL.
 
 ## 🛠️ Tech Stack
 
 **Frontend (Client)**
 * **Framework**: React.js (Vite)
-* **UI/UX**: CSS 3 (Glassmorphism design language), Bootstrap/Tailwind, Lucide Icons.
-* **Features**: Progressive Web App (PWA) ready, Offline-First capabilities, Firebase Cloud Messaging (FCM) integration.
+* **Styling**: CSS / Bootstrap, Lucide Icons.
+* **Fitur Tambahan**: Progressive Web App (PWA) ready, *Offline-First caching* sederhana, integrasi Firebase Cloud Messaging (FCM).
 
 **Backend (API)**
-* **Framework**: Node.js with Express.js
-* **Database**: PostgreSQL
-* **Authentication**: JSON Web Token (JWT) + bcryptjs
-* **AI Integration**: Google Generative AI SDK (`@google/generative-ai`) featuring a highly reliable *Key Rotation* & *Retry Mechanism*.
-* **Document Generator**: `docx` library.
+* **Framework**: Node.js dengan Express.js
+* **Database**: PostgreSQL (atau SQLite)
+* **Authentication**: JSON Web Token (JWT) & bcryptjs
+* **Integrasi AI**: Google Generative AI SDK (`@google/generative-ai`).
+* **Dokumen Generator**: library `docx`.
 
-## 🚀 Installation & Running Locally
+## 🚀 Instalasi & Menjalankan Lokal
 
-Ensure you have **Node.js** and **PostgreSQL** installed.
+Pastikan Anda telah menginstal **Node.js** dan **PostgreSQL/SQLite** di perangkat Anda.
 
 ### 1. Clone Repository
 ```bash
@@ -207,35 +173,35 @@ git clone https://github.com/dwikrisnandi/saiakd-dkn.git
 cd saiakd-dkn
 ```
 
-### 2. Backend Setup (API)
+### 2. Setup Backend (API)
 ```bash
 cd api
 npm install
 ```
-Configure environment variables. Create a `.env` file inside the `api` folder:
+Konfigurasi *environment variables*. Buat file `.env` di dalam folder `api`:
 ```env
 PORT=3000
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=your_db_password
+DB_PASSWORD=password_db_anda
 DB_NAME=siakad
-JWT_SECRET=your_super_secret_key
-GEMINI_API_KEY_1=your_google_gemini_api_key
+JWT_SECRET=rahasia_jwt_anda
+GEMINI_API_KEY_1=api_key_gemini_anda
 ```
-Start the server:
+Jalankan server:
 ```bash
 npm start
 ```
 
-### 3. Frontend Setup (Client)
-Open a new terminal:
+### 3. Setup Frontend (Client)
+Buka terminal baru:
 ```bash
 cd client
 npm install
 npm run dev
 ```
-The frontend application will be running at `http://localhost:5173`.
+Aplikasi frontend akan berjalan di `http://localhost:5173`.
 
-## 📜 License & Copyright
-Developed by **Dwi Krisnandi**. All rights reserved regarding architecture and source code.
+## 📜 Lisensi & Hak Cipta
+Dikembangkan oleh **Dwi Krisnandi**.
