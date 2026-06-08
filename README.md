@@ -3,7 +3,6 @@
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
 
 A modern, production-ready Academic Information System (SIAKAD) architected to streamline university operations. Integrated with the Google Gemini AI ecosystem, this platform automates grading, enhances academic integrity, and provides 24/7 intelligent assistance for students and faculty.
 
@@ -50,7 +49,7 @@ flowchart TD
 
     subgraph ServerSide [Backend API]
         API[Node.js / Express API]
-        DB[(PostgreSQL / SQLite)]
+        DB[(PostgreSQL)]
         API -->|Parameterized Queries| DB
     end
 
@@ -88,7 +87,7 @@ To ensure data integrity and system reliability during high-concurrency events (
 
 **Backend**
 * Node.js / Express.js
-* PostgreSQL & SQLite3 (Native drivers)
+* PostgreSQL (Native driver)
 * JSON Web Token (JWT) + bcryptjs
 
 **AI & Utilities**
@@ -99,7 +98,7 @@ To ensure data integrity and system reliability during high-concurrency events (
 
 ## 🚀 Local Development Setup
 
-Ensure you have **Node.js (v18+)** and **PostgreSQL/SQLite** installed on your local machine.
+Ensure you have **Node.js (v18+)** and **PostgreSQL** installed on your local machine.
 
 ### 1. Clone the Repository
 ```bash
