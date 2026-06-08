@@ -1,98 +1,55 @@
-# SIAKAD DKN: AI-Powered Academic Information System 🎓
+# SIAKAD DKN: Academic Information & CBT System 🎓
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
-A modern, production-ready Academic Information System (SIAKAD) architected to streamline university operations. Integrated with the Google Gemini AI ecosystem, this platform automates grading, enhances academic integrity, and provides 24/7 intelligent assistance for students and faculty.
+A lightweight, production-ready Academic Information System (SIAKAD) paired with a Computer-Based Test (CBT) engine. Engineered with a focus on simplicity, raw performance, and practical AI integrations to streamline operations for lecturers and students.
 
-> **Status:** Active in production. Currently handling daily academic operations, real-time examinations, and student management for a higher education institution.
+> **Status:** Active in production. Currently serving real-time examinations, attendance tracking, and student management for an active academic institution.
 
 ---
 
 ## 📸 System Previews
 
-*(Replace these placeholders with actual screenshots or GIFs of your application)*
-
-| Lecturer Dashboard | Student Exam Interface | AI Chatbot "Pak Dwi" |
+| Lecturer Dashboard | CBT & Anti-Cheat UI | AI Chatbot "Pak Dwi" |
 |:---:|:---:|:---:|
 | <img src="link_to_image1.png" width="250" alt="Lecturer Dashboard"/> | <img src="link_to_image2.png" width="250" alt="Student Interface"/> | <img src="link_to_image3.png" width="250" alt="AI Chatbot"/> |
 
 ---
 
-## ✨ Key Features
+## ✨ Key Features & Architecture
 
-### 🧑‍🏫 Faculty & Lecturer Operations
-- **Comprehensive Class Management**: End-to-end management of lecture schedules, syllabuses (RPS), and attendance tracking.
-- **AI-Assisted Material & Exam Generation**: Leverage LLMs to summarize curriculum topics into structured HTML modules and bulk-generate contextual exam questions.
-- **Automated Essay Evaluation**: Built-in AI grading engine that evaluates student essays, provides instant constructive feedback, and flags potential AI-generated or plagiarized submissions.
-- **One-Click Export**: Generate print-ready DOCX files for examination archives with dynamic institutional headers.
+### 1. Computer-Based Test (CBT) & Exam Integrity
+Built to handle concurrent examination sessions with built-in academic integrity controls:
+- **Client-Side Request Jittering**: When hundreds of students press "Start Exam" at the exact same time, the frontend applies a randomized delay (jitter). This staggers the API calls, preventing Node.js event-loop bottlenecks and database connection exhaustion.
+- **Payload Sanitization**: Exam keys are strictly stripped from the JSON response at the Express route level. It is impossible for students to find the correct answers via DevTools or Network interception.
+- **Visibility-Based Anti-Cheat**: Utilizes the browser's Page Visibility API. If a student leaves the active exam tab (e.g., switching to Google or WhatsApp) more than a configured threshold (3 times), the system automatically force-submits their exam payload to the server.
 
-### 👨‍🎓 Student Experience
-- **Unified Academic Portal**: Real-time access to schedules, grades (KHS), assignments, and lecture materials.
-- **Proactive Exam Integrity (CBT)**: A secure examination environment featuring clipboard restrictions, tab-switching detection, and automated force-submission policies to maintain academic honesty.
-- **"Pak Dwi" AI Academic Advisor**: A fine-tuned 24/7 contextual chatbot designed to guide students through course materials based on the active syllabus, strictly filtered to prevent direct assignment resolution.
+### 2. Pragmatic AI Integration
+Integrates the Google Gemini API to solve real operational bottlenecks, equipped with automatic API key-rotation to handle quota limits:
+- **Essay Auto-Grading**: Sends student essay answers alongside the lecturer's answer key to Gemini, returning a suggested score and brief contextual feedback.
+- **Curriculum to Content Generation**: Allows lecturers to bulk-generate reading materials and multiple-choice question drafts directly from syllabus (RPS) topics.
+- **Academic Chatbot**: A contextual assistant ("Pak Dwi") strictly prompted to guide students on coursework without outright giving them the answers to assignments.
 
----
-
-## 🏛️ System Architecture
-
-Built on a decoupled client-server architecture to ensure scalability and maintainability.
-
-```mermaid
-flowchart TD
-    subgraph ClientSide [Frontend]
-        Client[React.js SPA / PWA]
-        LocalDB[(Local Cache)]
-        Client -.->|State Hydration| LocalDB
-    end
-
-    subgraph ServerSide [Backend API]
-        API[Node.js / Express API]
-        DB[(PostgreSQL)]
-        API -->|Parameterized Queries| DB
-    end
-
-    subgraph ExternalServices [3rd Party Services]
-        AI[Google Gemini SDK]
-        FCM[Firebase Push Notifications]
-    end
-
-    Client <-->|REST API / JWT Auth| API
-    API <-->|Contextual Prompts| AI
-    API -.->|Async Events| FCM
-    FCM -.->|Alerts| Client
-```
-
----
-
-## 📈 Security & Implementation Standards
-
-To ensure data integrity and system reliability during high-concurrency events (e.g., university-wide midterm exams), the application implements robust engineering practices:
-
-- **Data Access Layer Security**: Mitigates SQL injection risks globally by exclusively utilizing parameterized statements and native query bindings across the data layer.
-- **API Defense Mechanisms**: Implements strict Role-Based Access Control (RBAC) via cryptographically signed JWTs. Features payload stripping at the controller level to ensure sensitive data (e.g., correct exam answers) is never exposed to the client network tab.
-- **Frontend Integrity**: Utilizes the Page Visibility API and DOM event listeners to restrict unauthorized copy-pasting and track application focus during active exam sessions.
-- **Resilient AI Integration**: The Google Generative AI SDK wrapper is engineered with an intelligent key-rotation system and exponential backoff retry mechanisms to prevent service disruption during rate limits.
-- **Production Infrastructure**: The live environment is battle-tested behind a Web Application Firewall (WAF) to mitigate Layer 7 volumetric anomalies.
+### 3. Deliberate Data Layer Design (No ORM)
+- **Raw SQL for Performance**: Instead of relying on heavy Object-Relational Mappers (ORMs), the application utilizes the native `pg` driver with raw, parameterized SQL queries. This deliberate choice eliminates abstraction overhead, allows for precise index tuning, and guarantees maximum query execution speed.
+- **Injection Prevention**: 100% of the queries use strict parameter binding (e.g., `WHERE id = $1`), categorically preventing SQL injection vectors without needing a complex query builder.
 
 ---
 
 ## 🛠️ Tech Stack
 
 **Frontend**
-* React.js (Vite)
-* Bootstrap / Custom CSS
-* Progressive Web App (PWA) configuration
+* **Framework**: React.js (Vite) for fast HMR and optimized builds.
+* **Styling**: Bootstrap & Custom CSS (Glassmorphism UI).
+* **Caching**: IndexedDB & LocalStorage for offline-first exam persistence.
 
 **Backend**
-* Node.js / Express.js
-* PostgreSQL (Native driver)
-* JSON Web Token (JWT) + bcryptjs
-
-**AI & Utilities**
-* `@google/generative-ai`
-* `docx` (Document Generation)
+* **Runtime**: Node.js / Express.js.
+* **Database**: PostgreSQL (Native `pg` driver).
+* **Auth**: JSON Web Tokens (JWT) & bcryptjs for stateless authentication.
+* **Integrations**: `@google/generative-ai` for LLM features and `docx` for generating print-ready exam documents.
 
 ---
 
