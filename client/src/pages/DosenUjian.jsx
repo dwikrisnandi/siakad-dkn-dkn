@@ -162,6 +162,18 @@ export default function DosenUjian() {
     }
   };
 
+  const handleSyncGrades = async (examOverride) => {
+    const targetExam = examOverride || activeExam;
+    if (!targetExam) return;
+    if (!window.confirm(`Kirim semua nilai ${targetExam.type} ini ke Modul Nilai Akhir? Nilai yang ada di Modul Nilai Akhir akan ditimpa dengan hasil ini.`)) return;
+    try {
+      const res = await api.post(`/exams/${targetExam.id}/sync-grades`);
+      alert(res.data.message);
+    } catch (e) {
+      alert(e.response?.data?.error || 'Gagal sinkronisasi nilai');
+    }
+  };
+
   const handleImportBank = async () => {
     if (selectedBankIds.length === 0) return alert('Pilih minimal 1 soal');
     setImportingBank(true);
@@ -200,7 +212,10 @@ export default function DosenUjian() {
     <div className="animate-fade-in">
       <div className="d-flex align-items-center gap-3 mb-4">
         <button className="btn btn-sm btn-outline-secondary" onClick={() => setView('list')}><ArrowLeft size={16} /></button>
-        <div><h3 className="fw-bold mb-0">Peserta & Hasil Ujian</h3><small className="text-muted">{activeExam?.title}</small></div>
+        <div className="flex-grow-1"><h3 className="fw-bold mb-0">Peserta & Hasil Ujian</h3><small className="text-muted">{activeExam?.title}</small></div>
+        <button className="btn btn-success fw-bold d-flex align-items-center gap-2 shadow-sm" onClick={handleSyncGrades}>
+          <Database size={18} /> Kirim Nilai ke Modul Nilai Akhir
+        </button>
       </div>
       <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
         <div className="table-responsive">
@@ -537,6 +552,7 @@ export default function DosenUjian() {
                     </div>
                     <div className="d-flex flex-wrap gap-2">
                       <button className="btn btn-sm btn-outline-warning text-dark" onClick={() => openStudents(exam)}><Users size={14} className="me-1" />Peserta & Hasil</button>
+                      <button className="btn btn-sm btn-outline-success" onClick={() => handleSyncGrades(exam)}><Database size={14} className="me-1" />Kirim Nilai</button>
                       <button className="btn btn-sm btn-outline-primary" onClick={() => openManage(exam)}><Edit3 size={14} className="me-1" />Kelola Soal</button>
                       <button className={`btn btn-sm ${exam.is_active ? 'btn-success' : 'btn-outline-secondary'}`} onClick={() => handleToggle(exam)}>
                         {exam.is_active ? <ToggleRight size={14} className="me-1" /> : <ToggleLeft size={14} className="me-1" />}

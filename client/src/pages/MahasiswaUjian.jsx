@@ -221,12 +221,12 @@ export default function MahasiswaUjian() {
     if (view !== 'exam' || !activeExam) return;
 
     let idleTimer;
-    const IDLE_TIME_MS = 2000; // 2 Detik (sesuai permintaan, walau sangat ekstrem)
+    const IDLE_TIME_MS = 5000; // 5 Detik
 
     const resetIdleTimer = () => {
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
-        alert('⏱️ TERDETEKSI DIAM (TIDAK ADA AKTIVITAS)!\n\nKarena Anda diam selama 2 detik, sistem menduga Anda sedang melihat layar lain (HP / AI). Sesi ujian Anda dikunci sementara.\n\nSilakan masukkan TOKEN ujian kembali untuk melanjutkan.');
+        alert('⏱️ TERDETEKSI DIAM (TIDAK ADA AKTIVITAS)!\n\nKarena Anda diam selama 5 detik, sistem menduga Anda sedang melihat layar lain (HP / AI). Sesi ujian Anda dikunci sementara.\n\nSilakan masukkan TOKEN ujian kembali untuk melanjutkan.');
         setView('list'); // Melempar mahasiswa keluar ke daftar ujian (butuh token untuk masuk lagi)
       }, IDLE_TIME_MS); 
     };

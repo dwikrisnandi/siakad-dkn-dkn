@@ -344,6 +344,15 @@ router.get('/grades/:scheduleId', [verifyToken], async (req, res) => {
     const [totalAssignmentRows] = await query('SELECT COUNT(*) as total FROM assignments WHERE schedule_id = ?', [scheduleId]);
     const totalAssignments = totalAssignmentRows[0]?.total || 0;
 
+    // Cek apakah seluruh kelas sudah ada nilai UTS/UAS
+    const [kelasGrades] = await query('SELECT SUM(nilai_uts) as total_uts, SUM(nilai_uas) as total_uas FROM course_grades WHERE schedule_id = ?', [scheduleId]);
+    const isUtsExist = (kelasGrades[0]?.total_uts || 0) > 0;
+    const isUasExist = (kelasGrades[0]?.total_uas || 0) > 0;
+    
+    let totalWeight = 0.3; // 10% Kehadiran + 20% Tugas
+    if (isUtsExist) totalWeight += 0.3;
+    if (isUasExist) totalWeight += 0.4;
+
     const result = [];
     for (const st of students) {
       const mhsId = st.mahasiswa_id;
@@ -369,6 +378,7 @@ router.get('/grades/:scheduleId', [verifyToken], async (req, res) => {
       const [gradeRows] = await query('SELECT nilai_uts, nilai_uas FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
       if (gradeRows.length > 0) { uts = gradeRows[0].nilai_uts; uas = gradeRows[0].nilai_uas; }
 
+      const baseScore = (kehadiran * 0.1) + (avgTugas * 0.2) + (isUtsExist ? uts * 0.3 : 0) + (isUasExist ? uas * 0.4 : 0);
       result.push({
         mahasiswa_id: mhsId,
         mahasiswa_nim: st.mahasiswa_nim,
@@ -377,7 +387,7 @@ router.get('/grades/:scheduleId', [verifyToken], async (req, res) => {
         tugas: avgTugas,
         uts,
         uas,
-        final_score: Math.round((kehadiran * 0.1) + (avgTugas * 0.2) + (uts * 0.3) + (uas * 0.4))
+        final_score: Math.round(baseScore / totalWeight)
       });
     }
 

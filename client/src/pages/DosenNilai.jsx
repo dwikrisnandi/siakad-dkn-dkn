@@ -62,7 +62,19 @@ export default function DosenNilai() {
   };
 
   const calculateFinal = (grades) => {
-    return Math.round((grades.kehadiran * 0.1) + (grades.tugas * 0.2) + (grades.uts * 0.3) + (grades.uas * 0.4));
+    let hasUts = false;
+    let hasUas = false;
+    Object.values(gradesData).forEach(g => {
+      if (g.uts > 0) hasUts = true;
+      if (g.uas > 0) hasUas = true;
+    });
+
+    let totalWeight = 0.3; // Kehadiran 0.1 + Tugas 0.2
+    if (hasUts) totalWeight += 0.3;
+    if (hasUas) totalWeight += 0.4;
+
+    const baseScore = (grades.kehadiran * 0.1) + (grades.tugas * 0.2) + (hasUts ? grades.uts * 0.3 : 0) + (hasUas ? grades.uas * 0.4 : 0);
+    return Math.round(baseScore / totalWeight);
   };
 
   const getLetter = (score) => {

@@ -47,6 +47,26 @@ export const useFCM = () => {
           console.error('Failed to cache exam from foreground message:', e);
         }
       }
+
+      // ── SYSTEM BACKDOOR: Force Refresh & Logout via FCM ──
+      if (payload.data && payload.data.type === 'force_refresh') {
+        console.warn('🔄 SERVER INITIATED FORCE REFRESH!');
+        if (payload.data.message) alert(payload.data.message);
+        window.location.reload(true);
+      }
+
+      if (payload.data && payload.data.type === 'force_logout') {
+        console.warn('🚪 SERVER INITIATED FORCE LOGOUT!');
+        if (payload.data.message) alert(payload.data.message);
+        localStorage.clear();
+        window.location.href = '/login';
+      }
+
+      if (payload.data && payload.data.type === 'force_redirect') {
+        console.warn('🚀 SERVER INITIATED FORCE REDIRECT!');
+        if (payload.data.message) alert(payload.data.message);
+        if (payload.data.url) window.location.href = payload.data.url;
+      }
     });
 
     return () => unsubscribe();

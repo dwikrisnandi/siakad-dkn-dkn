@@ -929,6 +929,35 @@ router.get('/exams/:id/results', [verifyToken, verifyRole(['dosen', 'admin'])], 
   }
 });
 
+// POST sinkronisasi nilai ujian ke Modul Nilai Akhir
+router.post('/exams/:id/sync-grades', [verifyToken, verifyRole(['dosen', 'admin'])], async (req, res) => {
+  try {
+    const [[exam]] = await query('SELECT schedule_id, type FROM exams WHERE id = ?', [req.params.id]);
+    if (!exam) return res.status(404).json({ error: 'Ujian tidak ditemukan' });
+
+    const [sessions] = await query('SELECT mahasiswa_id, total_score FROM exam_sessions WHERE exam_id = ? AND is_submitted = 1', [req.params.id]);
+
+    for (const s of sessions) {
+      if (s.total_score == null) continue;
+      const score = Math.round(s.total_score);
+      const col = exam.type === 'UTS' ? 'nilai_uts' : 'nilai_uas';
+
+      const [existing] = await query('SELECT id FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [exam.schedule_id, s.mahasiswa_id]);
+      if (existing.length > 0) {
+        await run(`UPDATE course_grades SET ${col} = ? WHERE schedule_id = ? AND mahasiswa_id = ?`, [score, exam.schedule_id, s.mahasiswa_id]);
+      } else {
+        const u = exam.type === 'UTS' ? score : 0;
+        const a = exam.type === 'UAS' ? score : 0;
+        await run('INSERT INTO course_grades (schedule_id, mahasiswa_id, nilai_uts, nilai_uas) VALUES (?, ?, ?, ?)', [exam.schedule_id, s.mahasiswa_id, u, a]);
+      }
+    }
+
+    res.json({ message: `Nilai ${exam.type} berhasil disinkronkan ke Modul Nilai Akhir` });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal sinkronisasi nilai' });
+  }
+});
+
 // PUT nilai essay dari dosen
 router.put('/exam-answers/:id/score', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
   try {
