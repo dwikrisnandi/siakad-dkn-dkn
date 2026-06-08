@@ -87,14 +87,14 @@ npm start
 ```
 *The API will be available at `http://localhost:3000`*
 
-### 3. Frontend Setup
+### 3. Frontend Setup (Vite)
 Open a new terminal window:
 ```bash
 cd client
 npm install
 npm run dev
 ```
-*The client application will run at `http://localhost:5173`*
+*The React client (powered by Vite) will automatically run at `http://localhost:5173`*
 
 ---
 
