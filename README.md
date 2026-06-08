@@ -103,8 +103,8 @@ Ensure you have **Node.js (v18+)** and **PostgreSQL/SQLite** installed on your l
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/dwikrisnandi/siakad-dkn.git
-cd siakad-dkn
+git clone https://github.com/dwikrisnandi/siakad-dkn-dkn.git
+cd siakad-dkn-dkn
 ```
 
 ### 2. Backend & Database Setup
