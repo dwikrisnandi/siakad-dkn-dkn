@@ -1,207 +1,147 @@
-# SIAKAD DKN 🎓
+# SIAKAD DKN: AI-Powered Academic Information System 🎓
 
-A web-based Academic Information System (SIAKAD) developed by **Dwi Krisnandi**. This application is equipped with basic Artificial Intelligence (AI) integrations to assist lecturers, students, and streamline academic operations.
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
+
+A modern, production-ready Academic Information System (SIAKAD) architected to streamline university operations. Integrated with the Google Gemini AI ecosystem, this platform automates grading, enhances academic integrity, and provides 24/7 intelligent assistance for students and faculty.
+
+> **Status:** Active in production. Currently handling daily academic operations, real-time examinations, and student management for a higher education institution.
+
+---
+
+## 📸 System Previews
+
+*(Replace these placeholders with actual screenshots or GIFs of your application)*
+
+| Lecturer Dashboard | Student Exam Interface | AI Chatbot "Pak Dwi" |
+|:---:|:---:|:---:|
+| <img src="link_to_image1.png" width="250" alt="Lecturer Dashboard"/> | <img src="link_to_image2.png" width="250" alt="Student Interface"/> | <img src="link_to_image3.png" width="250" alt="AI Chatbot"/> |
+
+---
 
 ## ✨ Key Features
 
-### 🧑‍🏫 Lecturer Module
-- **Class & Schedule Management**: Manage course schedules and record student attendance (Present, Sick, Excused, Absent).
-- **Materials & Assignments**: Distribute course materials and assign coursework to students.
-- **Online Examination (CBT)**: Create question banks and conduct online exams (Multiple Choice, True/False, and Essay). Equipped with basic anti-cheat mechanisms (detecting browser tab switching and blocking copy-paste operations).
-- **DOCX Export**: Generate and export exam questions into ready-to-print Microsoft Word documents.
-- **AI-Assisted Auto-Grading**: Utilizes Google Gemini integration to provide grading suggestions and brief feedback on student essay responses.
-- **AI Generator**: An AI assistant to summarize syllabuses into reading materials and generate bulk drafts of multiple-choice questions.
+### 🧑‍🏫 Faculty & Lecturer Operations
+- **Comprehensive Class Management**: End-to-end management of lecture schedules, syllabuses (RPS), and attendance tracking.
+- **AI-Assisted Material & Exam Generation**: Leverage LLMs to summarize curriculum topics into structured HTML modules and bulk-generate contextual exam questions.
+- **Automated Essay Evaluation**: Built-in AI grading engine that evaluates student essays, provides instant constructive feedback, and flags potential AI-generated or plagiarized submissions.
+- **One-Click Export**: Generate print-ready DOCX files for examination archives with dynamic institutional headers.
 
-### 👨‍🎓 Student Module
-- **Academic Dashboard**: View class schedules, attendance history, materials, and assignment calendars.
-- **Online Examination**: Take exams via a responsive interface. Includes threshold warnings; if a student frequently switches tabs or navigates away from the exam page, the system will automatically force-submit their exam.
-- **"Pak Dwi" Assistant Chatbot**: An AI-based chatbot feature allowing students to ask questions and discuss course materials.
+### 👨‍🎓 Student Experience
+- **Unified Academic Portal**: Real-time access to schedules, grades (KHS), assignments, and lecture materials.
+- **Proactive Exam Integrity (CBT)**: A secure examination environment featuring clipboard restrictions, tab-switching detection, and automated force-submission policies to maintain academic honesty.
+- **"Pak Dwi" AI Academic Advisor**: A fine-tuned 24/7 contextual chatbot designed to guide students through course materials based on the active syllabus, strictly filtered to prevent direct assignment resolution.
 
-### 🛡️ Admin Module
-- **User Management**: Manage Lecturer, Student, and Admin records.
-- **Curriculum Management**: Manage Faculties, Study Programs, Courses, and Classes.
-- **Transcripts & Grading (KHS)**: Generate exam results and student graduation documents.
+---
 
-## 🏛️ System Architecture (Block Diagram)
+## 🏛️ System Architecture
 
-The following diagram illustrates the high-level architecture of the system components:
+Built on a decoupled client-server architecture to ensure scalability and maintainability.
 
 ```mermaid
 flowchart TD
-    subgraph ClientSide [Client Side]
+    subgraph ClientSide [Frontend]
         Client[React.js SPA / PWA]
-        LocalDB[(Local Storage / Cache)]
-        Client -.->|Offline Mode| LocalDB
+        LocalDB[(Local Cache)]
+        Client -.->|State Hydration| LocalDB
     end
 
-    subgraph ServerSide [Server Side]
+    subgraph ServerSide [Backend API]
         API[Node.js / Express API]
-        DB[(PostgreSQL)]
-        API -->|Read/Write| DB
+        DB[(PostgreSQL / SQLite)]
+        API -->|Parameterized Queries| DB
     end
 
-    subgraph ExternalServices [External Services]
-        AI[Google Gemini AI]
-        FCM[Firebase Cloud Messaging]
+    subgraph ExternalServices [3rd Party Services]
+        AI[Google Gemini SDK]
+        FCM[Firebase Push Notifications]
     end
 
     Client <-->|REST API / JWT Auth| API
-    API <-->|API Calls / Prompts| AI
-    API -.->|Push Notifications| FCM
+    API <-->|Contextual Prompts| AI
+    API -.->|Async Events| FCM
     FCM -.->|Alerts| Client
 ```
 
-## 🗄️ Entity-Relationship Diagram (ERD)
+---
 
-Core database structure of SIAKAD DKN:
+## 📈 Security & Implementation Standards
 
-```mermaid
-erDiagram
-    USERS ||--o{ CLASS_ENROLLMENTS : enrolled_in
-    USERS ||--o{ EXAM_SESSIONS : takes
-    FACULTIES ||--o{ PROGRAMS : has
-    PROGRAMS ||--o{ COURSES : offers
-    COURSES ||--o{ CLASSES : scheduled_as
-    USERS ||--o{ CLASSES : teaches
-    CLASSES ||--o{ CLASS_ENROLLMENTS : contains
-    CLASSES ||--o{ SCHEDULES : has_sessions
-    CLASSES ||--o{ MATERIALS : has
-    CLASSES ||--o{ ASSIGNMENTS : has
-    SCHEDULES ||--o{ ATTENDANCES : records
-    SCHEDULES ||--o{ EXAMS : hosts
-    EXAMS ||--o{ EXAM_QUESTIONS : contains
-    EXAMS ||--o{ EXAM_SESSIONS : has
-    EXAMS ||--o{ EXAM_BLOCKS : blocks
-    EXAM_SESSIONS ||--o{ EXAM_ANSWERS : submits
-    EXAM_QUESTIONS ||--o{ EXAM_ANSWERS : answered_in
-```
+To ensure data integrity and system reliability during high-concurrency events (e.g., university-wide midterm exams), the application implements robust engineering practices:
 
-## 🔄 Activity Diagram: Student Exam Workflow
+- **Data Access Layer Security**: Mitigates SQL injection risks globally by exclusively utilizing parameterized statements and native query bindings across the data layer.
+- **API Defense Mechanisms**: Implements strict Role-Based Access Control (RBAC) via cryptographically signed JWTs. Features payload stripping at the controller level to ensure sensitive data (e.g., correct exam answers) is never exposed to the client network tab.
+- **Frontend Integrity**: Utilizes the Page Visibility API and DOM event listeners to restrict unauthorized copy-pasting and track application focus during active exam sessions.
+- **Resilient AI Integration**: The Google Generative AI SDK wrapper is engineered with an intelligent key-rotation system and exponential backoff retry mechanisms to prevent service disruption during rate limits.
+- **Production Infrastructure**: The live environment is battle-tested behind a Web Application Firewall (WAF) to mitigate Layer 7 volumetric anomalies.
 
-Online exam execution flow, including tab/screen monitoring logic during an active session:
-
-```mermaid
-flowchart TD
-    Start[Student Starts Exam] --> Render[Exam UI Rendered]
-    Render --> Answering
-    
-    subgraph Answering [Exam Session]
-        Input[Input Answer]
-        TabSwitch{Switch Tab/App?}
-        Paste{Attempt Paste?}
-        Violation[Increment Violation Count]
-        Warn[Show Warning]
-        ForceSubmit[Auto-Submit Exam]
-        Blocked[Action Blocked]
-        
-        Input --> TabSwitch
-        Input --> Paste
-        
-        Paste -->|Yes| Blocked --> Input
-        TabSwitch -->|Yes| Violation
-        
-        Violation -->|Count < 3| Warn --> Input
-        Violation -->|Count >= 3| ForceSubmit
-    end
-    
-    Answering -->|Manual Submit| Submit[Submit to API]
-    ForceSubmit -->|Max Violations| Submit
-    
-    Submit --> Calc[Calculate PG/TF Score]
-    Calc --> AI_Eval[Send Essays to AI]
-    
-    AI_Eval --> Finish[Done]
-```
-
-## 🔄 Activity Diagram: AI-Assisted Auto-Grading
-
-Workflow for lecturers utilizing AI to assist in grading student essay responses:
-
-```mermaid
-flowchart TD
-    Start[Student Submits Assignment] --> Panel[Lecturer Opens Grading Panel]
-    Panel --> Click[Click 'Use AI']
-    Click --> Send[Send Answer & Key to AI]
-    
-    subgraph GeminiEval [AI Evaluation]
-        Analyze[Analyze Contextual Accuracy]
-        Score[Suggest Objective Score]
-        Feedback[Generate Brief Feedback]
-        
-        Analyze --> Score --> Feedback
-    end
-    
-    Send --> GeminiEval
-    Feedback --> API_Return[Return Result to API]
-    
-    API_Return --> Display[Display Suggested Score to Lecturer]
-    Display --> Approve[Lecturer Approves/Adjusts]
-    Approve --> Save[Save Final Score to Database]
-```
-
-## ⚙️ System Design & Security Posture
-
-The system is designed with defense-in-depth and fault-tolerance principles to ensure reliability during concurrent load spikes (e.g., simultaneous exams) and to mitigate standard security vulnerabilities.
-
-- **Thundering Herd Mitigation (Client-Side Jittering)**: Implemented a randomized jitter algorithm on the frontend when hundreds of clients start an exam simultaneously. This evenly distributes the request rate over a specified time window, preventing CPU spikes and connection timeouts at the API Gateway.
-- **Data Minimization & DTO Mapping**: Exam data serialization utilizes strict Data Transfer Object (DTO) mapping at the service layer. Sensitive fields such as `correct_answer` are systematically stripped prior to payload dispatch over the network, ensuring zero-leakage via client-side Network Tab inspection.
-- **Offline-First Resilience**: To address intermittent network partitions, the client architecture leverages IndexedDB and localStorage to temporarily persist exam states. Answer payloads are queued locally and synchronized asynchronously once connectivity is restored.
-- **State Integrity & Zero Trust**: Employs a zero-trust approach toward client inputs. All critical state mutations (e.g., score calculations) are executed exclusively server-side. The client only transmits event actions (the selected option letter), ensuring that client-side state manipulation cannot alter the ground truth in the database.
-- **Access Control & Sanitization**: Authentication and authorization are enforced at the middleware tier using JSON Web Tokens (stateless auth) combined with Role-Based Access Control (RBAC). The Data Access Layer comprehensively uses parameterized queries to categorically prevent SQL injection vulnerabilities.
+---
 
 ## 🛠️ Tech Stack
 
-**Frontend (Client)**
-* **Framework**: React.js (Vite)
-* **Styling**: CSS / Bootstrap, Lucide Icons.
-* **Additional Features**: Progressive Web App (PWA) ready, basic Offline-First caching, Firebase Cloud Messaging (FCM) integration.
+**Frontend**
+* React.js (Vite)
+* Bootstrap / Custom CSS
+* Progressive Web App (PWA) configuration
 
-**Backend (API)**
-* **Framework**: Node.js with Express.js
-* **Database**: PostgreSQL (or SQLite)
-* **Authentication**: JSON Web Token (JWT) & bcryptjs
-* **AI Integration**: Google Generative AI SDK (`@google/generative-ai`).
-* **Document Generator**: `docx` library.
+**Backend**
+* Node.js / Express.js
+* PostgreSQL & SQLite3 (Native drivers)
+* JSON Web Token (JWT) + bcryptjs
 
-## 🚀 Installation & Running Locally
+**AI & Utilities**
+* `@google/generative-ai`
+* `docx` (Document Generation)
 
-Ensure you have **Node.js** and **PostgreSQL/SQLite** installed on your system.
+---
 
-### 1. Clone Repository
+## 🚀 Local Development Setup
+
+Ensure you have **Node.js (v18+)** and **PostgreSQL/SQLite** installed on your local machine.
+
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/dwikrisnandi/saiakd-dkn.git
-cd saiakd-dkn
+git clone https://github.com/dwikrisnandi/siakad-dkn.git
+cd siakad-dkn
 ```
 
-### 2. Backend Setup (API)
+### 2. Backend & Database Setup
 ```bash
 cd api
 npm install
 ```
-Configure environment variables by creating a `.env` file inside the `api` directory:
+
+Create a `.env` file in the `api` directory:
 ```env
 PORT=3000
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=your_db_password
-DB_NAME=siakad
-JWT_SECRET=your_jwt_secret
-GEMINI_API_KEY_1=your_gemini_api_key
+DB_PASSWORD=your_password
+DB_NAME=siakad_db
+JWT_SECRET=your_development_secret
+GEMINI_API_KEY_1=your_google_ai_studio_key
 ```
-Start the server:
+
+Start the API:
 ```bash
 npm start
 ```
+*The API will be available at `http://localhost:3000`*
 
-### 3. Frontend Setup (Client)
-Open a new terminal session:
+### 3. Frontend Setup
+Open a new terminal window:
 ```bash
 cd client
 npm install
 npm run dev
 ```
-The frontend application will run at `http://localhost:5173`.
+*The client application will run at `http://localhost:5173`*
 
-## 📜 License & Copyright
-Developed by **Dwi Krisnandi**.
+---
+
+## 📜 License
+Developed and architected by **Dwi Krisnandi**. 
+For business inquiries, deployment consultations, or white-label licensing, please reach out via GitHub issues or email.
