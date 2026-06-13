@@ -54,6 +54,7 @@ const MahasiswaTranskrip = React.lazy(
 	() => import("./pages/MahasiswaTranskrip"),
 );
 const MahasiswaSkripsi = React.lazy(() => import("./pages/MahasiswaSkripsi"));
+const RegisterCampus = React.lazy(() => import("./pages/RegisterCampus"));
 
 import InstallPWA from "./components/InstallPWA";
 import { useFCM } from "./hooks/useFCM";
@@ -70,7 +71,7 @@ function AppContent() {
 	useFCM();
 
 	// Daftar rute utama aplikasi (bukan tenant) untuk backward compatibility PWA
-	const knownRoutes = ["login", "admin", "dosen", "mahasiswa", "superadmin"];
+	const knownRoutes = ["login", "register", "admin", "dosen", "mahasiswa", "superadmin"];
 	
 	const pathParts = window.location.pathname.split("/");
 	const firstPath = pathParts[1] && pathParts[1] !== "" ? pathParts[1] : "";
@@ -95,6 +96,7 @@ function AppContent() {
 					<Routes>
 						<Route path="/" element={<LandingPage />} />
 						<Route path="/login" element={<Login />} />
+						<Route path="/register" element={<RegisterCampus />} />
 
 						{/* Super Admin Routes */}
 						<Route

@@ -22,5 +22,22 @@
     "title": "Install App",
     "desc": "Install this app on your phone for faster access and real-time notifications.",
     "button": "Install Now"
+  },
+  "register": {
+    "title": "Register Your Campus",
+    "subtitle": "Choose a plan that fits your campus needs and start your 14-day free trial.",
+    "campus_info": "Campus Information",
+    "campus_name": "Campus Name",
+    "campus_slug": "Campus Slug (URL)",
+    "country": "Country",
+    "admin_info": "Admin Information",
+    "admin_nidn": "Admin NIDN / ID",
+    "admin_name": "Admin Full Name",
+    "admin_password": "Password",
+    "select_plan": "Select Subscription Plan",
+    "max_students": "Max Students",
+    "submit": "Register Now",
+    "success": "Registration successful! You can now log in.",
+    "error": "An error occurred during registration."
   }
 }

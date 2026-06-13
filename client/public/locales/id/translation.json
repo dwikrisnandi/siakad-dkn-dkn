@@ -22,5 +22,22 @@
     "title": "Install App",
     "desc": "Install aplikasi ini di HP Anda untuk akses lebih cepat dan notifikasi real-time.",
     "button": "Install Sekarang"
+  },
+  "register": {
+    "title": "Daftarkan Kampus Anda",
+    "subtitle": "Pilih paket yang sesuai dengan kebutuhan kampus Anda dan mulai uji coba gratis 14 hari.",
+    "campus_info": "Informasi Kampus",
+    "campus_name": "Nama Kampus",
+    "campus_slug": "Slug Kampus (Subdomain URL)",
+    "country": "Negara",
+    "admin_info": "Informasi Admin",
+    "admin_nidn": "NIDN / ID Admin",
+    "admin_name": "Nama Lengkap Admin",
+    "admin_password": "Password Admin",
+    "select_plan": "Pilih Paket Langganan",
+    "max_students": "Maks Mahasiswa",
+    "submit": "Daftar Sekarang",
+    "success": "Pendaftaran kampus berhasil! Anda sekarang bisa login.",
+    "error": "Terjadi kesalahan saat mendaftarkan kampus."
   }
 }
