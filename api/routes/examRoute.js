@@ -1046,7 +1046,10 @@ router.post('/exams/:id/blocks', [verifyToken, verifyRole(['dosen', 'admin'])], 
   try {
     const { mahasiswa_id, is_blocked } = req.body;
     if (is_blocked) {
-      await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?) ON CONFLICT (exam_id, mahasiswa_id) DO NOTHING', [req.params.id, mahasiswa_id]);
+      const [existing] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [req.params.id, mahasiswa_id]);
+      if (existing.length === 0) {
+        await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?)', [req.params.id, mahasiswa_id]);
+      }
     } else {
       await run('DELETE FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [req.params.id, mahasiswa_id]);
     }
@@ -1110,7 +1113,7 @@ router.post('/exam-sessions/:examId/start', [verifyToken, verifyRole(['mahasiswa
     // Cek apakah mahasiswa diblokir dari ujian ini
     const [blocked] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [examId, mahasiswaId]);
     if (blocked.length > 0) {
-      return res.status(403).json({ error: 'Maaf, Anda tidak diizinkan untuk mengikuti ujian ini' });
+      return res.status(403).json({ error: '🚨 AKSES DITOLAK! Anda telah diblokir karena terdeteksi melakukan kecurangan (Pindah tab/Aplikasi). Silakan menghadap Dosen Pengawas sekarang juga untuk membuka blokir!' });
     }
 
     // Cek apakah sudah ada sesi
@@ -1136,6 +1139,21 @@ router.post('/exam-sessions/:examId/start', [verifyToken, verifyRole(['mahasiswa
     res.status(201).json({ message: 'Sesi ujian dimulai', session_id: result.id });
   } catch (e) {
     res.status(500).json({ error: 'Gagal memulai sesi ujian' });
+  }
+});
+
+// POST: catat pelanggaran oleh mahasiswa (self-block)
+router.post('/exam-sessions/:examId/violation', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
+  try {
+    const examId = parseInt(req.params.examId);
+    const [existing] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [examId, req.userId]);
+    if (existing.length === 0) {
+      await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?)', [examId, req.userId]);
+    }
+    res.json({ message: 'Sesi diblokir karena pelanggaran' });
+  } catch (e) {
+    console.error('Violation error:', e);
+    res.status(500).json({ error: 'Gagal mencatat pelanggaran' });
   }
 });
 
@@ -1245,7 +1263,10 @@ router.post('/exam-sessions/:examId/submit', [verifyToken, verifyRole(['mahasisw
     );
 
     if (is_violation) {
-      await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?) ON CONFLICT (exam_id, mahasiswa_id) DO NOTHING', [examId, mahasiswaId]);
+      const [existing] = await query('SELECT * FROM exam_blocks WHERE exam_id = ? AND mahasiswa_id = ?', [examId, mahasiswaId]);
+      if (existing.length === 0) {
+        await run('INSERT INTO exam_blocks (exam_id, mahasiswa_id) VALUES (?, ?)', [examId, mahasiswaId]);
+      }
     }
 
     res.json({ message: 'Ujian berhasil dikumpulkan', total_score: totalScore });

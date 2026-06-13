@@ -34,6 +34,10 @@ Thumbs.db
 upload_and_restart.js
 upload_client.js
 deploy_docx.js
+deploy.js
+
+# GA4 credentials
+client/.env.local
 
 # Template files
 Format Soal UAS Multimedia.docx
@@ -54,3 +58,18 @@ client/eslint_report.json
 
 # Internal Documentation
 ROADMAP.md
+
+# Secret & Temp Scripts
+api/check_*.js
+api/ssh_*.js
+api/auto_deploy.js
+api/deploy*.js
+deploy*.js
+api/probe.js
+api/scratch.js
+api/patch_indexes.js
+siakad_backup_*.sql
+temp_ecc/
+
+api/scripts/
+api/__tests__/

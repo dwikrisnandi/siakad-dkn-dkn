@@ -9,11 +9,27 @@ router.post('/login', async (req, res) => {
   try {
     const { nidn_nim, password } = req.body;
 
-    // Find user
-    const [users] = await query('SELECT * FROM users WHERE nidn_nim = ?', [nidn_nim]);
-    if (users.length === 0) return res.status(404).json({ error: 'User not found' });
+    // Strict Input Validation
+    if (!nidn_nim || typeof nidn_nim !== 'string' || nidn_nim.trim() === '') {
+      return res.status(400).json({ error: 'NIDN/NIM valid diperlukan' });
+    }
+    if (!password || typeof password !== 'string' || password.trim() === '') {
+      return res.status(400).json({ error: 'Password valid diperlukan' });
+    }
+
+    // Find user (isolated by tenant or global superadmin)
+    const [users] = await query('SELECT * FROM users WHERE nidn_nim = ? AND (tenant_id = ? OR role = ?)', [nidn_nim, req.tenant_id, 'superadmin']);
+    if (users.length === 0) return res.status(404).json({ error: 'User not found in this tenant' });
 
     const user = users[0];
+
+    // Cek batas langganan (subscription_end_date) untuk selain admin/superadmin
+    if (req.tenant && req.tenant.subscription_end_date) {
+      const isExpired = new Date(req.tenant.subscription_end_date) < new Date();
+      if (isExpired && user.role !== 'admin' && user.role !== 'superadmin') {
+        return res.status(403).json({ error: 'Masa aktif kampus telah habis. Silakan hubungi admin kampus.' });
+      }
+    }
 
     // Check password
     const passwordIsValid = await bcrypt.compare(password, user.password);
@@ -50,6 +66,14 @@ router.get('/me', verifyToken, async (req, res) => {
 router.put('/change-password', verifyToken, async (req, res) => {
   try {
     const { old_password, new_password } = req.body;
+
+    // Strict Input Validation
+    if (!old_password || typeof old_password !== 'string') {
+      return res.status(400).json({ error: 'Password lama diperlukan' });
+    }
+    if (!new_password || typeof new_password !== 'string' || new_password.length < 6) {
+      return res.status(400).json({ error: 'Password baru harus teks dan minimal 6 karakter' });
+    }
 
     // Fetch current user
     const [users] = await query('SELECT * FROM users WHERE id = ?', [req.userId]);

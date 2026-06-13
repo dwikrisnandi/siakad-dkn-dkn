@@ -34,7 +34,7 @@ router.get('/edom/questions', [verifyToken], async (req, res) => {
 // GET schedules that require EDOM for a student
 router.get('/edom/schedules', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
   try {
-    const mahasiswaId = req.user.id;
+    const mahasiswaId = req.userId;
     // Get active academic year
     const activeYear = await get('SELECT id FROM academic_years WHERE is_active = 1');
     if (!activeYear) return res.json({ error: 'Tahun akademik belum aktif' });
@@ -62,7 +62,7 @@ router.get('/edom/schedules', [verifyToken, verifyRole(['mahasiswa'])], async (r
 // SUBMIT EDOM
 router.post('/edom/submit', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
   try {
-    const mahasiswaId = req.user.id;
+    const mahasiswaId = req.userId;
     const { schedule_id, answers, comment } = req.body;
     
     // Check if already filled
@@ -85,7 +85,7 @@ router.post('/edom/submit', [verifyToken, verifyRole(['mahasiswa'])], async (req
 // CHECK if student has completed all EDOM for active semester
 router.get('/edom/check-completion', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
   try {
-    const mahasiswaId = req.user.id;
+    const mahasiswaId = req.userId;
     const activeYear = await get('SELECT id FROM academic_years WHERE is_active = 1');
     if (!activeYear) return res.json({ completed: true });
 
@@ -115,7 +115,7 @@ router.get('/edom/summary/:scheduleId', [verifyToken, verifyRole(['dosen', 'admi
     // Check if dosen owns schedule
     const schedule = await get('SELECT dosen_id FROM schedules WHERE id = ?', [scheduleId]);
     if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
-    if (req.user.role === 'dosen' && schedule.dosen_id !== req.user.id) {
+    if (req.userRole === 'dosen' && schedule.dosen_id !== req.userId) {
       return res.status(403).json({ error: 'Bukan kelas Anda' });
     }
 

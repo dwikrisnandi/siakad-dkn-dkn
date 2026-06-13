@@ -32,7 +32,7 @@ router.get('/skripsi/me', [verifyToken, verifyRole(['mahasiswa'])], async (req, 
       LEFT JOIN users p2 ON s.pembimbing_2_id = p2.id
       WHERE s.mahasiswa_id = ?
     `;
-    const data = await get(sql, [req.user.id]);
+    const data = await get(sql, [req.userId]);
     res.json(data || null);
   } catch (err) {
     res.status(500).json({ error: 'Failed fetching my skripsi' });
@@ -45,12 +45,12 @@ router.post('/skripsi/submit', [verifyToken, verifyRole(['mahasiswa'])], async (
     const { title_1, title_2, title_3 } = req.body;
     
     // Check if already submitted
-    const existing = await get('SELECT id FROM skripsi WHERE mahasiswa_id = ?', [req.user.id]);
+    const existing = await get('SELECT id FROM skripsi WHERE mahasiswa_id = ?', [req.userId]);
     if (existing) return res.status(400).json({ error: 'Anda sudah mengajukan Skripsi.' });
 
     await run(
       'INSERT INTO skripsi (mahasiswa_id, title_1, title_2, title_3) VALUES (?, ?, ?, ?)',
-      [req.user.id, title_1, title_2 || '', title_3 || '']
+      [req.userId, title_1, title_2 || '', title_3 || '']
     );
     res.json({ message: 'Pengajuan skripsi berhasil' });
   } catch (err) {
@@ -82,7 +82,7 @@ router.get('/skripsi/bimbingan', [verifyToken, verifyRole(['dosen'])], async (re
       JOIN users u ON s.mahasiswa_id = u.id
       WHERE (s.pembimbing_1_id = ? OR s.pembimbing_2_id = ?) AND s.status != 'Pending'
     `;
-    const [data] = await query(sql, [req.user.id, req.user.id]);
+    const [data] = await query(sql, [req.userId, req.userId]);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed fetching bimbingan' });

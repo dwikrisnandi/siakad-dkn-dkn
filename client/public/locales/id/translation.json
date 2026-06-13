@@ -1,0 +1,21 @@
+{
+  "landing": {
+    "title1": "Era Baru",
+    "title2": "Ekosistem Digital",
+    "title3": "Akademik",
+    "subtitle": "Sistem Informasi Akademik modern yang dilengkapi CBT offline-first, LMS interaktif, Tutor AI 24/7, dan penilaian otomatis berbasis AI.",
+    "register": "Daftar Kampus",
+    "login": "Masuk",
+    "start": "Mulai Sekarang",
+    "badge": "Platform Cerdas Pendidikan 2026",
+    "feature1_title": "CBT & Ujian",
+    "feature1_desc": "Ujian online real-time dengan proteksi AI dan fitur akses kontrol dinamis.",
+    "feature2_title": "LMS Interaktif",
+    "feature2_desc": "Manajemen RPS, pengumpulan materi, dan distribusi tugas satu pintu.",
+    "feature3_title": "Penilaian Cerdas",
+    "feature3_desc": "Kalkulasi KHS otomatis dan asisten AI untuk koreksi essai seketika.",
+    "feature4_title": "Tutor AI 24/7",
+    "feature4_desc": "Asisten cerdas pendamping mahasiswa untuk berdiskusi dan memahami materi kapan saja.",
+    "footer": "SIAKAD DKN - Sistem Informasi Akademik Terpadu"
+  }
+}

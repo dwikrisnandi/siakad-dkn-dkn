@@ -80,7 +80,7 @@ router.get('/bkd/documents/me', [verifyToken, verifyRole(['dosen'])], async (req
   try {
     const [docs] = await query(
       'SELECT d.*, a.name as academic_year FROM bkd_documents d LEFT JOIN academic_years a ON d.academic_year_id = a.id WHERE d.dosen_id = ? ORDER BY d.id DESC',
-      [req.user.id]
+      [req.userId]
     );
     res.json(docs);
   } catch (err) {
@@ -116,7 +116,7 @@ router.post('/bkd/documents', [verifyToken, verifyRole(['dosen']), upload.single
 
     await run(
       'INSERT INTO bkd_documents (dosen_id, category, title, file_url, academic_year_id) VALUES (?, ?, ?, ?, ?)',
-      [req.user.id, category, title, file_url, academic_year_id]
+      [req.userId, category, title, file_url, academic_year_id]
     );
 
     res.json({ message: 'Dokumen berhasil diunggah', url: file_url });
@@ -128,14 +128,14 @@ router.post('/bkd/documents', [verifyToken, verifyRole(['dosen']), upload.single
 // DELETE document (Dosen)
 router.delete('/bkd/documents/:id', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
   try {
-    const doc = await get('SELECT file_url FROM bkd_documents WHERE id = ? AND dosen_id = ?', [req.params.id, req.user.id]);
+    const doc = await get('SELECT file_url FROM bkd_documents WHERE id = ? AND dosen_id = ?', [req.params.id, req.userId]);
     if (!doc) return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
 
     // Hapus file fisik
     const filePath = path.join(__dirname, '../../client/dist', doc.file_url);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-    await run('DELETE FROM bkd_documents WHERE id = ? AND dosen_id = ?', [req.params.id, req.user.id]);
+    await run('DELETE FROM bkd_documents WHERE id = ? AND dosen_id = ?', [req.params.id, req.userId]);
     res.json({ message: 'Dokumen dihapus' });
   } catch (err) {
     res.status(500).json({ error: 'Gagal hapus dokumen' });

@@ -27,7 +27,7 @@ async function seed() {
         name TEXT NOT NULL,
         role TEXT NOT NULL,
         password TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
@@ -87,7 +87,7 @@ async function seed() {
         title TEXT NOT NULL,
         description TEXT,
         file_url TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
       )
     `);
@@ -99,8 +99,8 @@ async function seed() {
         schedule_id INTEGER,
         title TEXT NOT NULL,
         description TEXT,
-        deadline DATETIME NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        deadline TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
       )
     `);
@@ -113,7 +113,7 @@ async function seed() {
         mahasiswa_id INTEGER,
         file_url TEXT,
         grade INTEGER DEFAULT NULL,
-        submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
         FOREIGN KEY (mahasiswa_id) REFERENCES users(id) ON DELETE CASCADE
       )
@@ -140,7 +140,7 @@ async function seed() {
         course_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         file_url TEXT NOT NULL,
-        uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
       )
     `);

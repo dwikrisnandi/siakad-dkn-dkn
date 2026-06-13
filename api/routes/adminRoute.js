@@ -9,7 +9,12 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 router.get('/backup', [verifyToken, verifyRole(['admin'])], (req, res) => {
   const tempFile = path.join(__dirname, '..', `backup_tmp_${Date.now()}.sql`);
-  const cmd = `"C:\\Program Files\\SIAKAD\\pgsql\\bin\\pg_dump.exe" -p 8256 -U postgres -d siakad -f "${tempFile}"`;
+  const pgDumpPath = process.env.PG_DUMP_PATH || "C:\\Program Files\\SIAKAD\\pgsql\\bin\\pg_dump.exe";
+  const dbPort = process.env.DB_PORT || "8256";
+  const dbUser = process.env.DB_USER || "postgres";
+  const dbName = process.env.DB_NAME || "siakad";
+
+  const cmd = `"${pgDumpPath}" -p ${dbPort} -U ${dbUser} -d ${dbName} -f "${tempFile}"`;
   
   exec(cmd, (error, stdout, stderr) => {
     if (error) {
@@ -151,13 +156,29 @@ router.post('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => 
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Pengecekan Kuota Mahasiswa (SaaS Limit)
+    if (role === 'mahasiswa') {
+      const [studentCountRes] = await query(
+        "SELECT count(*) as count FROM users WHERE role = 'mahasiswa' AND tenant_id = ?",
+        [req.tenant_id]
+      );
+      const currentCount = parseInt(studentCountRes[0].count, 10);
+      
+      if (currentCount >= req.tenant.max_students) {
+        return res.status(403).json({ 
+          error: 'Kuota mahasiswa penuh. Silakan hubungi Super Admin untuk meningkatkan batas kuota (Upgrade Paket).' 
+        });
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await run(
-      'INSERT INTO users (nidn_nim, name, role, password, program_id, dpa_id) VALUES (?, ?, ?, ?, ?, ?)',
-      [nidn_nim, name, role, hashedPassword, program_id || null, dpa_id || null]
+      'INSERT INTO users (nidn_nim, name, role, password, program_id, dpa_id, tenant_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nidn_nim, name, role, hashedPassword, program_id || null, dpa_id || null, req.tenant_id]
     );
     res.status(201).json({ message: 'User created successfully', id: result.id });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed creating user' });
   }
 });

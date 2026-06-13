@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import api from '../utils/api';
+import React, { useEffect, useRef, useState } from "react";
+import api from "../utils/api";
 
 // ============================================================
 // STYLE HELPERS — injected once into <head>
@@ -273,157 +273,174 @@ const CSS = `
 
 let cssInjected = false;
 function injectCSS() {
-  if (cssInjected) return;
-  cssInjected = true;
-  const style = document.createElement('style');
-  style.textContent = CSS;
-  document.head.appendChild(style);
+	if (cssInjected) return;
+	cssInjected = true;
+	const style = document.createElement("style");
+	style.textContent = CSS;
+	document.head.appendChild(style);
 }
 
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
 export default function ChatBot() {
-  const [open, setOpen] = useState(false);
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-  const textareaRef = useRef(null);
+	const [open, setOpen] = useState(false);
+	const [input, setInput] = useState("");
+	const [messages, setMessages] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const messagesEndRef = useRef(null);
+	const textareaRef = useRef(null);
 
-  useEffect(() => { injectCSS(); }, []);
+	useEffect(() => {
+		injectCSS();
+	}, []);
 
-  useEffect(() => {
-    if (open && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, open, loading]);
+	useEffect(() => {
+		if (open && messagesEndRef.current) {
+			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [messages, open, loading]);
 
-  // Auto-resize textarea
-  const handleInput = (e) => {
-    setInput(e.target.value);
-    const ta = textareaRef.current;
-    if (ta) {
-      ta.style.height = 'auto';
-      ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
-    }
-  };
+	// Auto-resize textarea
+	const handleInput = (e) => {
+		setInput(e.target.value);
+		const ta = textareaRef.current;
+		if (ta) {
+			ta.style.height = "auto";
+			ta.style.height = Math.min(ta.scrollHeight, 100) + "px";
+		}
+	};
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter" && !e.shiftKey) {
+			e.preventDefault();
+			sendMessage();
+		}
+	};
 
-  const sendMessage = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
+	const sendMessage = async () => {
+		const text = input.trim();
+		if (!text || loading) return;
 
-    const userMsg = { role: 'user', text };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
-    setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    setLoading(true);
+		const userMsg = { role: "user", text };
+		const newMessages = [...messages, userMsg];
+		setMessages(newMessages);
+		setInput("");
+		if (textareaRef.current) textareaRef.current.style.height = "auto";
+		setLoading(true);
 
-    // Build history for the API (exclude the last user message — it's the current one)
-    const history = newMessages.slice(0, -1).map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      text: m.text,
-    }));
+		// Build history for the API (exclude the last user message — it's the current one)
+		const history = newMessages.slice(0, -1).map((m) => ({
+			role: m.role === "user" ? "user" : "model",
+			text: m.text,
+		}));
 
-    try {
-      const res = await api.post('/chat', { message: text, history });
-      setMessages(prev => [...prev, { role: 'model', text: res.data.reply }]);
-    } catch (err) {
-      const errMsg = err.response?.data?.error || 'Gagal terhubung ke Pak Dwi. Coba lagi.';
-      setMessages(prev => [...prev, { role: 'model', text: `⚠️ ${errMsg}` }]);
-    } finally {
-      setLoading(false);
-    }
-  };
+		try {
+			const res = await api.post("/chat", { message: text, history });
+			setMessages((prev) => [...prev, { role: "model", text: res.data.reply }]);
+		} catch (err) {
+			const errMsg =
+				err.response?.data?.error || "Gagal terhubung ke Pak Dwi. Coba lagi.";
+			setMessages((prev) => [...prev, { role: "model", text: `⚠️ ${errMsg}` }]);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  return (
-    <>
-      {/* Floating Action Button */}
-      <button
-        className="siabot-fab"
-        onClick={() => setOpen(o => !o)}
-        title="Tanya Pak Dwi"
-        aria-label="Buka asisten akademik"
-      >
-        {open ? '✕' : '👨‍🏫'}
-        {!open && <span className="siabot-badge" />}
-      </button>
+	return (
+		<>
+			{/* Floating Action Button */}
+			<button
+				className="siabot-fab"
+				onClick={() => setOpen((o) => !o)}
+				title="Tanya Pak Dwi"
+				aria-label="Buka asisten akademik"
+			>
+				{open ? "✕" : "👨‍🏫"}
+				{!open && <span className="siabot-badge" />}
+			</button>
 
-      {/* Chat Panel */}
-      {open && (
-        <div className="siabot-panel" role="dialog" aria-label="SIA-BOT Asisten Akademik">
-          {/* Header */}
-          <div className="siabot-header">
-            <div className="siabot-avatar">👨‍🏫</div>
-            <div className="siabot-header-info">
-              <strong>Pak Dwi</strong>
-              <span>Dosen Pembimbing • Aktif</span>
-            </div>
-            <button className="siabot-close-btn" onClick={() => setOpen(false)} aria-label="Tutup">✕</button>
-          </div>
+			{/* Chat Panel */}
+			{open && (
+				<div
+					className="siabot-panel"
+					role="dialog"
+					aria-label="SIA-BOT Asisten Akademik"
+				>
+					{/* Header */}
+					<div className="siabot-header">
+						<div className="siabot-avatar">👨‍🏫</div>
+						<div className="siabot-header-info">
+							<strong>Pak Dwi</strong>
+							<span>Dosen Pembimbing • Aktif</span>
+						</div>
+						<button
+							className="siabot-close-btn"
+							onClick={() => setOpen(false)}
+							aria-label="Tutup"
+						>
+							✕
+						</button>
+					</div>
 
-          {/* Messages */}
-          <div className="siabot-messages">
-            {messages.length === 0 && (
-              <div className="siabot-greeting">
-                👋 Halo! Saya <strong>Pak Dwi</strong>.<br />
-                Ada materi kuliah yang masih membingungkan? Tanyakan saja ke Bapak! 📚
-              </div>
-            )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`siabot-bubble-wrap ${msg.role === 'user' ? 'user' : 'bot'}`}>
-                <div className="siabot-bubble-icon">
-                  {msg.role === 'user' ? '🎓' : '👨‍🏫'}
-                </div>
-                <div className="siabot-bubble">
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {loading && (
-              <div className="siabot-bubble-wrap bot">
-                <div className="siabot-bubble-icon">👨‍🏫</div>
-                <div className="siabot-bubble">
-                  <div className="siabot-typing">
-                    <span /><span /><span />
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+					{/* Messages */}
+					<div className="siabot-messages">
+						{messages.length === 0 && (
+							<div className="siabot-greeting">
+								👋 Halo! Saya <strong>Pak Dwi</strong>.<br />
+								Ada materi kuliah yang masih membingungkan? Tanyakan saja ke
+								Bapak! 📚
+							</div>
+						)}
+						{messages.map((msg, i) => (
+							<div
+								key={i}
+								className={`siabot-bubble-wrap ${msg.role === "user" ? "user" : "bot"}`}
+							>
+								<div className="siabot-bubble-icon">
+									{msg.role === "user" ? "🎓" : "👨‍🏫"}
+								</div>
+								<div className="siabot-bubble">{msg.text}</div>
+							</div>
+						))}
+						{loading && (
+							<div className="siabot-bubble-wrap bot">
+								<div className="siabot-bubble-icon">👨‍🏫</div>
+								<div className="siabot-bubble">
+									<div className="siabot-typing">
+										<span />
+										<span />
+										<span />
+									</div>
+								</div>
+							</div>
+						)}
+						<div ref={messagesEndRef} />
+					</div>
 
-          {/* Input */}
-          <div className="siabot-input-row">
-            <textarea
-              ref={textareaRef}
-              className="siabot-textarea"
-              rows={1}
-              placeholder="Tanya tentang materi kuliah..."
-              value={input}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-            />
-            <button
-              className="siabot-send-btn"
-              onClick={sendMessage}
-              disabled={loading || !input.trim()}
-              aria-label="Kirim"
-            >
-              ➤
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
+					{/* Input */}
+					<div className="siabot-input-row">
+						<textarea
+							ref={textareaRef}
+							className="siabot-textarea"
+							rows={1}
+							placeholder="Tanya tentang materi kuliah..."
+							value={input}
+							onChange={handleInput}
+							onKeyDown={handleKeyDown}
+							disabled={loading}
+						/>
+						<button
+							className="siabot-send-btn"
+							onClick={sendMessage}
+							disabled={loading || !input.trim()}
+							aria-label="Kirim"
+						>
+							➤
+						</button>
+					</div>
+				</div>
+			)}
+		</>
+	);
 }

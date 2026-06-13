@@ -23,9 +23,20 @@ router.get('/schedules', [verifyToken], async (req, res) => {
       WHERE s.academic_year_id = ?
     `, [activeYearId]);
 
-    const [allClasses] = await query('SELECT * FROM classes');
+    const allParsedIds = new Set();
+    schedules.forEach(s => {
+      if (s.class_ids) {
+        try { JSON.parse(s.class_ids).forEach(id => allParsedIds.add(id)); } catch (e) { }
+      }
+    });
+
     const classMap = {};
-    allClasses.forEach(c => classMap[c.id] = c.name);
+    if (allParsedIds.size > 0) {
+      const idsArray = Array.from(allParsedIds);
+      const placeholders = idsArray.map(() => '?').join(',');
+      const [neededClasses] = await query(`SELECT id, name FROM classes WHERE id IN (${placeholders})`, idsArray);
+      neededClasses.forEach(c => classMap[c.id] = c.name);
+    }
 
     const formattedSchedules = schedules.map(s => {
       let parsedIds = [];
@@ -57,7 +68,8 @@ router.get('/schedules', [verifyToken], async (req, res) => {
 
     res.json(finalSchedules);
   } catch (error) {
-    res.status(500).json({ error: 'Failed fetching schedules', details: error.message });
+    console.error('[API Error] GET /schedules:', error.message);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Gagal memuat jadwal. Silakan coba lagi.' } });
   }
 });
 
@@ -76,7 +88,8 @@ router.post('/schedules', [verifyToken, verifyRole(['admin'])], async (req, res)
     );
     res.status(201).json({ message: 'Schedule created', id: result.id });
   } catch (error) {
-    res.status(500).json({ error: 'Failed creating schedule' });
+    console.error('[API Error] POST /schedules:', error.message);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Gagal membuat jadwal.' } });
   }
 });
 
@@ -91,7 +104,8 @@ router.put('/schedules/:id', [verifyToken, verifyRole(['admin'])], async (req, r
     );
     res.json({ message: 'Schedule updated' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed updating schedule' });
+    console.error('[API Error] PUT /schedules/:id:', error.message);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Gagal memperbarui jadwal.' } });
   }
 });
 
@@ -100,7 +114,8 @@ router.delete('/schedules/:id', [verifyToken, verifyRole(['admin'])], async (req
     await run('DELETE FROM schedules WHERE id = ?', [req.params.id]);
     res.json({ message: 'Schedule deleted' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed deleting schedule' });
+    console.error('[API Error] DELETE /schedules/:id:', error.message);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Gagal menghapus jadwal.' } });
   }
 });
 
@@ -144,7 +159,8 @@ router.delete('/rps/:id', [verifyToken, verifyRole(['dosen'])], async (req, res)
     if (rps[0] && rps[0].length > 0 && rps[0][0].file_url) {
       const url = rps[0][0].file_url;
       if (url.startsWith('/uploads/rps/')) {
-         const filePath = path.join(__dirname, '..', url);
+         const filename = path.basename(url);
+         const filePath = path.join(__dirname, '..', 'uploads', 'rps', filename);
          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       }
     }

@@ -151,7 +151,7 @@ router.get('/my-invoices', verifyToken, async (req, res) => {
       LEFT JOIN academic_years a ON i.academic_year_id = a.id 
       WHERE i.mahasiswa_id = ?
       ORDER BY i.id DESC
-    `, [req.user.id]);
+    `, [req.userId]);
     res.json(invoices);
   } catch (err) {
     res.status(500).json({ error: err.message });

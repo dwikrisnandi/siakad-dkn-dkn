@@ -1,28 +1,28 @@
 {
-  "short_name": "SIAKAD",
-  "name": "SIAKAD - Sistem Informasi Akademik",
-  "icons": [
-    {
-      "src": "favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
-      "purpose": "any"
-    },
-    {
-      "src": "favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192",
-      "purpose": "maskable"
-    },
-    {
-      "src": "favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "512x512",
-      "purpose": "maskable"
-    }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#863bff",
-  "background_color": "#ffffff"
+	"short_name": "SIAKAD",
+	"name": "SIAKAD - Sistem Informasi Akademik",
+	"icons": [
+		{
+			"src": "favicon.svg",
+			"type": "image/svg+xml",
+			"sizes": "any",
+			"purpose": "any"
+		},
+		{
+			"src": "favicon.svg",
+			"type": "image/svg+xml",
+			"sizes": "192x192",
+			"purpose": "maskable"
+		},
+		{
+			"src": "favicon.svg",
+			"type": "image/svg+xml",
+			"sizes": "512x512",
+			"purpose": "maskable"
+		}
+	],
+	"start_url": ".",
+	"display": "standalone",
+	"theme_color": "#863bff",
+	"background_color": "#ffffff"
 }

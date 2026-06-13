@@ -1,4 +1,5 @@
-const admin = require('firebase-admin');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getMessaging } = require('firebase-admin/messaging');
 const path = require('path');
 const fs = require('fs');
 
@@ -8,8 +9,8 @@ let fcmEnabled = false;
 if (fs.existsSync(serviceAccountPath)) {
   try {
     const serviceAccount = require(serviceAccountPath);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+    initializeApp({
+      credential: cert(serviceAccount)
     });
     fcmEnabled = true;
     console.log('✅ FCM initialized successfully.');
@@ -30,7 +31,7 @@ const sendPushNotification = async (token, title, body, data = {}) => {
   };
 
   try {
-    const response = await admin.messaging().send(message);
+    const response = await getMessaging().send(message);
     console.log('Successfully sent message:', response);
     return response;
   } catch (error) {
@@ -48,7 +49,7 @@ const sendMulticastNotification = async (tokens, title, body, data = {}) => {
   };
 
   try {
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const response = await getMessaging().sendEachForMulticast(message);
     console.log('Successfully sent multicast message:', response.successCount, 'successes,', response.failureCount, 'failures');
     return response;
   } catch (error) {

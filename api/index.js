@@ -15,6 +15,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const compression = require('compression');
+const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
@@ -23,6 +24,31 @@ const { run } = require('./db');
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
+const rateLimit = require('express-rate-limit');
+
+// ── RATE LIMITING ────────────────────────────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 400, // batasi setiap IP hingga 400 request per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30, // maksimal 30 percobaan per 15 menit untuk endpoint sensitif
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/auth', authLimiter);
+
+// ── SECURITY HEADERS ────────────────────────────────────────────────────────
+// Menggunakan Helmet.js untuk menyetel HTTP Security Headers guna menangkal XSS & Clickjacking
+app.use(helmet({
+  contentSecurityPolicy: false, // Nonaktifkan CSP sementara jika memblokir CDN/inline script AdminLTE
+  crossOriginEmbedderPolicy: false
+}));
 
 // ── COMPRESSION ─────────────────────────────────────────────────────────────
 // Mengkompres response HTTP (JSON/Teks) hingga 70% agar hemat bandwidth internet
@@ -32,6 +58,9 @@ app.use(compression());
 app.use(cors({
   origin: [
     'https://siakad.arthavirddhisampada.online',
+    'http://siakad.arthavirddhisampada.online',
+    'http://192.168.30.4',
+    'http://192.168.30.4:7542',
     'http://localhost:5173',
     'http://localhost:7542'
   ],
@@ -95,6 +124,7 @@ run(`CREATE TABLE IF NOT EXISTS attendance_notes (
 
 run("ALTER TABLE attendance_notes ADD COLUMN catatan TEXT").catch(() => {});
 run("ALTER TABLE users ADD COLUMN fcm_token TEXT").catch(() => {});
+run("ALTER TABLE tenants ADD COLUMN country TEXT DEFAULT 'Indonesia'").catch(() => {});
 run(`CREATE TABLE IF NOT EXISTS user_fcm_tokens (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
@@ -174,7 +204,7 @@ run(`CREATE TABLE IF NOT EXISTS skripsi (
   status TEXT DEFAULT 'Pending', -- Pending, Approved, Bimbingan, Sidang, Lulus, Revisi
   pembimbing_1_id INTEGER,
   pembimbing_2_id INTEGER,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`).catch(() => {});
 
 run(`CREATE TABLE IF NOT EXISTS skripsi_logbooks (
@@ -189,7 +219,7 @@ run(`CREATE TABLE IF NOT EXISTS skripsi_logbooks (
 run(`CREATE TABLE IF NOT EXISTS skripsi_sidang (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   skripsi_id INTEGER NOT NULL,
-  schedule_date DATETIME,
+  schedule_date TIMESTAMP,
   penguji_1_id INTEGER,
   penguji_2_id INTEGER,
   score REAL,
@@ -220,7 +250,7 @@ run(`CREATE TABLE IF NOT EXISTS bkd_documents (
   title TEXT NOT NULL,
   file_url TEXT NOT NULL,
   academic_year_id INTEGER,
-  uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`).catch(() => {});
 
 // Seed default structural roles
@@ -256,6 +286,13 @@ run('CREATE INDEX IF NOT EXISTS idx_edom_answers_sched ON edom_answers(schedule_
 run('CREATE INDEX IF NOT EXISTS idx_skripsi_mhs ON skripsi(mahasiswa_id)').catch(()=>{});
 
 // ── ROUTES ───────────────────────────────────────────────────────────────────
+const { tenantMiddleware } = require('./middlewares/tenant');
+
+// Rute Publik (Pendaftaran SaaS, tanpa butuh x-tenant-slug)
+app.use('/api/public/tenant', require('./routes/tenantRoute'));
+
+// Terapkan tenantMiddleware ke semua endpoint API internal untuk memastikan isolasi data
+app.use('/api', tenantMiddleware);
 app.use('/api/auth',  require('./routes/authRoute'));
 app.use('/api',       require('./routes/adminRoute'));
 app.use('/api',       require('./routes/masterRoute'));
@@ -270,6 +307,7 @@ app.use('/api',       require('./routes/bkdRoute'));
 app.use('/api',       require('./routes/portalRoute'));
 app.use('/api',       require('./routes/aiRoute'));
 app.use('/api',       require('./routes/examRoute'));
+app.use('/api/rps-builder', require('./routes/rpsBuilderRoute'));
 
 // ── SERVE STATIC FILES ───────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../client/dist'), {
@@ -284,7 +322,11 @@ app.use((req, res, next) => {
 
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 7542;
-app.listen(PORT, () => {
-  console.log(`✅ Server SIAKAD DKN berjalan di port ${PORT}.`);
-  console.log(`   Arsitektur Modular aktif (7 modul rute).`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✅ Server SIAKAD DKN berjalan di port ${PORT}.`);
+    console.log(`   Arsitektur Modular aktif (7 modul rute).`);
+  });
+}
+
+module.exports = app;

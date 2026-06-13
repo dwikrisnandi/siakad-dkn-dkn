@@ -1,0 +1,21 @@
+{
+  "landing": {
+    "title1": "New Era",
+    "title2": "Digital Ecosystem",
+    "title3": "Academic",
+    "subtitle": "Modern Academic Information System equipped with offline-first CBT, interactive LMS, 24/7 AI Tutor, and automated AI grading.",
+    "register": "Register Campus",
+    "login": "Login",
+    "start": "Get Started",
+    "badge": "Smart Education Platform 2026",
+    "feature1_title": "CBT & Exams",
+    "feature1_desc": "Real-time online exams with AI protection and dynamic access control.",
+    "feature2_title": "Interactive LMS",
+    "feature2_desc": "One-stop management for RPS, material collection, and task distribution.",
+    "feature3_title": "Smart Grading",
+    "feature3_desc": "Automated KHS calculation and instant AI essay correction.",
+    "feature4_title": "24/7 AI Tutor",
+    "feature4_desc": "Smart assistant for students to discuss and understand materials anytime.",
+    "footer": "SIAKAD DKN - Integrated Academic Information System"
+  }
+}

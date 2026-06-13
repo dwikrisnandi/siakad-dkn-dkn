@@ -38,8 +38,8 @@ async function withKeyRotation(modelName, systemInstruction, fn) {
       } catch (err) {
         const status = err?.status || err?.httpError?.status || 0;
 
-        // 429=Quota, 403=Invalid, 503=Overloaded. Semuanya akan langsung lompat ke KEY BERIKUTNYA.
-        if (status === 429 || status === 403 || status === 401 || status === 503 || (err.message && err.message.includes('503'))) {
+        // 429=Quota, 403=Invalid, 503=Overloaded, 500=Internal Error.
+        if (status >= 500 || status === 429 || status === 403 || status === 401 || (err.message && (err.message.includes('503') || err.message.includes('500')))) {
           console.warn(`Key API rotasi (Status: ${status || '503'}), mencoba key selanjutnya...`);
           lastError = err;
           continue;
@@ -623,12 +623,10 @@ router.post('/ai-generate-exam', [verifyToken, verifyRole(['dosen', 'admin'])], 
       return results;
     };
 
-    // EKSEKUSI PARALEL untuk masing-masing tipe soal
-    const [pgResult, tfResult, essayResult] = await Promise.all([
-      batchGenerate('pg', pgCount),
-      batchGenerate('tf', tfCount),
-      batchGenerate('essay', essayCount)
-    ]);
+    // EKSEKUSI SEKUENSIAL (Berurutan) untuk mencegah bentrok/429 Rate Limit pada API Key
+    const pgResult = await batchGenerate('pg', pgCount);
+    const tfResult = await batchGenerate('tf', tfCount);
+    const essayResult = await batchGenerate('essay', essayCount);
 
     const allQuestions = [...pgResult, ...tfResult, ...essayResult];
     res.json(allQuestions);

@@ -58,10 +58,10 @@ const getTranscriptData = async (mahasiswaId) => {
 // GET my transcript
 router.get('/transkrip/me', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
   try {
-    const data = await getTranscriptData(req.user.id);
+    const data = await getTranscriptData(req.userId);
     
     // Get identity
-    const user = await get('SELECT nidn_nim, name, program_id FROM users WHERE id = ?', [req.user.id]);
+    const user = await get('SELECT nidn_nim, name, program_id FROM users WHERE id = ?', [req.userId]);
     const program = await get('SELECT nama_prodi FROM programs WHERE id = ?', [user.program_id]);
     
     res.json({ ...data, student: { ...user, prodi: program?.nama_prodi || '-' } });
