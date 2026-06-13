@@ -17,5 +17,10 @@
     "feature4_title": "24/7 AI Tutor",
     "feature4_desc": "Smart assistant for students to discuss and understand materials anytime.",
     "footer": "SIAKAD DKN - Integrated Academic Information System"
+  },
+  "pwa": {
+    "title": "Install App",
+    "desc": "Install this app on your phone for faster access and real-time notifications.",
+    "button": "Install Now"
   }
 }

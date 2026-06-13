@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const InstallPWA = () => {
 	const [deferredPrompt, setDeferredPrompt] = useState(null);
 	const [isVisible, setIsVisible] = useState(false);
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		const handler = (e) => {
@@ -49,7 +51,7 @@ const InstallPWA = () => {
 		>
 			<div className="card-header">
 				<h3 className="card-title">
-					<i className="fas fa-mobile-alt me-2"></i> Install App
+					<i className="fas fa-mobile-alt me-2"></i> {t('pwa.title', 'Install App')}
 				</h3>
 				<div className="card-tools">
 					<button
@@ -62,13 +64,12 @@ const InstallPWA = () => {
 				</div>
 			</div>
 			<div className="card-body">
-				Install aplikasi ini di HP Anda untuk akses lebih cepat dan notifikasi
-				real-time.
+				{t('pwa.desc', 'Install aplikasi ini di HP Anda untuk akses lebih cepat dan notifikasi real-time.')}
 				<button
 					className="btn btn-primary w-100 mt-3"
 					onClick={handleInstallClick}
 				>
-					Install Sekarang
+					{t('pwa.button', 'Install Sekarang')}
 				</button>
 			</div>
 		</div>

@@ -17,5 +17,10 @@
     "feature4_title": "Tutor AI 24/7",
     "feature4_desc": "Asisten cerdas pendamping mahasiswa untuk berdiskusi dan memahami materi kapan saja.",
     "footer": "SIAKAD DKN - Sistem Informasi Akademik Terpadu"
+  },
+  "pwa": {
+    "title": "Install App",
+    "desc": "Install aplikasi ini di HP Anda untuk akses lebih cepat dan notifikasi real-time.",
+    "button": "Install Sekarang"
   }
 }
