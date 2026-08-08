@@ -247,9 +247,7 @@ export default function MahasiswaUjian() {
 
 		const handleVisibilityChange = async () => {
 			if (document.visibilityState === "hidden") {
-				alert(
-					"🚨 PELANGGARAN FATAL!\n\nAnda terdeteksi keluar dari layar ujian atau membuka aplikasi/tab lain. Sesi ujian Anda DIBLOKIR seketika. Silakan hubungi dosen Anda untuk membuka blokir.",
-				);
+				// We don't use alert() directly here because browsers block it in background tabs, causing the rest of the function to crash!
 				if (timerRef.current) clearInterval(timerRef.current);
 				if (navigator.onLine) {
 					try {
@@ -263,6 +261,13 @@ export default function MahasiswaUjian() {
 				}
 				setView("list");
 				fetchExams();
+				
+				// Show alert asynchronously so it doesn't block the thread
+				setTimeout(() => {
+					alert(
+						"🚨 PELANGGARAN FATAL!\n\nAnda terdeteksi keluar dari layar ujian atau membuka aplikasi/tab lain. Sesi ujian Anda DIBLOKIR seketika. Silakan hubungi dosen Anda untuk membuka blokir.",
+					);
+				}, 100);
 			}
 		};
 
