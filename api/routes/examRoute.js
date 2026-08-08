@@ -194,6 +194,22 @@ router.put('/exams/:id', [verifyToken, verifyRole(['dosen'])], async (req, res) 
   }
 });
 
+// PATCH generate token baru (manual hard reset base token)
+router.patch('/exams/:id/token', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
+  try {
+    const [[exam]] = await query('SELECT * FROM exams WHERE id = ?', [req.params.id]);
+    if (!exam) return res.status(404).json({ error: 'Ujian tidak ditemukan' });
+    
+    // Generate new random 6-character alphanumeric token
+    const newToken = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await run('UPDATE exams SET token = ? WHERE id = ?', [newToken, req.params.id]);
+    
+    res.json({ message: 'Token berhasil di-reset', token: newToken });
+  } catch (e) {
+    res.status(500).json({ error: 'Gagal mereset token' });
+  }
+});
+
 // PATCH toggle aktif/nonaktif ujian
 router.patch('/exams/:id/toggle', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
   try {

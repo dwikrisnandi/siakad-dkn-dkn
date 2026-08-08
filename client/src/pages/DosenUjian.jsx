@@ -9,6 +9,7 @@ import {
 	FileText,
 	HardDrive,
 	Plus,
+	RefreshCw,
 	ShieldAlert,
 	Sparkles,
 	ToggleLeft,
@@ -78,6 +79,20 @@ export default function DosenUjian() {
 	const [generatingKisi, setGeneratingKisi] = useState(false);
 
 	const [showBankModal, setShowBankModal] = useState(false);
+
+	const handleRegenerateToken = async (examId) => {
+		if (!window.confirm("Yakin ingin mengacak ulang token dasar (Hard Reset)? Token yang sedang dipakai mahasiswa saat ini akan langsung hangus!")) return;
+		try {
+			const res = await api.patch(`/exams/${examId}/token`);
+			if (res.data.token) {
+				fetchExams(); // muat ulang ujian untuk melihat token baru
+				alert("Token berhasil di-reset!");
+			}
+		} catch (err) {
+			alert("Gagal mereset token");
+		}
+	};
+
 	const [bankQuestions, setBankQuestions] = useState([]);
 	const [selectedBankIds, setSelectedBankIds] = useState([]);
 	const [importingBank, setImportingBank] = useState(false);
@@ -985,7 +1000,16 @@ export default function DosenUjian() {
 											<span>👥 {exam.total_submitted} dikumpulkan</span>
 											<span>⏱ {exam.duration_minutes} menit</span>
 											{exam.token && (
-												<DynamicTokenDisplay baseToken={exam.token} />
+												<div className="d-flex align-items-center gap-2">
+													<DynamicTokenDisplay baseToken={exam.token} />
+													<button
+														className="btn btn-sm btn-outline-danger py-0 px-1"
+														title="Reset Token Dasar Secara Manual"
+														onClick={() => handleRegenerateToken(exam.id)}
+													>
+														<RefreshCw size={14} />
+													</button>
+												</div>
 											)}
 										</div>
 										<div className="d-flex flex-wrap gap-2">
