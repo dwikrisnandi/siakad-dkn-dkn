@@ -269,7 +269,7 @@ export default function DosenUjian() {
 	};
 
 	const handleSyncGrades = async (examOverride) => {
-		const targetExam = examOverride || activeExam;
+		const targetExam = (examOverride && examOverride.id) ? examOverride : activeExam;
 		if (!targetExam) return;
 		if (
 			!window.confirm(

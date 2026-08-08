@@ -970,7 +970,8 @@ router.post('/exams/:id/sync-grades', [verifyToken, verifyRole(['dosen', 'admin'
 
     res.json({ message: `Nilai ${exam.type} berhasil disinkronkan ke Modul Nilai Akhir` });
   } catch (e) {
-    res.status(500).json({ error: 'Gagal sinkronisasi nilai' });
+    console.error('Error sync grades:', e);
+    res.status(500).json({ error: 'Gagal sinkronisasi nilai: ' + e.message });
   }
 });
 
