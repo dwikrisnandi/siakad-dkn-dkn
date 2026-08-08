@@ -277,13 +277,13 @@ export default function MahasiswaUjian() {
 		if (view !== "exam" || !activeExam) return;
 
 		let idleTimer;
-		const IDLE_TIME_MS = 5000; // 5 Detik
+		const IDLE_TIME_MS = 30000; // 30 Detik
 
 		const resetIdleTimer = () => {
 			clearTimeout(idleTimer);
 			idleTimer = setTimeout(async () => {
 				alert(
-					"⏱️ TERDETEKSI DIAM (TIDAK ADA AKTIVITAS)!\n\nKarena Anda diam selama 5 detik, sistem menduga Anda sedang melihat layar lain (HP / AI). Sesi ujian Anda DIBLOKIR sementara.\n\nSilakan hubungi dosen untuk membuka blokir agar bisa melanjutkan.",
+					"⏱️ TERDETEKSI DIAM (TIDAK ADA AKTIVITAS)!\n\nKarena Anda diam selama 30 detik, sistem menduga Anda sedang melihat layar lain (HP / AI). Sesi ujian Anda DIBLOKIR sementara.\n\nSilakan hubungi dosen untuk membuka blokir agar bisa melanjutkan.",
 				);
 				const eid = activeExam?.id;
 				if (eid) {

@@ -17,8 +17,12 @@ export const useFCM = () => {
 			try {
 				const permission = await Notification.requestPermission();
 				if (permission === "granted") {
+					const registration = await navigator.serviceWorker.register(
+						`/firebase-messaging-sw.js?apiKey=${import.meta.env.VITE_FIREBASE_API_KEY}`
+					);
 					const token = await getToken(messaging, {
 						vapidKey: VAPID_KEY,
+						serviceWorkerRegistration: registration,
 					});
 
 					if (token) {

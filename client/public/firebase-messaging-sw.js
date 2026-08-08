@@ -13,8 +13,9 @@ importScripts(
 );
 
 // Menggunakan konfigurasi yang sama dengan firebase.js
+const urlParams = new URLSearchParams(location.search);
 firebase.initializeApp({
-	apiKey: "AIzaSyCFxu2et4q__X9HYmUvFn82Ya-i3y6FbI0",
+	apiKey: urlParams.get("apiKey"),
 	authDomain: "siakad-dkn.firebaseapp.com",
 	projectId: "siakad-dkn",
 	storageBucket: "siakad-dkn.firebasestorage.app",
