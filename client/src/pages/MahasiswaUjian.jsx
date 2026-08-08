@@ -245,24 +245,23 @@ export default function MahasiswaUjian() {
 		const eid = activeExam.id;
 		const lsKey = `siakad_violations_${eid}`;
 
-		const handleVisibilityChange = async () => {
+		const handleVisibilityChange = () => {
 			if (document.visibilityState === "hidden") {
-				// We don't use alert() directly here because browsers block it in background tabs, causing the rest of the function to crash!
 				if (timerRef.current) clearInterval(timerRef.current);
-				if (navigator.onLine) {
-					try {
-						await api.post(`/exam-sessions/${eid}/violation`);
-					} catch (e) {
-						console.error("Gagal lapor pelanggaran:", e);
-					}
-				}
+				
+				// Langsung keluarkan ke halaman utama SECARA SINKRON agar tidak tertahan saat tab tidur
 				if (document.exitFullscreen && document.fullscreenElement) {
 					document.exitFullscreen().catch((e) => console.log(e));
 				}
 				setView("list");
 				fetchExams();
+
+				// Kirim laporan ke server di background (tanpa await, karena await di background tab sering dihentikan browser)
+				if (navigator.onLine) {
+					api.post(`/exam-sessions/${eid}/violation`).catch((e) => console.error("Gagal lapor pelanggaran:", e));
+				}
 				
-				// Show alert asynchronously so it doesn't block the thread
+				// Munculkan alert setelah state berubah
 				setTimeout(() => {
 					alert(
 						"🚨 PELANGGARAN FATAL!\n\nAnda terdeteksi keluar dari layar ujian atau membuka aplikasi/tab lain. Sesi ujian Anda DIBLOKIR seketika. Silakan hubungi dosen Anda untuk membuka blokir.",
@@ -270,10 +269,33 @@ export default function MahasiswaUjian() {
 				}, 100);
 			}
 		};
+		
+		const handleBlur = () => {
+		    // Deteksi jika berpindah jendela aplikasi (Alt+Tab) di komputer/laptop
+			if (document.visibilityState !== "hidden") {
+			    // Panggil logika yang sama
+			    if (timerRef.current) clearInterval(timerRef.current);
+				if (document.exitFullscreen && document.fullscreenElement) {
+					document.exitFullscreen().catch((e) => console.log(e));
+				}
+				setView("list");
+				fetchExams();
+				if (navigator.onLine) {
+					api.post(`/exam-sessions/${eid}/violation`).catch((e) => console.error("Gagal lapor pelanggaran:", e));
+				}
+				setTimeout(() => {
+					alert(
+						"🚨 PELANGGARAN FATAL!\n\nAnda terdeteksi keluar dari jendela ujian (kehilangan fokus layar). Sesi ujian Anda DIBLOKIR seketika.",
+					);
+				}, 100);
+			}
+		};
 
 		document.addEventListener("visibilitychange", handleVisibilityChange);
+		window.addEventListener("blur", handleBlur);
 		return () => {
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
+			window.removeEventListener("blur", handleBlur);
 		};
 	}, [view, activeExam]);
 
