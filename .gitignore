@@ -74,3 +74,4 @@ temp_ecc/
 api/scripts/
 api/__tests__/
 deploy.js
+client/dist.zip

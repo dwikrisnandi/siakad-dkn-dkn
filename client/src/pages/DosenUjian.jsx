@@ -20,6 +20,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
+import { getDynamicToken } from "../utils/dynamicToken";
 
 const EMPTY_EXAM = {
 	title: "",
@@ -36,6 +37,23 @@ const EMPTY_Q = {
 	correct_answer: "",
 	points: 10,
 };
+
+function DynamicTokenDisplay({ baseToken }) {
+	const [currentToken, setCurrentToken] = useState(() => getDynamicToken(baseToken));
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setCurrentToken(getDynamicToken(baseToken));
+		}, 1000);
+		return () => clearInterval(interval);
+	}, [baseToken]);
+
+	return (
+		<span className="fw-bold text-primary">
+			🔑 Token: {currentToken}
+		</span>
+	);
+}
 
 export default function DosenUjian() {
 	const { user } = useAuth();
@@ -967,9 +985,7 @@ export default function DosenUjian() {
 											<span>👥 {exam.total_submitted} dikumpulkan</span>
 											<span>⏱ {exam.duration_minutes} menit</span>
 											{exam.token && (
-												<span className="fw-bold text-primary">
-													🔑 Token: {exam.token}
-												</span>
+												<DynamicTokenDisplay baseToken={exam.token} />
 											)}
 										</div>
 										<div className="d-flex flex-wrap gap-2">

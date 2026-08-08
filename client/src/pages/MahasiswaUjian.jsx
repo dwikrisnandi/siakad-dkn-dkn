@@ -19,6 +19,7 @@ import {
 	getCachedExam,
 	removeCachedExam,
 } from "../utils/examCache";
+import { validateDynamicToken } from "../utils/dynamicToken";
 
 export default function MahasiswaUjian() {
 	const { user } = useAuth();
@@ -511,12 +512,12 @@ export default function MahasiswaUjian() {
 					return;
 				}
 
-				// Validate token locally against cached token
+				// Validate token locally against cached token (using Dynamic Token / ANBK style)
 				if (
 					cachedExam.token &&
-					cachedExam.token !== tokenInput.trim().toUpperCase()
+					!validateDynamicToken(cachedExam.token, tokenInput.trim())
 				) {
-					setTokenError("Token ujian tidak valid");
+					setTokenError("Token ujian tidak valid atau sudah kadaluarsa");
 					setIsStarting(false);
 					return;
 				}

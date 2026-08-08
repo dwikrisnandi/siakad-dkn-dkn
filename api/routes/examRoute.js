@@ -1101,13 +1101,15 @@ router.post('/exam-sessions/:examId/start', [verifyToken, verifyRole(['mahasiswa
     const mahasiswaId = req.userId;
     const { token } = req.body;
 
+    const { validateDynamicToken } = require('../utils/dynamicToken');
+
     const [[exam]] = await query('SELECT * FROM exams WHERE id = ?', [examId]);
     if (!exam) return res.status(404).json({ error: 'Ujian tidak ditemukan' });
     if (!exam.is_active) return res.status(403).json({ error: 'Ujian belum dibuka oleh dosen' });
 
-    // Validasi token terlebih dahulu (selalu wajib)
-    if (exam.token && exam.token !== token) {
-      return res.status(403).json({ error: 'Token ujian tidak valid' });
+    // Validasi token terlebih dahulu (selalu wajib) menggunakan Dynamic Token (ANBK Style)
+    if (exam.token && !validateDynamicToken(exam.token, token)) {
+      return res.status(403).json({ error: 'Token ujian tidak valid atau sudah kadaluarsa' });
     }
 
     // Cek apakah mahasiswa diblokir dari ujian ini
