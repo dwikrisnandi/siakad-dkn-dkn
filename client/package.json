@@ -27,6 +27,7 @@
 		"react-quill-new": "^3.7.0",
 		"react-router-dom": "^7.13.1",
 		"react-select": "^5.10.2",
+		"sweetalert2": "^11.26.25",
 		"xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
 	},
 	"devDependencies": {
