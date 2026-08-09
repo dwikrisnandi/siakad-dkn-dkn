@@ -126,7 +126,7 @@ export default function Topbar() {
 
 						<div
 							className={`dropdown-menu dropdown-menu-lg dropdown-menu-end ${dropdownOpen ? "show" : ""}`}
-							style={{ minWidth: "300px" }}
+							style={{ minWidth: "300px", right: 0, left: "auto" }}
 						>
 							<span className="dropdown-item dropdown-header border-bottom">
 								{notifications.count} Notifikasi Baru
@@ -212,6 +212,7 @@ export default function Topbar() {
 					</a>
 					<div
 						className={`dropdown-menu dropdown-menu-lg dropdown-menu-end mt-2 ${profileOpen ? "show" : ""}`}
+						style={{ right: 0, left: "auto" }}
 					>
 						<span className="dropdown-item dropdown-header">
 							{user?.name} ({user?.role})
