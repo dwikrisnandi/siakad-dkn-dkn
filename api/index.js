@@ -23,13 +23,23 @@ const { run } = require('./db');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
+// ── PROCESS ERROR HANDLERS (Mencegah server mati total) ───────────────────
+process.on('uncaughtException', (err) => {
+  console.error('🔥 UNCAUGHT EXCEPTION:', err.message);
+  console.error(err.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🔥 UNHANDLED REJECTION:', reason);
+});
+
 const app = express();
 const rateLimit = require('express-rate-limit');
 
 // ── RATE LIMITING ────────────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
-  max: 400, // batasi setiap IP hingga 400 request per windowMs
+  max: 5000, // batasi setiap IP hingga 5000 request per windowMs (akomodasi ~70 mahasiswa ujian)
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -42,6 +52,16 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/auth', authLimiter);
+
+// Rate limiter khusus endpoint ujian (lebih longgar karena ada polling check-block)
+const examLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10000, // endpoint ujian butuh banyak request (polling + save answer per mahasiswa)
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/exam-sessions', examLimiter);
+app.use('/api/exams', examLimiter);
 
 // ── SECURITY HEADERS ────────────────────────────────────────────────────────
 // Menggunakan Helmet.js untuk menyetel HTTP Security Headers guna menangkal XSS & Clickjacking
@@ -318,6 +338,16 @@ app.use(express.static(path.join(__dirname, '../client/dist'), {
 app.use((req, res, next) => {
   if (path.extname(req.path) !== '') return next();
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+// ── GLOBAL ERROR HANDLER ─────────────────────────────────────────────────────
+// Middleware 4-argumen menangkap semua error dari route/multer agar tidak crash
+app.use((err, req, res, next) => {
+  console.error('❌ Unhandled Express Error:', err.message);
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error'
+  });
 });
 
 // ── START SERVER ─────────────────────────────────────────────────────────────

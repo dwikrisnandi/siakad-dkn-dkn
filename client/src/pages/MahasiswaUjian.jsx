@@ -560,7 +560,7 @@ export default function MahasiswaUjian() {
 					});
 
 					pollCounter++;
-					if (pollCounter % 10 === 0 && navigator.onLine) {
+					if (pollCounter % 30 === 0 && navigator.onLine) {
 						api
 							.get(`/exams/${targetExam.id}/check-block`)
 							.then((res) => {
@@ -669,7 +669,7 @@ export default function MahasiswaUjian() {
 				});
 
 				pollCounter2++;
-				if (pollCounter2 % 10 === 0 && navigator.onLine) {
+				if (pollCounter2 % 30 === 0 && navigator.onLine) {
 					api
 						.get(`/exams/${targetExam.id}/check-block`)
 						.then((res) => {
