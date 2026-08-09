@@ -34,6 +34,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const app = express();
+app.set('trust proxy', true); // Cloudflare: agar rate limiter pakai IP asli user (X-Forwarded-For)
 const rateLimit = require('express-rate-limit');
 
 // ── RATE LIMITING ────────────────────────────────────────────────────────────
