@@ -1,0 +1,23 @@
+{
+  "landing": {
+    "title1": "新時代の",
+    "title2": "デジタルエコシステム",
+    "title3": "学務管理",
+    "subtitle": "オフライン優先のCBT、インタラクティブLMS、24時間年中無休のAIチューター、AI自動採点を備えた最新の学務情報システム。",
+    "register": "キャンパス登録",
+    "login": "ログイン",
+    "start": "今すぐ始める",
+    "contact_us": "お問い合わせ",
+    "subscribe_text": "SIAKADの構築または購読をご希望ですか？ お問い合わせ:",
+    "badge": "スマート教育プラットフォーム 2026",
+    "feature1_title": "CBTと試験",
+    "feature1_desc": "AI保護機能と動的アクセス制御を備えたリアルタイムオンライン試験。",
+    "feature2_title": "インタラクティブ LMS",
+    "feature2_desc": "カリキュラム、教材、課題の管理をワンストップで提供します。",
+    "feature3_title": "スマート採点",
+    "feature3_desc": "成績表の自動計算と、即時小論文採点のためのAIアシスタント。",
+    "feature4_title": "24/7 AIチューター",
+    "feature4_desc": "いつでも教材について議論し理解を深められる、学生のためのスマートなパートナー。",
+    "footer": "SIAKAD DKN - 統合学務情報システム"
+  }
+}

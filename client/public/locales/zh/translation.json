@@ -1,0 +1,23 @@
+{
+  "landing": {
+    "title1": "新时代的",
+    "title2": "数字生态系统",
+    "title3": "教务管理",
+    "subtitle": "配备离线优先 CBT、交互式 LMS、24/7 AI 导师和 AI 自动评分的现代教务信息系统。",
+    "register": "注册校园",
+    "login": "登录",
+    "start": "立即开始",
+    "contact_us": "联系我们",
+    "subscribe_text": "想要建立 SIAKAD 校园或订阅？联系方式：",
+    "badge": "2026年智能教育平台",
+    "feature1_title": "CBT & 考试",
+    "feature1_desc": "具有 AI 保护和动态访问控制的实时在线考试。",
+    "feature2_title": "交互式 LMS",
+    "feature2_desc": "一站式课程、教材和作业管理。",
+    "feature3_title": "智能评分",
+    "feature3_desc": "自动成绩单计算和即时论文评分 AI 助手。",
+    "feature4_title": "24/7 AI导师",
+    "feature4_desc": "学生随时讨论和理解教材的智能伙伴。",
+    "footer": "SIAKAD DKN - 综合教务信息系统"
+  }
+}

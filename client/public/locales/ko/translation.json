@@ -1,0 +1,23 @@
+{
+  "landing": {
+    "title1": "새로운 시대의",
+    "title2": "디지털 생태계",
+    "title3": "학사 관리",
+    "subtitle": "오프라인 우선 CBT, 대화형 LMS, 연중무휴 AI 튜터, AI 자동 채점을 갖춘 최신 학사 정보 시스템입니다.",
+    "register": "캠퍼스 등록",
+    "login": "로그인",
+    "start": "지금 시작하기",
+    "contact_us": "문의하기",
+    "subscribe_text": "SIAKAD 구축 또는 구독을 원하시나요? 연락처:",
+    "badge": "스마트 교육 플랫폼 2026",
+    "feature1_title": "CBT 및 시험",
+    "feature1_desc": "AI 보호 및 동적 접근 제어 기능을 갖춘 실시간 온라인 시험.",
+    "feature2_title": "대화형 LMS",
+    "feature2_desc": "커리큘럼, 학습 자료, 과제 관리를 한 곳에서 처리합니다.",
+    "feature3_title": "스마트 채점",
+    "feature3_desc": "자동 성적표 계산 및 즉각적인 에세이 채점을 위한 AI 어시스턴트.",
+    "feature4_title": "24/7 AI 튜터",
+    "feature4_desc": "학생들이 언제든지 자료를 논의하고 이해할 수 있도록 돕는 스마트 동반자.",
+    "footer": "SIAKAD DKN - 통합 학사 정보 시스템"
+  }
+}

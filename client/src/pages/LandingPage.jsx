@@ -208,6 +208,9 @@ export default function LandingPage() {
 						<ul className={`dropdown-menu dropdown-menu-end shadow-sm mt-2 ${langDropdownOpen ? 'show' : ''}`} style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--card-border)"}}>
 							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('en'); setLangDropdownOpen(false); }}>🇬🇧 English (EN)</button></li>
 							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('id'); setLangDropdownOpen(false); }}>🇮🇩 Indonesia (ID)</button></li>
+							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('ko'); setLangDropdownOpen(false); }}>🇰🇷 한국어 (KO)</button></li>
+							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('ja'); setLangDropdownOpen(false); }}>🇯🇵 日本語 (JA)</button></li>
+							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('zh'); setLangDropdownOpen(false); }}>🇨🇳 中文 (ZH)</button></li>
 						</ul>
 					</div>
 					<Link
