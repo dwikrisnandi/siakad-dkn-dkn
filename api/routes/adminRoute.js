@@ -9,16 +9,41 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 
 router.get('/backup', [verifyToken, verifyRole(['admin'])], (req, res) => {
   const tempFile = path.join(__dirname, '..', `backup_tmp_${Date.now()}.sql`);
-  const pgDumpPath = process.env.PG_DUMP_PATH || "C:\\Program Files\\SIAKAD\\pgsql\\bin\\pg_dump.exe";
-  const dbPort = process.env.DB_PORT || "8256";
-  const dbUser = process.env.DB_USER || "postgres";
-  const dbName = process.env.DB_NAME || "siakad";
-
-  const cmd = `"${pgDumpPath}" -p ${dbPort} -U ${dbUser} -d ${dbName} -f "${tempFile}"`;
   
-  exec(cmd, (error, stdout, stderr) => {
+  let dbUser = "postgres";
+  let dbPort = "8256";
+  let dbName = "siakad";
+  let dbPass = "";
+  let dbHost = "localhost";
+
+  if (process.env.DATABASE_URL) {
+    try {
+      const url = new URL(process.env.DATABASE_URL);
+      dbUser = url.username || dbUser;
+      dbPass = url.password || dbPass;
+      dbHost = url.hostname || dbHost;
+      dbPort = url.port || dbPort;
+      dbName = url.pathname.substring(1) || dbName;
+    } catch (e) {
+      console.error("Error parsing DATABASE_URL:", e);
+    }
+  } else {
+    dbPort = process.env.DB_PORT || dbPort;
+    dbUser = process.env.DB_USER || dbUser;
+    dbName = process.env.DB_NAME || dbName;
+    dbPass = process.env.DB_PASS || dbPass;
+  }
+
+  const isWin = process.platform === "win32";
+  const pgDumpPath = process.env.PG_DUMP_PATH || (isWin ? "C:\\Program Files\\SIAKAD\\pgsql\\bin\\pg_dump.exe" : "pg_dump");
+
+  const cmd = `"${pgDumpPath}" -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -f "${tempFile}"`;
+  const env = { ...process.env, PGPASSWORD: dbPass };
+  
+  exec(cmd, { env }, (error, stdout, stderr) => {
     if (error) {
       console.error(`Backup execution error: ${error}`);
+      console.error(`stderr: ${stderr}`);
       return res.status(500).json({ error: 'Failed to generate backup.' });
     }
     
