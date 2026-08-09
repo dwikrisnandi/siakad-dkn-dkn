@@ -401,7 +401,6 @@ export default function AdminUsers({ roleType, title }) {
 											</label>
 											<select
 												className="form-select"
-												required
 												value={formData.program_id}
 												onChange={(e) =>
 													setFormData({
@@ -534,7 +533,6 @@ export default function AdminUsers({ roleType, title }) {
 											</label>
 											<select
 												className="form-select"
-												required
 												value={editFormData.program_id}
 												onChange={(e) =>
 													setEditFormData({
