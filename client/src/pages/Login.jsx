@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -9,6 +10,7 @@ export default function Login() {
 	const [loading, setLoading] = useState(false);
 	const { login } = useAuth();
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -37,29 +39,29 @@ export default function Login() {
 				<div className="text-center mb-4">
 					<img src="/favicon.svg" alt="SIAKAD Logo" style={{ width: "60px", marginBottom: "15px" }} />
 					<h2 className="fw-bold text-primary">SIAKAD DKN</h2>
-					<p className="text-muted">STMIK Pamitran</p>
+					<p className="text-muted">{t("auth.subtitle")}</p>
 				</div>
 
 				{error && <div className="alert alert-danger py-2">{error}</div>}
 
 				<form onSubmit={handleSubmit}>
 					<div className="mb-3">
-						<label className="form-label">NIM / NIDN</label>
+						<label className="form-label">{t("auth.nidn_nim")}</label>
 						<input
 							type="text"
 							className="form-control"
-							placeholder="Masukkan NIM atau NIDN"
+							placeholder={t("auth.nidn_nim_ph")}
 							value={nidn_nim}
 							onChange={(e) => setNidnNim(e.target.value)}
 							required
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="form-label">Password</label>
+						<label className="form-label">{t("auth.password")}</label>
 						<input
 							type="password"
 							className="form-control"
-							placeholder="Masukkan password"
+							placeholder={t("auth.password_ph")}
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							required
@@ -70,7 +72,7 @@ export default function Login() {
 						className="btn btn-primary w-100 py-2 fw-bold"
 						disabled={loading}
 					>
-						{loading ? "Memeriksa..." : "Masuk"}
+						{loading ? t("auth.checking") : t("auth.login_btn")}
 					</button>
 				</form>
 			</div>

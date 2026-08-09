@@ -1,10 +1,12 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 import { getRoleLinks } from "../utils/menuLinks";
 
 export default function Sidebar() {
 	const { user } = useAuth();
+	const { t } = useTranslation();
 	const links = getRoleLinks(user?.role, 18);
 
 	return (
@@ -57,7 +59,7 @@ export default function Sidebar() {
 						data-accordion="false"
 					>
 						<li className="nav-header text-uppercase text-secondary text-xs fw-bold mb-1">
-							MENU UTAMA
+							{t("menu.main_menu")}
 						</li>
 
 						{links.map((link, idx) => (
@@ -72,7 +74,7 @@ export default function Sidebar() {
 								>
 									{link.icon}
 									<p style={{ textAlign: "left", marginBottom: 0 }}>
-										{link.name}
+										{t(link.name)}
 									</p>
 								</NavLink>
 							</li>
