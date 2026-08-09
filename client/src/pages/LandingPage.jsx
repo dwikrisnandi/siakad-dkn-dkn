@@ -37,8 +37,8 @@ export default function LandingPage() {
 			style={{
 				minHeight: "100vh",
 				fontFamily: "'Inter', 'Segoe UI', Roboto, sans-serif",
-				background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)",
-				color: "#f8fafc",
+				backgroundColor: "#f4f7f6",
+				color: "#2c3e50",
 				overflowX: "clip",
 				position: "relative",
 			}}
@@ -54,113 +54,109 @@ export default function LandingPage() {
 			</Helmet>
 
 			<style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        .glass-card {
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 24px;
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        .hero-section {
+          background: linear-gradient(135deg, #ffffff 0%, #eef2f3 100%);
+          position: relative;
         }
-        .glass-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(255, 255, 255, 0.06);
-        }
-        .gradient-text {
-          background: linear-gradient(135deg, #c084fc 0%, #3b82f6 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        .animate-float-delayed {
-          animation: float 6s ease-in-out 3s infinite;
-        }
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-          100% { transform: translateY(0px); }
-        }
-        .hero-blob {
+        
+        /* Subtle Grid Background Pattern */
+        .grid-pattern {
           position: absolute;
-          border-radius: 50%;
-          filter: blur(100px);
+          inset: 0;
+          background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+          background-size: 30px 30px;
+          opacity: 0.5;
           z-index: 0;
         }
-        .blob-1 {
-          width: 500px; height: 500px;
-          background: rgba(168, 85, 247, 0.3);
-          top: -150px; left: -150px;
+
+        .academic-card {
+          background: #ffffff;
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          border-radius: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        .blob-2 {
-          width: 600px; height: 600px;
-          background: rgba(59, 130, 246, 0.2);
-          bottom: -200px; right: -200px;
+        
+        .academic-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          border-color: rgba(37, 99, 235, 0.2);
         }
-        .blob-3 {
-          width: 400px; height: 400px;
-          background: rgba(236, 72, 153, 0.2);
-          top: 30%; left: 40%;
+
+        .text-accent {
+          color: #2563eb; /* Academic Blue */
         }
-        .btn-glow {
-          background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+        
+        .bg-accent {
+          background-color: #2563eb;
+        }
+
+        .btn-academic {
+          background-color: #2563eb;
           color: white;
           border: none;
-          box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
         }
-        .btn-glow:hover {
+        
+        .btn-academic:hover {
+          background-color: #1d4ed8;
           color: white;
-          box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
-          transform: translateY(-2px);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-outline-academic {
+          border: 2px solid #e5e7eb;
+          color: #4b5563;
+          background: white;
+          transition: all 0.2s ease;
+        }
+        
+        .btn-outline-academic:hover {
+          border-color: #d1d5db;
+          color: #1f2937;
+          background: #f9fafb;
         }
       `}</style>
 
-			{/* Background Blobs */}
-			<div className="hero-blob blob-1"></div>
-			<div className="hero-blob blob-2 animate-float-delayed"></div>
-			<div className="hero-blob blob-3 animate-float"></div>
-
 			{/* Navbar */}
 			<nav
-				className="d-flex flex-column flex-md-row justify-content-between align-items-center p-3 p-md-4 position-relative"
+				className="d-flex flex-column flex-md-row justify-content-between align-items-center p-3 p-md-4 position-relative bg-white border-bottom shadow-sm"
 				style={{ zIndex: 10 }}
 			>
-				<div className="d-flex align-items-center gap-3 mb-4 mb-md-0">
+				<div className="d-flex align-items-center gap-3 mb-3 mb-md-0">
 					<img
 						src="/favicon.svg"
 						alt="SIAKAD Logo"
-						className="rounded-circle shadow-lg bg-light"
-						style={{ width: "45px", height: "45px", padding: "4px" }}
+						className="rounded-circle shadow-sm"
+						style={{ width: "45px", height: "45px", padding: "4px", border: "1px solid #e5e7eb" }}
 					/>
-					<span className="fs-3 fw-bold tracking-tight">
-						SIAKAD <span className="text-primary">DKN</span>
+					<span className="fs-3 fw-bold tracking-tight text-dark">
+						SIAKAD <span className="text-accent">DKN</span>
 					</span>
 				</div>
 				<div className="d-flex align-items-center gap-2 gap-md-3 flex-wrap justify-content-center">
 					<div className="dropdown">
-						<button className="btn btn-outline-light rounded-pill dropdown-toggle d-flex align-items-center gap-2 btn-sm px-3 py-2 px-md-4" type="button" data-bs-toggle="dropdown" aria-expanded="false" style={{ borderColor: 'rgba(255,255,255,0.2)'}}>
+						<button className="btn btn-outline-academic rounded-pill dropdown-toggle d-flex align-items-center gap-2 btn-sm px-3 py-2 px-md-4" type="button" data-bs-toggle="dropdown" aria-expanded="false">
 							<Globe size={18} /> <span className="d-none d-sm-inline">{i18n.language.toUpperCase()}</span>
 						</button>
-						<ul className="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style={{ background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)'}}>
-							<li><button className="dropdown-item" onClick={() => changeLanguage('en')}>🇬🇧 English (EN)</button></li>
-							<li><button className="dropdown-item" onClick={() => changeLanguage('id')}>🇮🇩 Indonesia (ID)</button></li>
+						<ul className="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+							<li><button className="dropdown-item py-2" onClick={() => changeLanguage('en')}>🇬🇧 English (EN)</button></li>
+							<li><button className="dropdown-item py-2" onClick={() => changeLanguage('id')}>🇮🇩 Indonesia (ID)</button></li>
 						</ul>
 					</div>
 					<Link
 						to="/register"
-						className="btn btn-outline-light rounded-pill px-3 py-2 px-md-4 fw-semibold d-flex align-items-center gap-2 btn-sm"
-						style={{ borderColor: 'rgba(255,255,255,0.2)'}}
+						className="btn btn-outline-academic rounded-pill px-3 py-2 px-md-4 fw-semibold d-flex align-items-center gap-2 btn-sm"
 					>
 						<Building size={18} /> <span className="d-none d-sm-inline">{t('landing.register')}</span>
 					</Link>
 					<Link
 						to="/login"
-						className="btn btn-glow rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2 btn-sm"
+						className="btn btn-academic rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2 btn-sm"
 					>
 						{t('landing.login')} <ArrowRight size={18} />
 					</Link>
@@ -169,36 +165,37 @@ export default function LandingPage() {
 
 			{/* Hero Section */}
 			<main
-				className="container-fluid px-4 px-lg-5 position-relative"
-				style={{ zIndex: 10, marginTop: "8vh", paddingBottom: "10vh" }}
+				className="container-fluid px-4 px-lg-5 position-relative hero-section pb-5"
+				style={{ zIndex: 5, paddingTop: "8vh", minHeight: "85vh" }}
 			>
-				<div className="row align-items-center">
+				<div className="grid-pattern"></div>
+				<div className="row align-items-center position-relative" style={{ zIndex: 1 }}>
 					<div className="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
 						<div
-							className="badge glass-card px-3 py-2 mb-4 text-white d-inline-flex align-items-center gap-2 border-0"
-							style={{ background: "rgba(255,255,255,0.1)" }}
+							className="badge bg-white text-dark shadow-sm px-3 py-2 mb-4 d-inline-flex align-items-center gap-2 border"
+							style={{ borderRadius: "8px" }}
 						>
 							<ShieldCheck size={16} className="text-success" />
-							<span className="fw-normal">{t('landing.badge')}</span>
+							<span className="fw-medium">{t('landing.badge')}</span>
 						</div>
 						<h1
-							className="display-3 fw-bolder mb-4 lh-1"
+							className="display-4 fw-bolder mb-4 lh-sm text-dark"
 							style={{ letterSpacing: "-1px" }}
 						>
 							{t('landing.title1')} <br />
-							<span className="gradient-text">{t('landing.title2')}</span> <br />
+							<span className="text-accent">{t('landing.title2')}</span> <br />
 							{t('landing.title3')}
 						</h1>
 						<p
 							className="fs-5 mb-5"
-							style={{ color: "#94a3b8", maxWidth: "540px", lineHeight: "1.6" }}
+							style={{ color: "#475569", maxWidth: "540px", lineHeight: "1.7" }}
 						>
 							{t('landing.subtitle')}
 						</p>
 						<div className="d-flex gap-3">
 							<Link
 								to="/register"
-								className="btn btn-glow rounded-pill px-5 py-3 fs-5 fw-bold d-flex align-items-center gap-2 shadow-lg"
+								className="btn btn-academic rounded-pill px-5 py-3 fs-6 fw-bold d-flex align-items-center gap-2"
 							>
 								{t('landing.start')} <ArrowRight size={20} />
 							</Link>
@@ -206,66 +203,66 @@ export default function LandingPage() {
 					</div>
 
 					<div className="col-lg-6 position-relative ps-lg-5">
-						<div className="row g-4 position-relative">
-							<div className="col-6 mt-5 animate-float">
-								<div className="glass-card p-4 mb-4">
+						<div className="row g-4">
+							<div className="col-6 mt-lg-5">
+								<div className="academic-card p-4 mb-4">
 									<div
-										className="bg-primary bg-opacity-25 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-										style={{ width: "60px", height: "60px" }}
+										className="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+										style={{ width: "55px", height: "55px" }}
 									>
-										<MonitorPlay size={30} className="text-primary" />
+										<MonitorPlay size={26} className="text-primary" />
 									</div>
-									<h4 className="fw-bold mb-2">{t('landing.feature1_title')}</h4>
+									<h5 className="fw-bold mb-2 text-dark">{t('landing.feature1_title')}</h5>
 									<p
 										className="mb-0"
-										style={{ color: "#94a3b8", fontSize: "0.95rem" }}
+										style={{ color: "#64748b", fontSize: "0.9rem", lineHeight: "1.5" }}
 									>
 										{t('landing.feature1_desc')}
 									</p>
 								</div>
-								<div className="glass-card p-4">
+								<div className="academic-card p-4">
 									<div
-										className="bg-success bg-opacity-25 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-										style={{ width: "60px", height: "60px" }}
+										className="bg-success bg-opacity-10 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+										style={{ width: "55px", height: "55px" }}
 									>
-										<BookOpen size={30} className="text-success" />
+										<BookOpen size={26} className="text-success" />
 									</div>
-									<h4 className="fw-bold mb-2">{t('landing.feature2_title')}</h4>
+									<h5 className="fw-bold mb-2 text-dark">{t('landing.feature2_title')}</h5>
 									<p
 										className="mb-0"
-										style={{ color: "#94a3b8", fontSize: "0.95rem" }}
+										style={{ color: "#64748b", fontSize: "0.9rem", lineHeight: "1.5" }}
 									>
 										{t('landing.feature2_desc')}
 									</p>
 								</div>
 							</div>
-							<div className="col-6 animate-float-delayed">
-								<div className="glass-card p-4 mb-4">
+							<div className="col-6">
+								<div className="academic-card p-4 mb-4">
 									<div
-										className="bg-warning bg-opacity-25 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-										style={{ width: "60px", height: "60px" }}
+										className="bg-warning bg-opacity-10 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+										style={{ width: "55px", height: "55px" }}
 									>
-										<LayoutDashboard size={30} className="text-warning" />
+										<LayoutDashboard size={26} className="text-warning" />
 									</div>
-									<h4 className="fw-bold mb-2">{t('landing.feature3_title')}</h4>
+									<h5 className="fw-bold mb-2 text-dark">{t('landing.feature3_title')}</h5>
 									<p
 										className="mb-0"
-										style={{ color: "#94a3b8", fontSize: "0.95rem" }}
+										style={{ color: "#64748b", fontSize: "0.9rem", lineHeight: "1.5" }}
 									>
 										{t('landing.feature3_desc')}
 									</p>
 								</div>
-								<div className="glass-card p-4">
+								<div className="academic-card p-4">
 									<div
-										className="bg-info bg-opacity-25 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
-										style={{ width: "60px", height: "60px" }}
+										className="bg-info bg-opacity-10 p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+										style={{ width: "55px", height: "55px" }}
 									>
-										<Sparkles size={30} className="text-info" />
+										<Sparkles size={26} className="text-info" />
 									</div>
-									<h4 className="fw-bold mb-2">{t('landing.feature4_title')}</h4>
+									<h5 className="fw-bold mb-2 text-dark">{t('landing.feature4_title')}</h5>
 									<p
 										className="mb-0"
-										style={{ color: "#94a3b8", fontSize: "0.95rem" }}
+										style={{ color: "#64748b", fontSize: "0.9rem", lineHeight: "1.5" }}
 									>
 										{t('landing.feature4_desc')}
 									</p>
@@ -278,14 +275,13 @@ export default function LandingPage() {
 
 			{/* Footer */}
 			<footer
-				className="text-center py-4 mt-auto position-relative"
+				className="text-center py-4 bg-white border-top position-relative"
 				style={{
 					zIndex: 10,
-					borderTop: "1px solid rgba(255,255,255,0.05)",
-					color: "#475569",
+					color: "#64748b",
 				}}
 			>
-				<p className="mb-0 fw-medium">
+				<p className="mb-0 fw-medium small">
 					&copy; 2026 {t('landing.footer')}
 				</p>
 			</footer>
