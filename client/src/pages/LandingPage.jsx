@@ -260,7 +260,7 @@ export default function LandingPage() {
 								href="mailto:arthavirddhisampada@gmail.com"
 								className="btn btn-outline-academic rounded-pill px-4 py-3 fs-6 fw-bold d-flex align-items-center gap-2"
 							>
-								Hubungi Kami
+								{t('landing.contact_us')}
 							</a>
 						</div>
 					</div>
@@ -344,7 +344,7 @@ export default function LandingPage() {
 				}}
 			>
 				<p className="mb-2 fw-medium small text-secondary-custom">
-					Ingin bikin SIAKAD kampus atau berlangganan? Hubungi:{' '}
+					{t('landing.subscribe_text')}{' '}
 					<a href="mailto:arthavirddhisampada@gmail.com" className="text-accent text-decoration-none fw-bold">
 						arthavirddhisampada@gmail.com
 					</a>
