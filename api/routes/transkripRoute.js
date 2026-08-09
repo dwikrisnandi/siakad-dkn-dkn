@@ -12,11 +12,10 @@ const getTranscriptData = async (mahasiswaId) => {
       c.name as course_name, 
       c.sks, 
       c.semester,
-      MAX(cg.final_score) as final_score
+      MAX(cg.final_grade) as final_score
     FROM course_grades cg
-    JOIN schedules s ON cg.schedule_id = s.id
-    JOIN courses c ON s.course_id = c.id
-    WHERE cg.mahasiswa_id = ? AND cg.final_score IS NOT NULL
+    JOIN courses c ON cg.course_id = c.id
+    WHERE cg.mahasiswa_id = ? AND cg.final_grade IS NOT NULL
     GROUP BY c.id
     ORDER BY c.semester ASC, c.name ASC
   `;
