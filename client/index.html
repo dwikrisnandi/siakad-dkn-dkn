@@ -74,6 +74,29 @@
     <!-- Perlindungan Hak Cipta -->
     <div style="display:none;" id="dkn-cr">Copyright &copy; 2026 SIAKAD DKN. Hak cipta milik Dwi Krisnandi.</div>
     
+    <!-- Mencegah Crash React akibat Google Translate -->
+    <script>
+      if (typeof Node === 'function' && Node.prototype) {
+        const originalRemoveChild = Node.prototype.removeChild;
+        Node.prototype.removeChild = function(child) {
+          if (child.parentNode !== this) {
+            console.warn('React Google Translate Crash Prevented (removeChild)', child, this);
+            return child;
+          }
+          return originalRemoveChild.apply(this, arguments);
+        };
+
+        const originalInsertBefore = Node.prototype.insertBefore;
+        Node.prototype.insertBefore = function(newNode, referenceNode) {
+          if (referenceNode && referenceNode.parentNode !== this) {
+            console.warn('React Google Translate Crash Prevented (insertBefore)', referenceNode, this);
+            return newNode;
+          }
+          return originalInsertBefore.apply(this, arguments);
+        };
+      }
+    </script>
+    
     <!-- REQUIRED SCRIPTS FOR ADMINLTE -->
     <!-- jQuery -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>

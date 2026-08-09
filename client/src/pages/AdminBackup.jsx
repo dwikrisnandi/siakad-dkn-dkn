@@ -97,11 +97,11 @@ export default function AdminBackup() {
 									role="status"
 									aria-hidden="true"
 								></span>{" "}
-								Memproses Backup...
+								<span>Memproses Backup...</span>
 							</>
 						) : (
 							<>
-								<Download size={18} className="me-2" /> Mulai Download Backup
+								<Download size={18} className="me-2" /> <span>Mulai Download Backup</span>
 							</>
 						)}
 					</button>
