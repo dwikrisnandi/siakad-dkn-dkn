@@ -25,6 +25,7 @@ export default function LandingPage() {
 	const [isDark, setIsDark] = useState(() => {
 		return localStorage.getItem("theme") === "dark";
 	});
+	const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
 	useEffect(() => {
 		localStorage.setItem("theme", isDark ? "dark" : "light");
@@ -197,12 +198,16 @@ export default function LandingPage() {
 					</button>
 
 					<div className="dropdown">
-						<button className="btn btn-outline-academic rounded-pill dropdown-toggle d-flex align-items-center gap-2 btn-sm px-3 py-2 px-md-4" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+						<button 
+							className="btn btn-outline-academic rounded-pill dropdown-toggle d-flex align-items-center gap-2 btn-sm px-3 py-2 px-md-4" 
+							type="button" 
+							onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+						>
 							<Globe size={18} /> <span className="d-none d-sm-inline">{i18n.language.toUpperCase()}</span>
 						</button>
-						<ul className="dropdown-menu dropdown-menu-end shadow-sm mt-2" style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--card-border)"}}>
-							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => changeLanguage('en')}>🇬🇧 English (EN)</button></li>
-							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => changeLanguage('id')}>🇮🇩 Indonesia (ID)</button></li>
+						<ul className={`dropdown-menu dropdown-menu-end shadow-sm mt-2 ${langDropdownOpen ? 'show' : ''}`} style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--card-border)"}}>
+							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('en'); setLangDropdownOpen(false); }}>🇬🇧 English (EN)</button></li>
+							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('id'); setLangDropdownOpen(false); }}>🇮🇩 Indonesia (ID)</button></li>
 						</ul>
 					</div>
 					<Link
