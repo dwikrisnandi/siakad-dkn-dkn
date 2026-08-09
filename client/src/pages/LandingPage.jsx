@@ -249,13 +249,19 @@ export default function LandingPage() {
 						>
 							{t('landing.subtitle')}
 						</p>
-						<div className="d-flex gap-3">
+						<div className="d-flex flex-wrap gap-3">
 							<Link
 								to="/register"
 								className="btn btn-academic rounded-pill px-5 py-3 fs-6 fw-bold d-flex align-items-center gap-2"
 							>
 								{t('landing.start')} <ArrowRight size={20} />
 							</Link>
+							<a
+								href="mailto:arthavirddhisampada@gmail.com"
+								className="btn btn-outline-academic rounded-pill px-4 py-3 fs-6 fw-bold d-flex align-items-center gap-2"
+							>
+								Hubungi Kami
+							</a>
 						</div>
 					</div>
 
@@ -337,6 +343,12 @@ export default function LandingPage() {
 					zIndex: 10,
 				}}
 			>
+				<p className="mb-2 fw-medium small text-secondary-custom">
+					Ingin bikin SIAKAD kampus atau berlangganan? Hubungi:{' '}
+					<a href="mailto:arthavirddhisampada@gmail.com" className="text-accent text-decoration-none fw-bold">
+						arthavirddhisampada@gmail.com
+					</a>
+				</p>
 				<p className="mb-0 fw-medium small text-secondary-custom">
 					&copy; 2026 {t('landing.footer')}
 				</p>
