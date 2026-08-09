@@ -117,7 +117,8 @@ export default function AdminUsers({ roleType, title }) {
 			setSuccess(`Data ${title} berhasil diupdate`);
 			fetchUsers();
 		} catch (err) {
-			setError(`Gagal mengupdate data ${title}`);
+			const apiError = err.response?.data?.error || err.message || "";
+			setError(`Gagal mengupdate data ${title}. Detail: ${apiError}`);
 		}
 	};
 
