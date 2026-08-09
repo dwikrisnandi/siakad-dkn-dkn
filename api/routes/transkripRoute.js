@@ -66,7 +66,7 @@ router.get('/transkrip/me', [verifyToken, verifyRole(['mahasiswa'])], async (req
     
     res.json({ ...data, student: { ...user, prodi: program?.nama_prodi || '-' } });
   } catch (err) {
-    res.status(500).json({ error: 'Failed fetching transcript' });
+    res.status(500).json({ error: 'Failed fetching transcript: ' + err.message });
   }
 });
 
@@ -81,7 +81,7 @@ router.get('/transkrip/:mahasiswaId', [verifyToken, verifyRole(['admin'])], asyn
     
     res.json({ ...data, student: { ...user, prodi: program?.nama_prodi || '-' } });
   } catch (err) {
-    res.status(500).json({ error: 'Failed fetching transcript' });
+    res.status(500).json({ error: 'Failed fetching transcript: ' + err.message });
   }
 });
 
