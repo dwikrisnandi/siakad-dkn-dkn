@@ -127,10 +127,10 @@ export default function LandingPage() {
 
 			{/* Navbar */}
 			<nav
-				className="d-flex justify-content-between align-items-center p-4 position-relative flex-wrap"
+				className="d-flex flex-column flex-md-row justify-content-between align-items-center p-3 p-md-4 position-relative"
 				style={{ zIndex: 10 }}
 			>
-				<div className="d-flex align-items-center gap-3 mb-3 mb-md-0">
+				<div className="d-flex align-items-center gap-3 mb-4 mb-md-0">
 					<img
 						src="/favicon.svg"
 						alt="SIAKAD Logo"
@@ -141,10 +141,10 @@ export default function LandingPage() {
 						SIAKAD <span className="text-primary">DKN</span>
 					</span>
 				</div>
-				<div className="d-flex align-items-center gap-3">
+				<div className="d-flex align-items-center gap-2 gap-md-3 flex-wrap justify-content-center">
 					<div className="dropdown">
-						<button className="btn btn-outline-light rounded-pill dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style={{ borderColor: 'rgba(255,255,255,0.2)'}}>
-							<Globe size={18} /> {i18n.language.toUpperCase()}
+						<button className="btn btn-outline-light rounded-pill dropdown-toggle d-flex align-items-center gap-2 btn-sm px-3 py-2 px-md-4" type="button" data-bs-toggle="dropdown" aria-expanded="false" style={{ borderColor: 'rgba(255,255,255,0.2)'}}>
+							<Globe size={18} /> <span className="d-none d-sm-inline">{i18n.language.toUpperCase()}</span>
 						</button>
 						<ul className="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style={{ background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)'}}>
 							<li><button className="dropdown-item" onClick={() => changeLanguage('en')}>🇬🇧 English (EN)</button></li>
@@ -153,14 +153,14 @@ export default function LandingPage() {
 					</div>
 					<Link
 						to="/register"
-						className="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2"
+						className="btn btn-outline-light rounded-pill px-3 py-2 px-md-4 fw-semibold d-flex align-items-center gap-2 btn-sm"
 						style={{ borderColor: 'rgba(255,255,255,0.2)'}}
 					>
-						<Building size={18} /> {t('landing.register')}
+						<Building size={18} /> <span className="d-none d-sm-inline">{t('landing.register')}</span>
 					</Link>
 					<Link
 						to="/login"
-						className="btn btn-glow rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2"
+						className="btn btn-glow rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2 btn-sm"
 					>
 						{t('landing.login')} <ArrowRight size={18} />
 					</Link>
