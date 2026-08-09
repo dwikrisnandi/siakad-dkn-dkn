@@ -442,14 +442,14 @@ router.get('/exams/:id/export-docx', [verifyToken, verifyRole(['dosen', 'admin']
                   alignment: AlignmentType.CENTER,
                   spacing: { after: 0 },
                   children: [
-                    new TextRun({ text: 'Email: stmik@stmikpamitran.ac.id  Telepon: 082121444219', size: 18, font: 'Times New Roman' }),
+                    new TextRun({ text: 'Email: info@arthavirddhisampada.online  Telepon: 082121444219', size: 18, font: 'Times New Roman' }),
                   ],
                 }),
                 new Paragraph({
                   alignment: AlignmentType.CENTER,
                   spacing: { after: 0 },
                   children: [
-                    new TextRun({ text: 'Website: stmikpamitran.ac.id', size: 18, font: 'Times New Roman' }),
+                    new TextRun({ text: 'Website: arthavirddhisampada.online', size: 18, font: 'Times New Roman' }),
                   ],
                 }),
               ],

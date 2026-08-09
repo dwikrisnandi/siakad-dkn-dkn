@@ -76,7 +76,7 @@ function AppContent() {
 	const pathParts = window.location.pathname.split("/");
 	const firstPath = pathParts[1] && pathParts[1] !== "" ? pathParts[1] : "";
 	
-	let tenantSlug = "pamitran"; // Default tenant
+	let tenantSlug = "artha"; // Default tenant
 	let routerBasename = "/";    // Default basename untuk backward compatibility
 
 	// Jika bagian pertama URL bukan rute aplikasi, berarti itu adalah tenant_slug (misal: /horizon/login)

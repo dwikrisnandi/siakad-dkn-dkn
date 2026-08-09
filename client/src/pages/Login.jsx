@@ -17,7 +17,7 @@ export default function Login() {
 	React.useEffect(() => {
 		const fetchTenant = async () => {
 			try {
-				const slug = localStorage.getItem("tenant_slug") || "pamitran";
+				const slug = localStorage.getItem("tenant_slug") || "artha";
 				const res = await api.get(`/public/tenant/info/${slug}`);
 				setCampusName(res.data.name);
 			} catch (err) {

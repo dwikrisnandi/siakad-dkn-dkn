@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
 	}
 
 	// Multi-Tenant Isolation
-	const tenantSlug = localStorage.getItem("tenant_slug") || "pamitran";
+	const tenantSlug = localStorage.getItem("tenant_slug") || "artha";
 	config.headers["X-Tenant-Slug"] = tenantSlug;
 
 	return config;
