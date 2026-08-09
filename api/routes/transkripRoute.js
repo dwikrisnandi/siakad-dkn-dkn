@@ -10,7 +10,7 @@ const getTranscriptData = async (mahasiswaId) => {
     SELECT 
       c.code as course_code, 
       c.name as course_name, 
-      s.sks, 
+      c.sks, 
       c.semester,
       MAX(cg.final_score) as final_score
     FROM course_grades cg
