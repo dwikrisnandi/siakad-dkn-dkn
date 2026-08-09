@@ -3,13 +3,17 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
+import { Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Topbar() {
 	const { user, logout } = useAuth();
 	const navigate = useNavigate();
+	const { i18n } = useTranslation();
 	const [notifications, setNotifications] = useState({ count: 0, items: [] });
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [profileOpen, setProfileOpen] = useState(false);
+	const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
 	// Change Password State
 	const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -42,6 +46,11 @@ export default function Topbar() {
 	const handleLogout = () => {
 		logout();
 		navigate("/login");
+	};
+
+	const changeLanguage = (lng) => {
+		i18n.changeLanguage(lng);
+		setLangDropdownOpen(false);
 	};
 
 	const handleNotifClick = (e, notif) => {
@@ -102,6 +111,25 @@ export default function Topbar() {
 
 			{/* Right navbar links */}
 			<ul className="navbar-nav ms-auto d-flex align-items-center">
+				{/* Language Selector */}
+				<li className="nav-item dropdown me-2">
+					<button 
+						className="btn btn-light rounded-pill dropdown-toggle d-flex align-items-center gap-2 btn-sm px-3 py-1" 
+						type="button" 
+						onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+						style={{ border: "1px solid #dee2e6" }}
+					>
+						<Globe size={18} /> <span className="d-none d-sm-inline fw-bold text-uppercase">{i18n.language}</span>
+					</button>
+					<div className={`dropdown-menu dropdown-menu-end shadow-sm mt-2 ${langDropdownOpen ? 'show' : ''}`} style={{ right: 0, left: "auto" }}>
+						<button className="dropdown-item py-2" onClick={(e) => { e.preventDefault(); changeLanguage('en'); }}>🇬🇧 English (EN)</button>
+						<button className="dropdown-item py-2" onClick={(e) => { e.preventDefault(); changeLanguage('id'); }}>🇮🇩 Indonesia (ID)</button>
+						<button className="dropdown-item py-2" onClick={(e) => { e.preventDefault(); changeLanguage('ko'); }}>🇰🇷 한국어 (KO)</button>
+						<button className="dropdown-item py-2" onClick={(e) => { e.preventDefault(); changeLanguage('ja'); }}>🇯🇵 日本語 (JA)</button>
+						<button className="dropdown-item py-2" onClick={(e) => { e.preventDefault(); changeLanguage('zh'); }}>🇨🇳 中文 (ZH)</button>
+					</div>
+				</li>
+
 				{/* Notifications Dropdown Menu */}
 				{(user?.role === "mahasiswa" || user?.role === "dosen") && (
 					<li className="nav-item dropdown me-3">
@@ -243,13 +271,14 @@ export default function Topbar() {
 			</ul>
 
 			{/* Click outside to close dropdown (simple overlay logic) */}
-			{(dropdownOpen || profileOpen) && (
+			{(dropdownOpen || profileOpen || langDropdownOpen) && (
 				<div
 					className="position-fixed w-100 h-100"
 					style={{ top: 0, left: 0, zIndex: 990 }}
 					onClick={() => {
 						setDropdownOpen(false);
 						setProfileOpen(false);
+						setLangDropdownOpen(false);
 					}}
 				></div>
 			)}

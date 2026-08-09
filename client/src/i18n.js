@@ -30,4 +30,24 @@ i18n
     }
   });
 
+// Sinkronisasi otomatis dengan Google Translate
+i18n.on('languageChanged', (lng) => {
+  // Google Translate menggunakan 'zh-CN' untuk bahasa mandarin
+  const gLng = lng === 'zh' ? 'zh-CN' : (lng === 'id' ? 'id' : lng);
+  
+  // Set Cookie agar Google Translate otomatis translate saat load
+  document.cookie = `googtrans=/id/${gLng}; path=/`;
+  document.cookie = `googtrans=/id/${gLng}; domain=${window.location.hostname}; path=/`;
+
+  // Mencari dropdown bawaan google translate jika script sudah jalan
+  const googleSelect = document.querySelector('.goog-te-combo');
+  if (googleSelect) {
+    googleSelect.value = gLng;
+    googleSelect.dispatchEvent(new Event('change'));
+  } else if (gLng !== 'id') {
+    // Jika dropdown belum ada (script belum load), reload halaman agar cookie terbaca
+    // Tapi tunggu sebentar agar tidak infinite loop, atau biarkan Google membaca cookie saat inisialisasi
+  }
+});
+
 export default i18n;
