@@ -60,13 +60,12 @@ router.get('/feeder/nilai', [verifyToken, verifyRole(['admin'])], async (req, re
         u.nidn_nim as NIM,
         u.name as Nama_Mahasiswa,
         c.code as Kode_MK,
-        ay.name as Tahun_Akademik,
-        cg.final_score as Nilai_Angka
+        '-' as Tahun_Akademik,
+        (cg.nilai_uts + cg.nilai_uas) / 2 as Nilai_Angka
       FROM course_grades cg
       JOIN users u ON cg.mahasiswa_id = u.id
       JOIN schedules s ON cg.schedule_id = s.id
       JOIN courses c ON s.course_id = c.id
-      JOIN academic_years ay ON s.academic_year_id = ay.id
     `);
     const csv = generateCsv(['NIM', 'Nama_Mahasiswa', 'Kode_MK', 'Tahun_Akademik', 'Nilai_Angka'], data);
     res.header('Content-Type', 'text/csv');
