@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
 
 export default function Login() {
 	const [nidn_nim, setNidnNim] = useState("");
@@ -11,6 +12,20 @@ export default function Login() {
 	const { login } = useAuth();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
+	const [campusName, setCampusName] = useState("");
+
+	React.useEffect(() => {
+		const fetchTenant = async () => {
+			try {
+				const slug = localStorage.getItem("tenant_slug") || "pamitran";
+				const res = await api.get(`/public/tenant/info/${slug}`);
+				setCampusName(res.data.name);
+			} catch (err) {
+				setCampusName(t("auth.subtitle"));
+			}
+		};
+		fetchTenant();
+	}, [t]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -39,7 +54,7 @@ export default function Login() {
 				<div className="text-center mb-4">
 					<img src="/favicon.svg" alt="SIAKAD Logo" style={{ width: "60px", marginBottom: "15px" }} />
 					<h2 className="fw-bold text-primary">SIAKAD DKN</h2>
-					<p className="text-muted">{t("auth.subtitle")}</p>
+					<p className="text-muted">{campusName || t("auth.subtitle")}</p>
 				</div>
 
 				{error && <div className="alert alert-danger py-2">{error}</div>}

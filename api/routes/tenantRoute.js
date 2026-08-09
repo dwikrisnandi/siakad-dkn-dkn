@@ -14,6 +14,21 @@ router.get('/plans', async (req, res) => {
   }
 });
 
+// ── GET Tenant Info by Slug (Public) ──
+router.get('/info/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const [tenants] = await query('SELECT name, theme_color, country FROM tenants WHERE slug = ?', [slug]);
+    if (tenants.length === 0) {
+      return res.status(404).json({ error: 'Tenant tidak ditemukan' });
+    }
+    res.json(tenants[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Gagal memuat info tenant' });
+  }
+});
+
 // ── POST Register Tenant Baru (Self-Serve) ──
 router.post('/register', async (req, res) => {
   try {
