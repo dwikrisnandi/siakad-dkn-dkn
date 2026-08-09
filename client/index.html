@@ -53,9 +53,12 @@
     <!-- Google Translate Script (Hidden Widget) -->
     <style>
       /* Hide the Google Translate widget and top frame */
-      .goog-te-banner-frame.skiptranslate, .goog-te-gadget { display: none !important; }
-      body { top: 0px !important; }
-      #google_translate_element { display: none; }
+      .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame { display: none !important; }
+      body { top: 0px !important; position: static !important; }
+      html { top: 0px !important; position: static !important; }
+      #google_translate_element { display: none !important; }
+      .skiptranslate > iframe.goog-te-banner-frame { display: none !important; }
+      body > .skiptranslate { display: none !important; }
     </style>
     <script type="text/javascript">
       function googleTranslateElementInit() {
