@@ -75,3 +75,4 @@ api/scripts/
 api/__tests__/
 deploy.js
 client/dist.zip
+scratch/
