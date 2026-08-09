@@ -4,8 +4,35 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const { exec } = require('child_process');
-const { query, run } = require('../db');
+const { query, run, db: pool } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
+
+router.get('/fix-seq', async (req, res) => {
+  try {
+    const { rows: sequences } = await pool.query(`
+      SELECT c.relname as table_name, s.relname as seq_name
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      JOIN pg_attribute a ON a.attrelid = c.oid
+      JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+      JOIN pg_depend dep ON dep.objid = d.oid
+      JOIN pg_class s ON s.oid = dep.refobjid
+      WHERE n.nspname = 'public' AND s.relkind = 'S';
+    `);
+    let log = [];
+    for (const seq of sequences) {
+      const resQuery = await pool.query(`SELECT MAX(id) FROM ${seq.table_name}`);
+      const maxId = resQuery.rows[0].max;
+      if (maxId) {
+        await pool.query(`SELECT setval('${seq.seq_name}', ${maxId})`);
+        log.push(`Reset ${seq.seq_name} to ${maxId}`);
+      }
+    }
+    res.json({ message: 'Sequences fixed', log });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.get('/backup', [verifyToken, verifyRole(['admin'])], (req, res) => {
   const tempFile = path.join(__dirname, '..', `backup_tmp_${Date.now()}.sql`);
