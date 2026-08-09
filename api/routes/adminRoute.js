@@ -236,7 +236,7 @@ router.put('/users/:id', [verifyToken, verifyRole(['admin'])], async (req, res) 
     res.json({ message: 'User updated successfully' });
   } catch (error) {
     console.error('Update user error:', error);
-    res.status(500).json({ error: 'Failed updating user' });
+    res.status(500).json({ error: 'Failed updating user: ' + error.message });
   }
 });
 
