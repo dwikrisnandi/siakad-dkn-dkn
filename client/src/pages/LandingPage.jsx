@@ -444,7 +444,7 @@ export default function LandingPage() {
 							</div>
 							<h2 className="display-6 fw-bold mb-4 text-primary-custom">Transformasi Digital untuk <span className="text-accent">Pendidikan Masa Depan</span></h2>
 							<p className="fs-5 text-secondary-custom lh-lg mb-5">
-								<strong className="text-primary-custom">SIAKAD DKN Solusi Global</strong> hadir sebagai jawaban atas kebutuhan digitalisasi institusi pendidikan modern. 
+								<strong className="text-primary-custom">SIAKAD DKN dari PT. Artha Virddhi Sampada</strong> hadir sebagai jawaban atas kebutuhan digitalisasi institusi pendidikan modern. 
 								Kami mendedikasikan diri untuk merancang ekosistem pendidikan yang tidak hanya terintegrasi secara administratif (End-to-End), tetapi juga adaptif terhadap perkembangan teknologi. 
 								Dengan menggabungkan fondasi manajemen sekolah yang kokoh dan inovasi terkini—seperti kecerdasan buatan (AI) terapan—kami berkomitmen untuk mendampingi kampus dan sekolah Anda melompat lebih jauh menuju standar pendidikan yang cemerlang dan tanpa batas.
 							</p>
@@ -630,7 +630,7 @@ export default function LandingPage() {
 								<div className="d-flex align-items-start gap-3">
 									<Building size={18} className="mt-1 flex-shrink-0" />
 									<div>
-										<span className="fw-bold d-block text-primary-custom">SIAKAD DKN Solusi Global</span>
+										<span className="fw-bold d-block text-primary-custom">PT. Artha Virddhi Sampada</span>
 										Tirtajaya, Karawang,<br/>Jawa Barat
 									</div>
 								</div>
@@ -665,16 +665,18 @@ export default function LandingPage() {
 					</div>
 					
 					{/* Bottom Bar */}
-					<div className="row border-top border-secondary pt-3 mt-4" style={{ borderColor: "var(--card-border) !important" }}>
-						<div className="col-md-6 text-center text-md-start mb-2 mb-md-0">
-							<p className="mb-0 fw-medium small text-secondary-custom">
-								&copy; 2026 PT. SIAKAD DKN Solusi Global. All Rights Reserved.
-							</p>
-						</div>
-						<div className="col-md-6 text-center text-md-end">
-							<div className="d-flex gap-3 justify-content-center justify-content-md-end small">
-								<a href="#" className="text-secondary-custom text-decoration-none fw-medium hover-text-primary">Syarat & Ketentuan</a>
-								<a href="#" className="text-secondary-custom text-decoration-none fw-medium hover-text-primary">Kebijakan Privacy</a>
+					<div className="container-fluid px-4 px-lg-5 mt-5">
+						<div className="pt-4 border-top" style={{ borderColor: "var(--card-border) !important" }}>
+							<div className="row align-items-center">
+								<div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
+									<p className="mb-0 text-secondary-custom" style={{ fontSize: "0.85rem" }}>
+										&copy; {new Date().getFullYear()} PT. Artha Virddhi Sampada. Hak Cipta Dilindungi.
+									</p>
+								</div>
+								<div className="col-md-6 text-center text-md-end">
+									<a href="#" className="footer-link d-inline-block me-3" style={{ fontSize: "0.85rem" }}>Kebijakan Privasi</a>
+									<a href="#" className="footer-link d-inline-block" style={{ fontSize: "0.85rem" }}>Syarat & Ketentuan</a>
+								</div>
 							</div>
 						</div>
 					</div>
