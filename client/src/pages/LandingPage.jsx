@@ -434,7 +434,7 @@ export default function LandingPage() {
 			</main>
 
 			{/* Section: Tentang Kami */}
-			<section className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-primary)" }}>
+			<section id="tentang-kami" className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-primary)" }}>
 				<div className="container-fluid px-4 px-lg-5">
 					<div className="row justify-content-center text-center">
 						<div className="col-lg-8">
@@ -454,7 +454,7 @@ export default function LandingPage() {
 			</section>
 
 			{/* Section: Manajemen Kampus & Sekolah */}
-			<section className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-hero)" }}>
+			<section id="manajemen-kampus" className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-hero)" }}>
 				<div className="container-fluid px-4 px-lg-5">
 					<div className="text-center mb-5">
 						<h2 className="display-6 fw-bold text-primary-custom">Manajemen Kampus & Sekolah</h2>
@@ -511,7 +511,7 @@ export default function LandingPage() {
 			</section>
 
 			{/* Section: Manajemen Pembelajaran (LMS) */}
-			<section className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-primary)" }}>
+			<section id="manajemen-pembelajaran" className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-primary)" }}>
 				<div className="container-fluid px-4 px-lg-5">
 					<div className="text-center mb-5">
 						<div className="badge shadow-sm px-3 py-2 mb-3 text-primary-custom" style={{ borderRadius: "8px", background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
@@ -604,9 +604,9 @@ export default function LandingPage() {
 						<div className="col-6 col-lg-2 offset-lg-1">
 							<h6 className="fw-bold mb-4 text-primary-custom">Pintasan</h6>
 							<div className="d-flex flex-column">
-								<a href="#" className="footer-link">Tentang Kami</a>
-								<a href="#" className="footer-link">Manajemen Sekolah</a>
-								<a href="#" className="footer-link">Manajemen Pembelajaran</a>
+								<a href="#tentang-kami" className="footer-link" onClick={(e) => {e.preventDefault(); document.getElementById('tentang-kami').scrollIntoView({behavior: 'smooth'})}}>Tentang Kami</a>
+								<a href="#manajemen-kampus" className="footer-link" onClick={(e) => {e.preventDefault(); document.getElementById('manajemen-kampus').scrollIntoView({behavior: 'smooth'})}}>Manajemen Sekolah</a>
+								<a href="#manajemen-pembelajaran" className="footer-link" onClick={(e) => {e.preventDefault(); document.getElementById('manajemen-pembelajaran').scrollIntoView({behavior: 'smooth'})}}>Manajemen Pembelajaran</a>
 								<a href="mailto:arthavirddhisampada@gmail.com" className="footer-link">Konsultasi Tim Kami</a>
 							</div>
 						</div>
@@ -646,14 +646,14 @@ export default function LandingPage() {
 							
 							<h6 className="fw-bold mb-3 text-primary-custom">Download Sekarang</h6>
 							<div className="d-flex gap-2 flex-wrap">
-								<a href="#" className="store-btn shadow-sm">
+								<a href="#" className="store-btn shadow-sm" onClick={(e) => {e.preventDefault(); alert('Aplikasi iOS SIAKAD DKN sedang dalam tahap pengembangan. Segera hadir di App Store!');}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2m-5.15 5.56c.59-.34 1.1-.75 1.51-1.22l2.84 1.64a13.3 13.3 0 0 1-4.35 1.91m-4.51-1.91 2.83-1.64c.42.47.93.88 1.52 1.22v3.28a13.3 13.3 0 0 1-4.35-1.9m-2.18-5.65h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.52a11.1 11.1 0 0 1 0-4m5.15-5.56c-.59.34-1.1.75-1.51 1.22L5.32 3.97a13.3 13.3 0 0 1 4.35-1.91m4.51 1.91-2.83 1.64c-.42-.47-.93-.88-1.52-1.22V2.67a13.3 13.3 0 0 1 4.35 1.9M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8"/></svg>
 									<div className="d-flex flex-column" style={{ lineHeight: "1" }}>
 										<span style={{ fontSize: "0.6rem" }}>Download on the</span>
 										<span className="fw-bold" style={{ fontSize: "1rem" }}>App Store</span>
 									</div>
 								</a>
-								<a href="#" className="store-btn shadow-sm">
+								<a href="#" className="store-btn shadow-sm" onClick={(e) => {e.preventDefault(); alert('Aplikasi Android SIAKAD DKN sedang dalam tahap pengembangan. Segera hadir di Google Play!');}}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5V3.5C3 2.91 3.34 2.39 3.84 2.15L13.69 12 3.84 21.85C3.34 21.61 3 21.09 3 20.5M4.97 22.18 15.11 13.4 18.06 12 4.97 1.82c-.39-.17-.83-.17-1.22 0l11.22 10.18L4.97 22.18m13.79-11.45L21.5 12l-2.74 1.27-3.65-3.65 3.65-3.65Z"/></svg>
 									<div className="d-flex flex-column" style={{ lineHeight: "1" }}>
 										<span style={{ fontSize: "0.6rem" }}>GET IT ON</span>
