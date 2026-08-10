@@ -99,7 +99,7 @@ export default function Topbar() {
 	};
 
 	return (
-		<nav className="main-header navbar navbar-expand navbar-white navbar-light">
+		<nav className="main-header navbar navbar-expand navbar-white navbar-light glass-nav">
 			{/* Left navbar links */}
 			<ul className="navbar-nav">
 				<li className="nav-item d-none d-md-block">

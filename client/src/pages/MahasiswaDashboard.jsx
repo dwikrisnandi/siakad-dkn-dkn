@@ -114,31 +114,33 @@ export default function MahasiswaDashboard() {
 	];
 
 	return (
-		<div className="animate-fade-in">
-			<div className="mb-4">
-				<h3 className="fw-bold mb-1">Selamat datang, {user?.name}</h3>
-				<p className="text-muted">NIM: {user?.nidn_nim}</p>
+		<div className="animate-fade-up">
+			<div className="welcome-banner mb-4">
+				<div className="position-relative" style={{ zIndex: 1 }}>
+					<h3 className="fw-bold mb-1">Selamat datang, {user?.name}</h3>
+					<p className="mb-0 text-white-50">NIM: {user?.nidn_nim}</p>
+				</div>
 			</div>
 
 			<div className="row g-4 mb-4">
 				{cards.map((card, idx) => (
 					<div className="col-12 col-md-4" key={idx}>
-						<div className="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
-							<div className="card-body p-3 d-flex align-items-center justify-content-between">
+						<div className="premium-card h-100 overflow-hidden">
+							<div className="card-body p-4 d-flex align-items-center justify-content-between">
 								<div>
 									<p
-										className="text-muted mb-1 fw-semibold"
-										style={{ fontSize: "0.8rem" }}
+										className="text-muted mb-1 fw-semibold text-uppercase tracking-wide"
+										style={{ fontSize: "0.75rem", letterSpacing: "1px" }}
 									>
 										{card.title}
 									</p>
-									<h4 className="fw-bold mb-0 text-dark">{card.value}</h4>
+									<h3 className="fw-bold mb-0 text-dark">{card.value}</h3>
 								</div>
 								<div
-									className={`${card.bg} p-2 rounded-circle d-flex align-items-center justify-content-center`}
-									style={{ width: "45px", height: "45px" }}
+									className={`${card.bg} p-3 rounded-circle d-flex align-items-center justify-content-center shadow-sm`}
+									style={{ width: "55px", height: "55px" }}
 								>
-									{React.cloneElement(card.icon, { size: 22 })}
+									{card.icon}
 								</div>
 							</div>
 						</div>
