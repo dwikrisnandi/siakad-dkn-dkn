@@ -209,6 +209,44 @@ export default function LandingPage() {
           -webkit-backdrop-filter: blur(16px);
           border-bottom: 1px solid var(--card-border);
         }
+
+        /* Mega Footer Styles */
+        .mega-footer {
+          background-color: var(--card-bg);
+          border-top: 1px solid var(--card-border);
+          position: relative;
+          z-index: 10;
+        }
+        
+        .footer-link {
+          color: var(--text-secondary);
+          text-decoration: none;
+          transition: all 0.2s ease;
+          display: inline-block;
+          margin-bottom: 0.75rem;
+        }
+        
+        .footer-link:hover {
+          color: var(--accent);
+          transform: translateX(4px);
+        }
+
+        .store-btn {
+          background: var(--text-primary);
+          color: var(--bg-primary);
+          border-radius: 8px;
+          padding: 8px 16px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          text-decoration: none;
+          transition: transform 0.2s;
+        }
+        
+        .store-btn:hover {
+          transform: translateY(-2px);
+          color: var(--bg-primary);
+        }
       `}</style>
 
 			{/* Navbar */}
@@ -386,22 +424,107 @@ export default function LandingPage() {
 				</div>
 			</main>
 
-			{/* Footer */}
-			<footer
-				className="text-center py-4 navbar-custom position-relative"
-				style={{
-					zIndex: 10,
-				}}
-			>
-				<p className="mb-2 fw-medium small text-secondary-custom">
-					{t('landing.subscribe_text')}{' '}
-					<a href="mailto:arthavirddhisampada@gmail.com" className="text-accent text-decoration-none fw-bold">
-						arthavirddhisampada@gmail.com
-					</a>
-				</p>
-				<p className="mb-0 fw-medium small text-secondary-custom">
-					&copy; 2026 {t('landing.footer')}
-				</p>
+			{/* Mega Footer */}
+			<footer className="mega-footer pt-5 pb-4">
+				<div className="container-fluid px-4 px-lg-5">
+					<div className="row mb-5 g-4">
+						{/* Col 1: Brand */}
+						<div className="col-12 col-lg-3">
+							<div className="d-flex align-items-center gap-2 mb-3">
+								<img
+									src="/favicon.svg"
+									alt="SIAKAD Logo"
+									className="rounded-circle shadow-sm bg-white"
+									style={{ width: "35px", height: "35px", padding: "3px" }}
+								/>
+								<span className="fs-4 fw-bold tracking-tight text-primary-custom">
+									SIAKAD <span className="text-accent">DKN</span>
+								</span>
+							</div>
+							<p className="text-secondary-custom mb-4" style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
+								Sistem manajemen sekolah dan pembelajaran terintegrasi yang dirancang untuk mendukung seluruh aktivitas di lingkungan pendidikan (End-to-End). Optimalkan seluruh kegiatan dalam satu platform modern.
+							</p>
+						</div>
+
+						{/* Col 2: Pintasan */}
+						<div className="col-6 col-lg-2 offset-lg-1">
+							<h6 className="fw-bold mb-4 text-primary-custom">Pintasan</h6>
+							<div className="d-flex flex-column">
+								<a href="#" className="footer-link">Tentang Kami</a>
+								<a href="#" className="footer-link">Manajemen Sekolah</a>
+								<a href="#" className="footer-link">Manajemen Pembelajaran</a>
+								<a href="mailto:arthavirddhisampada@gmail.com" className="footer-link">Konsultasi Tim Kami</a>
+							</div>
+						</div>
+
+						{/* Col 3: Keunggulan */}
+						<div className="col-6 col-lg-2">
+							<h6 className="fw-bold mb-4 text-primary-custom">Keunggulan Kami</h6>
+							<div className="d-flex flex-column">
+								<a href="#" className="footer-link">Smart Campus</a>
+								<a href="#" className="footer-link">Keterpaduan End-to-End</a>
+								<a href="#" className="footer-link">Terintegrasi Feeder</a>
+								<a href="#" className="footer-link">Akses Super Cepat</a>
+								<a href="#" className="footer-link">Monitoring & Laporan</a>
+							</div>
+						</div>
+
+						{/* Col 4: Kontak & Download */}
+						<div className="col-12 col-lg-4">
+							<h6 className="fw-bold mb-4 text-primary-custom">Hubungi Kami (Konsultasi & Kerjasama)</h6>
+							<div className="d-flex flex-column gap-3 mb-4 text-secondary-custom" style={{ fontSize: "0.9rem" }}>
+								<div className="d-flex align-items-start gap-3">
+									<Building size={18} className="mt-1 flex-shrink-0" />
+									<div>
+										<span className="fw-bold d-block text-primary-custom">SIAKAD DKN Solusi Global</span>
+										The Tech Office Building Lantai 2,<br/>Jakarta, Indonesia
+									</div>
+								</div>
+								<div className="d-flex align-items-center gap-3">
+									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+									<span>+62 811 305 4199</span>
+								</div>
+								<div className="d-flex align-items-center gap-3">
+									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+									<span>arthavirddhisampada@gmail.com</span>
+								</div>
+							</div>
+							
+							<h6 className="fw-bold mb-3 text-primary-custom">Download Sekarang</h6>
+							<div className="d-flex gap-2 flex-wrap">
+								<a href="#" className="store-btn shadow-sm">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2m-5.15 5.56c.59-.34 1.1-.75 1.51-1.22l2.84 1.64a13.3 13.3 0 0 1-4.35 1.91m-4.51-1.91 2.83-1.64c.42.47.93.88 1.52 1.22v3.28a13.3 13.3 0 0 1-4.35-1.9m-2.18-5.65h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.52a11.1 11.1 0 0 1 0-4m5.15-5.56c-.59.34-1.1.75-1.51 1.22L5.32 3.97a13.3 13.3 0 0 1 4.35-1.91m4.51 1.91-2.83 1.64c-.42-.47-.93-.88-1.52-1.22V2.67a13.3 13.3 0 0 1 4.35 1.9M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8"/></svg>
+									<div className="d-flex flex-column" style={{ lineHeight: "1" }}>
+										<span style={{ fontSize: "0.6rem" }}>Download on the</span>
+										<span className="fw-bold" style={{ fontSize: "1rem" }}>App Store</span>
+									</div>
+								</a>
+								<a href="#" className="store-btn shadow-sm">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5V3.5C3 2.91 3.34 2.39 3.84 2.15L13.69 12 3.84 21.85C3.34 21.61 3 21.09 3 20.5M4.97 22.18 15.11 13.4 18.06 12 4.97 1.82c-.39-.17-.83-.17-1.22 0l11.22 10.18L4.97 22.18m13.79-11.45L21.5 12l-2.74 1.27-3.65-3.65 3.65-3.65Z"/></svg>
+									<div className="d-flex flex-column" style={{ lineHeight: "1" }}>
+										<span style={{ fontSize: "0.6rem" }}>GET IT ON</span>
+										<span className="fw-bold" style={{ fontSize: "1rem" }}>Google Play</span>
+									</div>
+								</a>
+							</div>
+						</div>
+					</div>
+					
+					{/* Bottom Bar */}
+					<div className="row border-top border-secondary pt-3 mt-4" style={{ borderColor: "var(--card-border) !important" }}>
+						<div className="col-md-6 text-center text-md-start mb-2 mb-md-0">
+							<p className="mb-0 fw-medium small text-secondary-custom">
+								&copy; 2026 PT. SIAKAD DKN Solusi Global. All Rights Reserved.
+							</p>
+						</div>
+						<div className="col-md-6 text-center text-md-end">
+							<div className="d-flex gap-3 justify-content-center justify-content-md-end small">
+								<a href="#" className="text-secondary-custom text-decoration-none fw-medium hover-text-primary">Syarat & Ketentuan</a>
+								<a href="#" className="text-secondary-custom text-decoration-none fw-medium hover-text-primary">Kebijakan Privacy</a>
+							</div>
+						</div>
+					</div>
+				</div>
 			</footer>
 		</div>
 	);
