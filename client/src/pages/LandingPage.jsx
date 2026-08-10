@@ -458,7 +458,7 @@ export default function LandingPage() {
 				<div className="container-fluid px-4 px-lg-5">
 					<div className="text-center mb-5">
 						<h2 className="display-6 fw-bold text-primary-custom">Manajemen Kampus & Sekolah</h2>
-						<p className="text-secondary-custom fs-5">Otomatisasi seluruh alur administrasi akademik dalam satu *dashboard* sentral.</p>
+						<p className="text-secondary-custom fs-5">Otomatisasi seluruh alur administrasi akademik dalam satu dasbor sentral.</p>
 					</div>
 					<div className="row g-4 justify-content-center">
 						<div className="col-md-6 col-lg-4">
@@ -476,7 +476,7 @@ export default function LandingPage() {
 									<FileText size={24} className="text-success" />
 								</div>
 								<h5 className="fw-bold text-primary-custom">KRS & Transkrip Dinamis</h5>
-								<p className="text-secondary-custom small mb-0">Mahasiswa dapat menyusun rencana studi secara mandiri dan mencetak KHS serta Transkrip dengan *barcode* validasi.</p>
+								<p className="text-secondary-custom small mb-0">Mahasiswa dapat menyusun rencana studi secara mandiri dan mencetak KHS serta Transkrip dengan validasi <em>barcode</em>.</p>
 							</div>
 						</div>
 						<div className="col-md-6 col-lg-4">
@@ -494,7 +494,7 @@ export default function LandingPage() {
 									<Building size={24} className="text-info" />
 								</div>
 								<h5 className="fw-bold text-primary-custom">Manajemen Keuangan</h5>
-								<p className="text-secondary-custom small mb-0">Sistem tagihan (*invoices*) otomatis dengan pemantauan status pembayaran *real-time* untuk mahasiswa.</p>
+								<p className="text-secondary-custom small mb-0">Sistem tagihan otomatis dengan pemantauan status pembayaran secara <em>real-time</em> untuk mahasiswa.</p>
 							</div>
 						</div>
 						<div className="col-md-6 col-lg-4">
@@ -503,7 +503,7 @@ export default function LandingPage() {
 									<GraduationCap size={24} className="text-danger" />
 								</div>
 								<h5 className="fw-bold text-primary-custom">Administrasi Skripsi</h5>
-								<p className="text-secondary-custom small mb-0">Alur pengajuan judul, bimbingan dosen, hingga penjadwalan sidang secara *online* tanpa tumpukan kertas.</p>
+								<p className="text-secondary-custom small mb-0">Alur pengajuan judul, bimbingan dosen, hingga penjadwalan sidang secara <em>online</em> tanpa tumpukan kertas.</p>
 							</div>
 						</div>
 					</div>
@@ -550,14 +550,14 @@ export default function LandingPage() {
 							<div className="academic-card p-4 h-100">
 								<Laptop size={28} className="text-accent mb-3" />
 								<h6 className="fw-bold text-primary-custom">Ujian (CBT) & Bank Soal</h6>
-								<p className="text-secondary-custom small mb-0">Ujian *online* tangguh dengan sistem batas waktu mundur dan penyimpanan *offline-first*.</p>
+								<p className="text-secondary-custom small mb-0">Ujian <em>online</em> tangguh dengan sistem batas waktu mundur dan penyimpanan <em>offline-first</em>.</p>
 							</div>
 						</div>
 						<div className="col-md-6 col-lg-3">
 							<div className="academic-card p-4 h-100">
 								<BookOpen size={28} className="text-success mb-3" />
 								<h6 className="fw-bold text-primary-custom">Materi & Tugas Berbasis Cloud</h6>
-								<p className="text-secondary-custom small mb-0">Dosen dapat mengunggah file (PDF/Video) dan menetapkan tenggat waktu (*deadline*) pengumpulan tugas.</p>
+								<p className="text-secondary-custom small mb-0">Dosen dapat mengunggah file (PDF/Video) dan menetapkan tenggat waktu (<em>deadline</em>) pengumpulan tugas.</p>
 							</div>
 						</div>
 						<div className="col-md-6 col-lg-3">
