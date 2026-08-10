@@ -13,10 +13,11 @@ export const useFCM = () => {
 	useEffect(() => {
 		if (!user) return;
 
-		const requestPermission = async () => {
+		const setupFCM = async () => {
 			try {
-				const permission = await Notification.requestPermission();
-				if (permission === "granted") {
+				// Prevent auto-requesting permission on load to avoid browser warnings
+				// (The Notification permission may only be requested from inside a short running user-generated event handler)
+				if (Notification.permission === "granted") {
 					const registration = await navigator.serviceWorker.register(
 						`/firebase-messaging-sw.js?apiKey=${import.meta.env.VITE_FIREBASE_API_KEY}`
 					);
@@ -36,7 +37,7 @@ export const useFCM = () => {
 			}
 		};
 
-		requestPermission();
+		setupFCM();
 
 		const unsubscribe = onMessage(messaging, (payload) => {
 			console.log("Message received. ", payload);
