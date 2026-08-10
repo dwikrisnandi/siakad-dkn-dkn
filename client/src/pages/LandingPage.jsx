@@ -8,7 +8,16 @@ import {
 	Globe,
 	Building,
 	Moon,
-	Sun
+	Sun,
+	BrainCircuit,
+	Users,
+	Database,
+	Calendar,
+	GraduationCap,
+	Laptop,
+	LineChart,
+	FileText,
+	CheckCircle
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -423,6 +432,151 @@ export default function LandingPage() {
 					</div>
 				</div>
 			</main>
+
+			{/* Section: Tentang Kami */}
+			<section className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-primary)" }}>
+				<div className="container-fluid px-4 px-lg-5">
+					<div className="row justify-content-center text-center">
+						<div className="col-lg-8">
+							<div className="badge shadow-sm px-3 py-2 mb-3 text-primary-custom" style={{ borderRadius: "8px", background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+								<Users size={16} className="text-info me-2 d-inline-block" style={{ verticalAlign: "text-top" }} />
+								<span className="fw-medium">Tentang Kami</span>
+							</div>
+							<h2 className="display-6 fw-bold mb-4 text-primary-custom">Transformasi Digital untuk <span className="text-accent">Pendidikan Masa Depan</span></h2>
+							<p className="fs-5 text-secondary-custom lh-lg mb-5">
+								<strong className="text-primary-custom">SIAKAD DKN Solusi Global</strong> hadir sebagai jawaban atas kebutuhan digitalisasi institusi pendidikan modern. 
+								Kami mendedikasikan diri untuk merancang ekosistem pendidikan yang tidak hanya terintegrasi secara administratif (End-to-End), tetapi juga adaptif terhadap perkembangan teknologi. 
+								Dengan menggabungkan fondasi manajemen sekolah yang kokoh dan inovasi terkini—seperti kecerdasan buatan (AI) terapan—kami berkomitmen untuk mendampingi kampus dan sekolah Anda melompat lebih jauh menuju standar pendidikan yang cemerlang dan tanpa batas.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Section: Manajemen Kampus & Sekolah */}
+			<section className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-hero)" }}>
+				<div className="container-fluid px-4 px-lg-5">
+					<div className="text-center mb-5">
+						<h2 className="display-6 fw-bold text-primary-custom">Manajemen Kampus & Sekolah</h2>
+						<p className="text-secondary-custom fs-5">Otomatisasi seluruh alur administrasi akademik dalam satu *dashboard* sentral.</p>
+					</div>
+					<div className="row g-4 justify-content-center">
+						<div className="col-md-6 col-lg-4">
+							<div className="academic-card p-4 h-100">
+								<div className="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+									<Database size={24} className="text-primary" />
+								</div>
+								<h5 className="fw-bold text-primary-custom">Integrasi Feeder (PDDikti)</h5>
+								<p className="text-secondary-custom small mb-0">Sinkronisasi data mahasiswa, kurikulum, dan nilai secara otomatis dan akurat sesuai standar pemerintah.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-4">
+							<div className="academic-card p-4 h-100">
+								<div className="bg-success bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+									<FileText size={24} className="text-success" />
+								</div>
+								<h5 className="fw-bold text-primary-custom">KRS & Transkrip Dinamis</h5>
+								<p className="text-secondary-custom small mb-0">Mahasiswa dapat menyusun rencana studi secara mandiri dan mencetak KHS serta Transkrip dengan *barcode* validasi.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-4">
+							<div className="academic-card p-4 h-100">
+								<div className="bg-warning bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+									<LineChart size={24} className="text-warning" />
+								</div>
+								<h5 className="fw-bold text-primary-custom">Beban Kerja Dosen (BKD)</h5>
+								<p className="text-secondary-custom small mb-0">Pemantauan jam mengajar, aktivitas penelitian, dan pengabdian masyarakat untuk akreditasi yang lebih mudah.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-4">
+							<div className="academic-card p-4 h-100">
+								<div className="bg-info bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+									<Building size={24} className="text-info" />
+								</div>
+								<h5 className="fw-bold text-primary-custom">Manajemen Keuangan</h5>
+								<p className="text-secondary-custom small mb-0">Sistem tagihan (*invoices*) otomatis dengan pemantauan status pembayaran *real-time* untuk mahasiswa.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-4">
+							<div className="academic-card p-4 h-100">
+								<div className="bg-danger bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+									<GraduationCap size={24} className="text-danger" />
+								</div>
+								<h5 className="fw-bold text-primary-custom">Administrasi Skripsi</h5>
+								<p className="text-secondary-custom small mb-0">Alur pengajuan judul, bimbingan dosen, hingga penjadwalan sidang secara *online* tanpa tumpukan kertas.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Section: Manajemen Pembelajaran (LMS) */}
+			<section className="py-5 position-relative" style={{ zIndex: 5, backgroundColor: "var(--bg-primary)" }}>
+				<div className="container-fluid px-4 px-lg-5">
+					<div className="text-center mb-5">
+						<div className="badge shadow-sm px-3 py-2 mb-3 text-primary-custom" style={{ borderRadius: "8px", background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+							<Sparkles size={16} className="text-warning me-2 d-inline-block" style={{ verticalAlign: "text-top" }} />
+							<span className="fw-medium">LMS Super Terintegrasi</span>
+						</div>
+						<h2 className="display-6 fw-bold text-primary-custom">Manajemen Pembelajaran Interaktif</h2>
+						<p className="text-secondary-custom fs-5">Bawa ruang kelas Anda ke dunia digital dengan fitur yang disukai dosen dan mahasiswa.</p>
+					</div>
+					
+					<div className="row g-4 justify-content-center">
+						<div className="col-lg-8">
+							<div className="academic-card p-4 p-md-5 h-100" style={{ border: "2px solid rgba(59, 130, 246, 0.4)" }}>
+								<div className="row align-items-center">
+									<div className="col-md-8">
+										<div className="d-flex align-items-center gap-2 mb-3">
+											<div className="bg-accent text-white p-2 rounded-circle" style={{ background: "var(--accent)" }}>
+												<BrainCircuit size={20} />
+											</div>
+											<h4 className="fw-bold mb-0 text-primary-custom">Tanya AI (Asisten Belajar Pribadi)</h4>
+										</div>
+										<p className="text-secondary-custom">
+											Fitur revolusioner kami! Mahasiswa dapat berinteraksi langsung dengan AI cerdas yang dirancang untuk menjawab pertanyaan materi, merangkum dokumen, dan membantu proses belajar 24/7. Pembelajaran kini lebih personal dan tak terbatas waktu.
+										</p>
+									</div>
+									<div className="col-md-4 text-center d-none d-md-block">
+										<BrainCircuit size={100} className="text-primary opacity-25" style={{ animation: "floatBlob 6s ease-in-out infinite alternate" }} />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="row g-4 justify-content-center mt-2">
+						<div className="col-md-6 col-lg-3">
+							<div className="academic-card p-4 h-100">
+								<Laptop size={28} className="text-accent mb-3" />
+								<h6 className="fw-bold text-primary-custom">Ujian (CBT) & Bank Soal</h6>
+								<p className="text-secondary-custom small mb-0">Ujian *online* tangguh dengan sistem batas waktu mundur dan penyimpanan *offline-first*.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-3">
+							<div className="academic-card p-4 h-100">
+								<BookOpen size={28} className="text-success mb-3" />
+								<h6 className="fw-bold text-primary-custom">Materi & Tugas Berbasis Cloud</h6>
+								<p className="text-secondary-custom small mb-0">Dosen dapat mengunggah file (PDF/Video) dan menetapkan tenggat waktu (*deadline*) pengumpulan tugas.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-3">
+							<div className="academic-card p-4 h-100">
+								<CheckCircle size={28} className="text-info mb-3" />
+								<h6 className="fw-bold text-primary-custom">Presensi Digital</h6>
+								<p className="text-secondary-custom small mb-0">Catat kehadiran mahasiswa dengan cepat di setiap pertemuan menggunakan sistem terekap otomatis.</p>
+							</div>
+						</div>
+						<div className="col-md-6 col-lg-3">
+							<div className="academic-card p-4 h-100">
+								<Users size={28} className="text-warning mb-3" />
+								<h6 className="fw-bold text-primary-custom">EDOM (Evaluasi Dosen)</h6>
+								<p className="text-secondary-custom small mb-0">Kuesioner anonim di akhir semester untuk menjaga dan memonitor kualitas pengajaran dosen.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
 
 			{/* Mega Footer */}
 			<footer className="mega-footer pt-5 pb-4">
