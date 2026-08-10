@@ -1,10 +1,12 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getRoleLinks } from "../utils/menuLinks";
+import { useTranslation } from "react-i18next";
 
 export default function MobileMenuGrid({ role }) {
 	const location = useLocation();
 	const roleHome = `/${role}`;
+	const { t } = useTranslation();
 
 	// Hanya tampil di beranda
 	if (location.pathname !== roleHome && location.pathname !== `${roleHome}/`) {
@@ -36,10 +38,10 @@ export default function MobileMenuGrid({ role }) {
 									</div>
 								</div>
 								<small
-									className="text-dark d-block lh-1"
-									style={{ fontSize: "0.75rem", fontWeight: "600" }}
+									className="text-dark d-block lh-1 text-wrap"
+									style={{ fontSize: "0.75rem", fontWeight: "600", wordBreak: "break-word" }}
 								>
-									{link.name}
+									{t(link.name)}
 								</small>
 							</Link>
 						</div>
