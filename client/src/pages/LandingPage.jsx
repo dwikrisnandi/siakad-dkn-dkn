@@ -72,30 +72,30 @@ export default function LandingPage() {
         
         .theme-light {
           --bg-primary: #f8fafc;
-          --bg-hero: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-          --nav-bg: rgba(255, 255, 255, 0.9);
+          --bg-hero: #f8fafc;
+          --nav-bg: rgba(255, 255, 255, 0.85);
           --text-primary: #0f172a;
           --text-secondary: #475569;
           --accent: #2563eb;
           --accent-hover: #1d4ed8;
-          --card-bg: #ffffff;
-          --card-border: rgba(0,0,0,0.05);
+          --card-bg: rgba(255, 255, 255, 0.9);
+          --card-border: rgba(255,255,255,0.7);
           --grid-color: #cbd5e1;
           --btn-outline-border: #e2e8f0;
-          --btn-outline-bg: #ffffff;
+          --btn-outline-bg: rgba(255, 255, 255, 0.5);
           --btn-outline-hover: #f1f5f9;
         }
 
         .theme-dark {
           --bg-primary: #020617;
-          --bg-hero: linear-gradient(135deg, #020617 0%, #0f172a 100%);
-          --nav-bg: rgba(15, 23, 42, 0.9);
+          --bg-hero: #020617;
+          --nav-bg: rgba(15, 23, 42, 0.85);
           --text-primary: #f8fafc;
           --text-secondary: #94a3b8;
           --accent: #3b82f6;
           --accent-hover: #60a5fa;
-          --card-bg: rgba(30, 41, 59, 0.6);
-          --card-border: rgba(255,255,255,0.05);
+          --card-bg: rgba(30, 41, 59, 0.7);
+          --card-border: rgba(255,255,255,0.1);
           --grid-color: #1e293b;
           --btn-outline-border: rgba(255,255,255,0.1);
           --btn-outline-bg: transparent;
@@ -105,6 +105,28 @@ export default function LandingPage() {
         .hero-section {
           background: var(--bg-hero);
           position: relative;
+          overflow: hidden;
+        }
+
+        /* Glowing Blobs for Premium Feel */
+        .glow-blob-1 {
+          position: absolute;
+          top: -10%; left: -5%; width: 40vw; height: 40vw;
+          background: radial-gradient(circle, rgba(37,99,235,0.15) 0%, rgba(255,255,255,0) 70%);
+          border-radius: 50%; z-index: 0;
+          animation: floatBlob 10s ease-in-out infinite alternate;
+        }
+        .glow-blob-2 {
+          position: absolute;
+          bottom: -20%; right: -10%; width: 50vw; height: 50vw;
+          background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(255,255,255,0) 70%);
+          border-radius: 50%; z-index: 0;
+          animation: floatBlob 12s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatBlob {
+          0% { transform: translate(0, 0) scale(1); }
+          100% { transform: translate(30px, 30px) scale(1.05); }
         }
         
         /* Subtle Grid Background Pattern */
@@ -113,59 +135,78 @@ export default function LandingPage() {
           inset: 0;
           background-image: radial-gradient(var(--grid-color) 1px, transparent 1px);
           background-size: 30px 30px;
-          opacity: 0.5;
+          opacity: 0.3;
           z-index: 0;
         }
 
         .academic-card {
           background: var(--card-bg);
           border: 1px solid var(--card-border);
-          border-radius: 16px;
-          backdrop-filter: blur(12px);
-          transition: all 0.3s ease;
+          border-radius: 20px;
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          position: relative;
+          overflow: hidden;
         }
         
-        .academic-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          border-color: rgba(59, 130, 246, 0.3);
+        .academic-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
         }
 
-        .text-accent { color: var(--accent); }
+        .academic-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 20px 30px -5px rgba(37, 99, 235, 0.15), 0 10px 15px -5px rgba(37, 99, 235, 0.05);
+          border-color: rgba(59, 130, 246, 0.4);
+        }
+        .academic-card:hover::before { opacity: 1; }
+
+        .text-accent { 
+          background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
         .text-primary-custom { color: var(--text-primary); }
         .text-secondary-custom { color: var(--text-secondary); }
 
         .btn-academic {
-          background-color: var(--accent);
+          background: linear-gradient(135deg, var(--accent) 0%, #3b82f6 100%);
           color: white !important;
           border: none;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
         }
         
         .btn-academic:hover {
-          background-color: var(--accent-hover);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+          background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
         }
         
         .btn-outline-academic {
           border: 1px solid var(--btn-outline-border);
           color: var(--text-primary);
           background: var(--btn-outline-bg);
-          transition: all 0.2s ease;
+          backdrop-filter: blur(8px);
+          transition: all 0.3s ease;
         }
         
         .btn-outline-academic:hover {
           border-color: var(--accent);
-          color: var(--text-primary);
+          color: var(--accent);
           background: var(--btn-outline-hover);
         }
 
         .navbar-custom {
           background: var(--nav-bg);
-          backdrop-filter: blur(12px);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
           border-bottom: 1px solid var(--card-border);
         }
       `}</style>
@@ -228,12 +269,13 @@ export default function LandingPage() {
 				</div>
 			</nav>
 
-			{/* Hero Section */}
 			<main
 				className="container-fluid px-4 px-lg-5 position-relative hero-section pb-5"
 				style={{ zIndex: 5, paddingTop: "8vh", minHeight: "85vh" }}
 			>
 				<div className="grid-pattern"></div>
+				<div className="glow-blob-1"></div>
+				<div className="glow-blob-2"></div>
 				<div className="row align-items-center position-relative" style={{ zIndex: 1 }}>
 					<div className="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
 						<div
