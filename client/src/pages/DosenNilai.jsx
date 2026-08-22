@@ -133,7 +133,30 @@ export default function DosenNilai() {
 		if (!selectedSchedule || mahasiswa.length === 0) return;
 
 		const scheduleInfo = schedules.find((s) => s.id === parseInt(selectedSchedule));
-		const sheetData = mahasiswa.map((m) => {
+		
+		const aoa = [
+			["LAPORAN PRESTASI KULIAH"],
+			["SUBJECT PERFORMANCE REPORT"],
+			[],
+			[null, null, null, null, null, null, null, null, "Kelas", `: ${scheduleInfo ? scheduleInfo.course_code : "-"}`],
+			[null, null, null, null, null, null, null, null, "Mata Kuliah", `: ${scheduleInfo ? scheduleInfo.course_name : "-"}`],
+			[null, null, null, null, null, null, null, null, "Dosen  ", `: ${scheduleInfo ? scheduleInfo.dosen_name : "-"}`],
+			[null, null, null, null, null, null, null, null, "Pertemuan", `: 16 kali pertemuan`],
+			[null, null, null, null, null, null, null, null, "Semester", `: ${scheduleInfo ? scheduleInfo.semester : "Ganjil"}`, `Tahun : ${new Date().getFullYear()}`],
+			[
+				"NPM", "NAMA MAHASISWA", "RINCIAN NILAI", null, null, null, null, null, 
+				"PROSENTASE PERHITUNGAN NILAI", null, null, null, null, "KET"
+			],
+			[
+				null, null, "PARTISIPASI", "TUGAS", null, "RATA-RATA TUGAS", "UJIAN", null, 
+				"NHD", "TGS", "UTS", "UAS", "NILAI AKHIR"
+			],
+			[
+				null, null, null, 1, 2, null, "UTS", "UAS", null, null, null, null, "AM", "HM"
+			]
+		];
+
+		mahasiswa.forEach((m) => {
 			const studentGrades = gradesData[m.mahasiswa_id] || {
 				kehadiran: 0,
 				tugas: 0,
@@ -143,19 +166,45 @@ export default function DosenNilai() {
 			const finalScore = calculateFinal(studentGrades);
 			const letterGrade = getLetter(studentGrades);
 
-			return {
-				"NIM": m.mahasiswa_nim,
-				"Nama Mahasiswa": m.mahasiswa_name,
-				"Kehadiran (10%)": studentGrades.kehadiran,
-				"Tugas (20%)": studentGrades.tugas,
-				"UTS (30%)": studentGrades.uts,
-				"UAS (40%)": studentGrades.uas,
-				"Nilai Akhir": letterGrade === "BL" ? "BL" : finalScore,
-				"Huruf Mutu": letterGrade,
-			};
+			aoa.push([
+				m.mahasiswa_nim,
+				m.mahasiswa_name,
+				100, // Partisipasi (Fallback)
+				100, // Tugas 1
+				100, // Tugas 2
+				100, // Rata-Rata Tugas
+				studentGrades.uts || 0,
+				studentGrades.uas || 0,
+				Number(((studentGrades.kehadiran || 0) * 0.1).toFixed(1)),
+				Number(((studentGrades.tugas || 0) * 0.2).toFixed(1)),
+				Number(((studentGrades.uts || 0) * 0.3).toFixed(1)),
+				Number(((studentGrades.uas || 0) * 0.4).toFixed(1)),
+				letterGrade === "BL" ? 0 : finalScore,
+				letterGrade
+			]);
 		});
 
-		const ws = XLSX.utils.json_to_sheet(sheetData);
+		const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+		ws["!merges"] = [
+			{ s: {r:0, c:0}, e: {r:0, c:13} },
+			{ s: {r:1, c:0}, e: {r:1, c:13} },
+			{ s: {r:8, c:0}, e: {r:10, c:0} },
+			{ s: {r:8, c:1}, e: {r:10, c:1} },
+			{ s: {r:8, c:2}, e: {r:8, c:7} },
+			{ s: {r:8, c:8}, e: {r:8, c:12} },
+			{ s: {r:8, c:13}, e: {r:9, c:13} },
+			{ s: {r:9, c:2}, e: {r:10, c:2} },
+			{ s: {r:9, c:3}, e: {r:9, c:4} },
+			{ s: {r:9, c:5}, e: {r:10, c:5} },
+			{ s: {r:9, c:6}, e: {r:9, c:7} },
+			{ s: {r:9, c:8}, e: {r:10, c:8} },
+			{ s: {r:9, c:9}, e: {r:10, c:9} },
+			{ s: {r:9, c:10}, e: {r:10, c:10} },
+			{ s: {r:9, c:11}, e: {r:10, c:11} },
+			{ s: {r:9, c:12}, e: {r:9, c:12} }
+		];
+
 		const wb = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(wb, ws, "Nilai");
 
