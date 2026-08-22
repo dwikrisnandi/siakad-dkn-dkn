@@ -474,21 +474,25 @@ export default function DosenNilai() {
 													</td>
 													<td className={`text-center border-end ${studentGrades.tugas_auto < 60 ? "" : "text-muted bg-light"}`}>
 														{studentGrades.tugas_auto < 60 ? (
-															<input
-																type="number"
-																className="form-control form-control-sm text-center fw-bold border-warning"
-																min="0"
-																max="100"
-																value={studentGrades.tugas}
-																onChange={(e) =>
-																	handleGradeChange(
-																		m.mahasiswa_id,
-																		"tugas",
-																		e.target.value,
-																	)
-																}
-																title="Nilai sistem < 60, bisa diubah manual"
-															/>
+															<div className="d-flex align-items-center justify-content-center gap-1">
+																<input
+																	type="number"
+																	className="form-control form-control-sm text-center fw-bold border-warning"
+																	style={{ width: "65px" }}
+																	min="0"
+																	max="100"
+																	value={studentGrades.tugas}
+																	onChange={(e) =>
+																		handleGradeChange(
+																			m.mahasiswa_id,
+																			"tugas",
+																			e.target.value,
+																		)
+																	}
+																	title="Nilai sistem < 60, bisa diubah manual"
+																/>
+																<span className="small text-muted fw-normal" title="Nilai asli dari sistem">({studentGrades.tugas_auto})</span>
+															</div>
 														) : (
 															studentGrades.tugas
 														)}
