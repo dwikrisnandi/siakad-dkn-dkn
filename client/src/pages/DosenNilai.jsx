@@ -138,7 +138,7 @@ export default function DosenNilai() {
 			["LAPORAN PRESTASI KULIAH"],
 			["SUBJECT PERFORMANCE REPORT"],
 			[],
-			[null, null, null, null, "Kelas", `: ${scheduleInfo ? scheduleInfo.course_code : "-"}`],
+			[null, null, null, null, "Kelas", `: ${scheduleInfo ? (scheduleInfo.single_class_name || "-") : "-"}`],
 			[null, null, null, null, "Mata Kuliah", `: ${scheduleInfo ? scheduleInfo.course_name : "-"}`],
 			[null, null, null, null, "Dosen", `: ${scheduleInfo ? scheduleInfo.dosen_name : "-"}`],
 			[null, null, null, null, "Pertemuan", `: 16 kali pertemuan`],
