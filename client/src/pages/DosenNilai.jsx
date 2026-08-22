@@ -138,21 +138,14 @@ export default function DosenNilai() {
 			["LAPORAN PRESTASI KULIAH"],
 			["SUBJECT PERFORMANCE REPORT"],
 			[],
-			[null, null, null, null, null, null, null, null, "Kelas", `: ${scheduleInfo ? scheduleInfo.course_code : "-"}`],
-			[null, null, null, null, null, null, null, null, "Mata Kuliah", `: ${scheduleInfo ? scheduleInfo.course_name : "-"}`],
-			[null, null, null, null, null, null, null, null, "Dosen  ", `: ${scheduleInfo ? scheduleInfo.dosen_name : "-"}`],
-			[null, null, null, null, null, null, null, null, "Pertemuan", `: 16 kali pertemuan`],
-			[null, null, null, null, null, null, null, null, "Semester", `: ${scheduleInfo ? scheduleInfo.semester : "Ganjil"}`, `Tahun : ${new Date().getFullYear()}`],
+			[null, "Kelas", `: ${scheduleInfo ? scheduleInfo.course_code : "-"}`],
+			[null, "Mata Kuliah", `: ${scheduleInfo ? scheduleInfo.course_name : "-"}`],
+			[null, "Dosen", `: ${scheduleInfo ? scheduleInfo.dosen_name : "-"}`],
+			[null, "Pertemuan", `: 16 kali pertemuan`],
+			[null, "Semester", `: ${scheduleInfo ? scheduleInfo.semester : "Ganjil"}`, `Tahun : ${new Date().getFullYear()}`],
+			[],
 			[
-				"NPM", "NAMA MAHASISWA", "RINCIAN NILAI", null, null, null, null, null, 
-				"PROSENTASE PERHITUNGAN NILAI", null, null, null, null, null, "KET"
-			],
-			[
-				null, null, "PARTISIPASI", "TUGAS", null, "RATA-RATA TUGAS", "UJIAN", null, 
-				"NHD", "TGS", "UTS", "UAS", "NILAI AKHIR", null, null
-			],
-			[
-				null, null, null, 1, 2, null, "UTS", "UAS", null, null, null, null, "AM", "HM", null
+				"NPM", "NAMA MAHASISWA", "KEHADIRAN", "TUGAS", "UTS", "UAS", "NILAI AKHIR", "HURUF MUTU"
 			]
 		];
 
@@ -169,41 +162,20 @@ export default function DosenNilai() {
 			aoa.push([
 				m.mahasiswa_nim,
 				m.mahasiswa_name,
-				studentGrades.kehadiran || 0, // Partisipasi
-				"", // Tugas 1
-				"", // Tugas 2
-				studentGrades.tugas || 0, // Rata-Rata Tugas
+				studentGrades.kehadiran || 0,
+				studentGrades.tugas || 0,
 				studentGrades.uts || 0,
 				studentGrades.uas || 0,
-				Number(((studentGrades.kehadiran || 0) * 0.1).toFixed(1)),
-				Number(((studentGrades.tugas || 0) * 0.2).toFixed(1)),
-				Number(((studentGrades.uts || 0) * 0.3).toFixed(1)),
-				Number(((studentGrades.uas || 0) * 0.4).toFixed(1)),
 				letterGrade === "BL" ? 0 : finalScore,
-				letterGrade,
-				"" // KET
+				letterGrade
 			]);
 		});
 
 		const ws = XLSX.utils.aoa_to_sheet(aoa);
 
 		ws["!merges"] = [
-			{ s: {r:0, c:0}, e: {r:0, c:14} },
-			{ s: {r:1, c:0}, e: {r:1, c:14} },
-			{ s: {r:8, c:0}, e: {r:10, c:0} },
-			{ s: {r:8, c:1}, e: {r:10, c:1} },
-			{ s: {r:8, c:2}, e: {r:8, c:7} },
-			{ s: {r:8, c:8}, e: {r:8, c:13} },
-			{ s: {r:8, c:14}, e: {r:10, c:14} },
-			{ s: {r:9, c:2}, e: {r:10, c:2} },
-			{ s: {r:9, c:3}, e: {r:9, c:4} },
-			{ s: {r:9, c:5}, e: {r:10, c:5} },
-			{ s: {r:9, c:6}, e: {r:9, c:7} },
-			{ s: {r:9, c:8}, e: {r:10, c:8} },
-			{ s: {r:9, c:9}, e: {r:10, c:9} },
-			{ s: {r:9, c:10}, e: {r:10, c:10} },
-			{ s: {r:9, c:11}, e: {r:10, c:11} },
-			{ s: {r:9, c:12}, e: {r:9, c:13} }
+			{ s: {r:0, c:0}, e: {r:0, c:7} },
+			{ s: {r:1, c:0}, e: {r:1, c:7} }
 		];
 
 		const wb = XLSX.utils.book_new();
@@ -229,10 +201,39 @@ export default function DosenNilai() {
 				const ws = wb.Sheets[wb.SheetNames[0]];
 				const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
+				let utsIndex = -1;
+				let uasIndex = -1;
+				let dataStartIndex = 0;
+
+				for (let i = 0; i < Math.min(data.length, 20); i++) {
+					const row = data[i];
+					if (!row || !row.length) continue;
+					
+					// Find NPM column
+					const npmIndex = row.findIndex(c => String(c).toUpperCase().trim() === "NPM");
+					if (npmIndex !== -1) {
+						dataStartIndex = i + 1;
+						// Look for UTS and UAS in this row and the next 2 rows
+						for (let r = i; r <= i + 2 && r < data.length; r++) {
+							const searchRow = data[r];
+							if (!searchRow) continue;
+							for (let c = 0; c < searchRow.length; c++) {
+								const cell = String(searchRow[c]).toUpperCase().trim();
+								if (cell === "UTS" && utsIndex === -1) utsIndex = c;
+								if (cell === "UAS" && uasIndex === -1) uasIndex = c;
+							}
+						}
+						break;
+					}
+				}
+
+				if (utsIndex === -1) utsIndex = 4;
+				if (uasIndex === -1) uasIndex = 5;
+
 				let importedCount = 0;
 				const newGrades = { ...gradesData };
 
-				for (let i = 0; i < data.length; i++) {
+				for (let i = dataStartIndex; i < data.length; i++) {
 					const row = data[i];
 					if (!row || !row[0]) continue;
 					
@@ -240,9 +241,8 @@ export default function DosenNilai() {
 					// Skip if NIM is not numeric
 					if (!/^\d+$/.test(nim)) continue;
 
-					// According to user's template: UTS is at index 6, UAS is at index 7
-					const utsVal = row[6];
-					const uasVal = row[7];
+					const utsVal = row[utsIndex];
+					const uasVal = row[uasIndex];
 
 					const student = mahasiswa.find(m => String(m.mahasiswa_nim) === nim);
 					if (student) {
