@@ -1,15 +1,14 @@
-const mysql = require('mysql2/promise');
+const { run } = require('./db');
 (async () => {
-  const c = await mysql.createConnection({host:'localhost',user:'root',password:'aku',database:'siakad_dkn'});
   try {
-    await c.execute('ALTER TABLE course_grades ADD COLUMN tugas_override INT DEFAULT NULL');
+    await run('ALTER TABLE course_grades ADD COLUMN tugas_override INT DEFAULT NULL');
     console.log('Column tugas_override added successfully!');
   } catch(e) {
-    if (e.code === 'ER_DUP_FIELDNAME') {
+    if (e.code === '42701') {
       console.log('Column tugas_override already exists, skipping.');
     } else {
-      throw e;
+      console.error('Error:', e.message);
     }
   }
-  await c.end();
+  process.exit(0);
 })();
