@@ -1,5 +1,5 @@
 import { Award, Save, Download, Upload } from "lucide-react";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
@@ -172,6 +172,49 @@ export default function DosenNilai() {
 		});
 
 		const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+		const range = XLSX.utils.decode_range(ws['!ref']);
+		for (let R = 0; R <= range.e.r; ++R) {
+			for (let C = 0; C <= range.e.c; ++C) {
+				const cellAddress = { c: C, r: R };
+				const cellRef = XLSX.utils.encode_cell(cellAddress);
+				
+				if (!ws[cellRef]) ws[cellRef] = { t: 's', v: '' };
+
+				let style = {
+					alignment: { vertical: "center", horizontal: "center" }
+				};
+
+				if (R === 0 || R === 1) {
+					style.font = { bold: true, sz: 12 };
+				}
+				
+				if (R >= 9) {
+					style.border = {
+						top: { style: "thin", color: { rgb: "000000" } },
+						bottom: { style: "thin", color: { rgb: "000000" } },
+						left: { style: "thin", color: { rgb: "000000" } },
+						right: { style: "thin", color: { rgb: "000000" } }
+					};
+
+					if (R === 9) style.font = { bold: true };
+					if (R > 9 && C === 1) style.alignment = { vertical: "center", horizontal: "left" };
+				}
+
+				ws[cellRef].s = style;
+			}
+		}
+
+		ws['!cols'] = [
+			{ wpx: 100 }, // NPM
+			{ wpx: 250 }, // NAMA
+			{ wpx: 100 }, // KEHADIRAN
+			{ wpx: 80 },  // TUGAS
+			{ wpx: 80 },  // UTS
+			{ wpx: 80 },  // UAS
+			{ wpx: 100 }, // NILAI AKHIR
+			{ wpx: 100 }  // HURUF MUTU
+		];
 
 		ws["!merges"] = [
 			{ s: {r:0, c:0}, e: {r:0, c:7} },

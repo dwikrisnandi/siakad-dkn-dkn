@@ -28,7 +28,8 @@
 		"react-router-dom": "^7.13.1",
 		"react-select": "^5.10.2",
 		"sweetalert2": "^11.26.25",
-		"xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
+		"xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz",
+		"xlsx-js-style": "^1.2.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.16",
