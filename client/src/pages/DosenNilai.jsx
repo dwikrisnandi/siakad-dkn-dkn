@@ -235,8 +235,26 @@ export default function DosenNilai() {
 													<td className="text-center text-muted bg-light border-end">
 														{studentGrades.kehadiran}
 													</td>
-													<td className="text-center text-muted bg-light border-end">
-														{studentGrades.tugas}
+													<td className={`text-center border-end ${studentGrades.tugas !== "" && studentGrades.tugas < 60 ? "" : "text-muted bg-light"}`}>
+														{studentGrades.tugas !== "" && studentGrades.tugas < 60 ? (
+															<input
+																type="number"
+																className="form-control form-control-sm text-center fw-bold border-warning"
+																min="0"
+																max="100"
+																value={studentGrades.tugas}
+																onChange={(e) =>
+																	handleGradeChange(
+																		m.mahasiswa_id,
+																		"tugas",
+																		e.target.value,
+																	)
+																}
+																title="Nilai tugas < 60, bisa diedit manual"
+															/>
+														) : (
+															studentGrades.tugas
+														)}
 													</td>
 													<td>
 														<input
