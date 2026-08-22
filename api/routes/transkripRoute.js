@@ -6,21 +6,81 @@ const { verifyToken, verifyRole } = require('../middlewares/auth');
 // Complex Query for Cumulative Transcript
 // Logic: If retaken, get max final_score
 const getTranscriptData = async (mahasiswaId) => {
-  const sql = `
+  // Fetch all schedules for this mahasiswa
+  const [schedules] = await query(`
     SELECT 
-      c.code as course_code, 
-      c.name as course_name, 
-      c.sks, 
-      c.semester,
-      MAX((cg.nilai_uts + cg.nilai_uas) / 2) as final_score
+      c.id as course_id, c.code as course_code, c.name as course_name, c.sks, c.semester,
+      s.id as schedule_id
     FROM course_grades cg
     JOIN schedules s ON cg.schedule_id = s.id
     JOIN courses c ON s.course_id = c.id
     WHERE cg.mahasiswa_id = ?
-    GROUP BY c.id
     ORDER BY c.semester ASC, c.name ASC
-  `;
-  const [records] = await query(sql, [mahasiswaId]);
+  `, [mahasiswaId]);
+
+  const courseMap = new Map();
+
+  for (const s of schedules) {
+    const scheduleId = s.schedule_id;
+    
+    // Kehadiran
+    const [attRows] = await query('SELECT COUNT(DISTINCT meeting_number) as total_meetings FROM attendance WHERE schedule_id = ?', [scheduleId]);
+    const totalMeetings = attRows[0].total_meetings || 0;
+    let kehadiran = 0;
+    if (totalMeetings > 0) {
+      const [presentRows] = await query('SELECT COUNT(*) as present FROM attendance WHERE schedule_id = ? AND mahasiswa_id = ? AND status = ?', [scheduleId, mahasiswaId, 'Hadir']);
+      kehadiran = Math.round((presentRows[0].present / totalMeetings) * 100);
+    }
+    
+    // Tugas
+    let avgTugas = 0;
+    const [tugasRows] = await query(`
+      SELECT s.nilai 
+      FROM submissions s 
+      JOIN assignments a ON s.assignment_id = a.id 
+      WHERE a.schedule_id = ? AND s.mahasiswa_id = ? AND s.nilai IS NOT NULL
+    `, [scheduleId, mahasiswaId]);
+    if (tugasRows.length > 0) {
+      const sum = tugasRows.reduce((a, b) => a + b.nilai, 0);
+      avgTugas = Math.round(sum / tugasRows.length);
+    }
+    
+    // Grades
+    let uts = 0, uas = 0, tugasOverride = null;
+    const [gradeRows] = await query('SELECT nilai_uts, nilai_uas, tugas_override FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mahasiswaId]);
+    if (gradeRows.length > 0) {
+      uts = gradeRows[0].nilai_uts || 0;
+      uas = gradeRows[0].nilai_uas || 0;
+      tugasOverride = gradeRows[0].tugas_override;
+    }
+    
+    const finalTugas = tugasOverride !== null ? tugasOverride : avgTugas;
+    const finalScore = Math.round((kehadiran * 0.1) + (finalTugas * 0.2) + (uts * 0.3) + (uas * 0.4));
+
+    // Update MAX score in courseMap
+    if (!courseMap.has(s.course_id)) {
+      courseMap.set(s.course_id, {
+        course_code: s.course_code,
+        course_name: s.course_name,
+        sks: s.sks,
+        semester: s.semester,
+        final_score: finalScore
+      });
+    } else {
+      const existing = courseMap.get(s.course_id);
+      if (finalScore > existing.final_score) {
+        existing.final_score = finalScore;
+      }
+    }
+  }
+
+  const records = Array.from(courseMap.values());
+  
+  // Sort by semester then name
+  records.sort((a, b) => {
+    if (a.semester !== b.semester) return a.semester - b.semester;
+    return a.course_name.localeCompare(b.course_name);
+  });
 
   // Transform scores to letters
   const getLetterGrade = (score) => {

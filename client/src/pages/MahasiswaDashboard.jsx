@@ -24,41 +24,29 @@ export default function MahasiswaDashboard() {
 				const resSched = await api.get("/schedules");
 				setSchedules(resSched.data);
 
-				let uncompletedTasks = 0;
-				let totalScore = 0;
-				let scoreCount = 0;
-
 				const scheduleIds = resSched.data.map((s) => s.id);
 
+				let uncompletedTasks = 0;
 				if (scheduleIds.length > 0) {
 					try {
 						const notifRes = await api.get("/notifications");
 						uncompletedTasks = notifRes.data.count || 0;
 					} catch (e) {}
-
-					const gradesPromises = scheduleIds.map((id) =>
-						api.get(`/grades/${id}`),
-					);
-					const gradesRes = await Promise.all(gradesPromises);
-
-					gradesRes.forEach((res) => {
-						const myGrade = res.data.find((g) => g.mahasiswa_id === user.id);
-						if (myGrade && myGrade.final_score > 0) {
-							const scale4 = (myGrade.final_score / 100) * 4;
-							totalScore += scale4;
-							scoreCount++;
-						}
-					});
 				}
 
-				let calculatedIpk = "0.00";
-				if (scoreCount > 0) {
-					calculatedIpk = (totalScore / scoreCount).toFixed(2);
+				let realIpk = "0.00";
+				try {
+					const transkripRes = await api.get("/transkrip/me");
+					if (transkripRes.data && transkripRes.data.ipk) {
+						realIpk = transkripRes.data.ipk;
+					}
+				} catch (e) {
+					console.error("Failed fetching transkrip for IPK", e);
 				}
 
 				setStats({
 					activeTasks: uncompletedTasks,
-					ipk: calculatedIpk,
+					ipk: realIpk,
 				});
 			} catch (err) {
 				console.error("Dashboard fetch error:", err);
