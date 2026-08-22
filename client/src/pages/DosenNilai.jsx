@@ -171,6 +171,45 @@ export default function DosenNilai() {
 			]);
 		});
 
+		aoa.push([]); 
+		aoa.push([]); 
+
+		const footerStartR = aoa.length;
+		const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+		const today = new Date();
+		const dateStr = `Karawang, ${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+
+		aoa.push([
+			"Partisipasi = Nilai Kehadiran & Keaktifan = 10 %", null, null, 
+			"AM = Angka Mutu", "HM = Huruf Mutu", "Ket.", 
+			null, dateStr
+		]);
+		aoa.push([
+			"TGS = Tugas = 20 %", null, null, 
+			"80 - 100", "A", "Baik Sekali", 
+			null, "Dosen Mata Kuliah"
+		]);
+		aoa.push([
+			"UTS = Ujian Tengah Semester = 30 %", null, null, 
+			"70 - 79", "B", "Baik", 
+			null, null
+		]);
+		aoa.push([
+			"UAS = Ujian Akhir Semester = 40 %", null, null, 
+			"60 - 69", "C", "Cukup", 
+			null, null
+		]);
+		aoa.push([
+			null, null, null, 
+			"50 - 59", "D", "Kurang", 
+			null, null
+		]);
+		aoa.push([
+			null, null, null, 
+			"0 - 49", "E", "Tidak Lulus", 
+			null, scheduleInfo ? scheduleInfo.dosen_name : "Dosen"
+		]);
+
 		const ws = XLSX.utils.aoa_to_sheet(aoa);
 
 		const range = XLSX.utils.decode_range(ws['!ref']);
@@ -193,7 +232,7 @@ export default function DosenNilai() {
 					style.alignment = { vertical: "center", horizontal: "left" };
 				}
 				
-				if (R >= 9) {
+				if (R >= 9 && R < footerStartR) {
 					style.border = {
 						top: { style: "thin", color: { rgb: "000000" } },
 						bottom: { style: "thin", color: { rgb: "000000" } },
@@ -203,6 +242,40 @@ export default function DosenNilai() {
 
 					if (R === 9) style.font = { bold: true };
 					if (R > 9 && C === 1) style.alignment = { vertical: "center", horizontal: "left" };
+				}
+
+				if (R >= footerStartR) {
+					const rowOffset = R - footerStartR;
+					
+					if (C === 0 || C === 1) {
+						if (rowOffset <= 3) {
+							style.alignment = { vertical: "center", horizontal: "left" };
+							style.border = {};
+							if (rowOffset === 0) style.border.top = { style: "thin", color: { rgb: "000000" } };
+							if (rowOffset === 3) style.border.bottom = { style: "thin", color: { rgb: "000000" } };
+							if (C === 0) style.border.left = { style: "thin", color: { rgb: "000000" } };
+							if (C === 1) style.border.right = { style: "thin", color: { rgb: "000000" } };
+						}
+					}
+
+					if (C >= 3 && C <= 5) {
+						style.border = {
+							top: { style: "thin", color: { rgb: "000000" } },
+							bottom: { style: "thin", color: { rgb: "000000" } },
+							left: { style: "thin", color: { rgb: "000000" } },
+							right: { style: "thin", color: { rgb: "000000" } }
+						};
+						if (rowOffset === 0) {
+							style.fill = { fgColor: { rgb: "E0E0E0" } };
+							style.font = { bold: true };
+						}
+					}
+
+					if (C === 7) {
+						if (rowOffset === 5) {
+							style.font = { bold: true };
+						}
+					}
 				}
 
 				ws[cellRef].s = style;
@@ -222,7 +295,11 @@ export default function DosenNilai() {
 
 		ws["!merges"] = [
 			{ s: {r:0, c:0}, e: {r:0, c:7} },
-			{ s: {r:1, c:0}, e: {r:1, c:7} }
+			{ s: {r:1, c:0}, e: {r:1, c:7} },
+			{ s: {r:footerStartR, c:0}, e: {r:footerStartR, c:1} },
+			{ s: {r:footerStartR+1, c:0}, e: {r:footerStartR+1, c:1} },
+			{ s: {r:footerStartR+2, c:0}, e: {r:footerStartR+2, c:1} },
+			{ s: {r:footerStartR+3, c:0}, e: {r:footerStartR+3, c:1} }
 		];
 
 		const wb = XLSX.utils.book_new();
