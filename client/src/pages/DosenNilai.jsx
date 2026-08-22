@@ -188,6 +188,10 @@ export default function DosenNilai() {
 				if (R === 0 || R === 1) {
 					style.font = { bold: true, sz: 12 };
 				}
+
+				if (R >= 3 && R <= 7) {
+					style.alignment = { vertical: "center", horizontal: "left" };
+				}
 				
 				if (R >= 9) {
 					style.border = {
