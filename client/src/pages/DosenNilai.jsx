@@ -1,4 +1,4 @@
-import { Award, Save, Download } from "lucide-react";
+import { Award, Save, Download, Upload } from "lucide-react";
 import * as XLSX from "xlsx";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -166,6 +166,59 @@ export default function DosenNilai() {
 		XLSX.writeFile(wb, fileName);
 	};
 
+	const handleImportExcel = (e) => {
+		if (mahasiswa.length === 0) return;
+		const file = e.target.files[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (evt) => {
+			try {
+				const bstr = evt.target.result;
+				const wb = XLSX.read(bstr, { type: "binary" });
+				const ws = wb.Sheets[wb.SheetNames[0]];
+				const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+				let importedCount = 0;
+				const newGrades = { ...gradesData };
+
+				for (let i = 0; i < data.length; i++) {
+					const row = data[i];
+					if (!row || !row[0]) continue;
+					
+					const nim = String(row[0]).trim();
+					// Skip if NIM is not numeric
+					if (!/^\d+$/.test(nim)) continue;
+
+					// According to user's template: UTS is at index 6, UAS is at index 7
+					const utsVal = row[6];
+					const uasVal = row[7];
+
+					const student = mahasiswa.find(m => String(m.mahasiswa_nim) === nim);
+					if (student) {
+						const mhsId = student.mahasiswa_id;
+						newGrades[mhsId] = {
+							...newGrades[mhsId],
+							uts: (utsVal !== undefined && utsVal !== null && !isNaN(utsVal) && String(utsVal).trim() !== "") ? Number(utsVal) : newGrades[mhsId].uts,
+							uas: (uasVal !== undefined && uasVal !== null && !isNaN(uasVal) && String(uasVal).trim() !== "") ? Number(uasVal) : newGrades[mhsId].uas,
+						};
+						importedCount++;
+					}
+				}
+
+				setGradesData(newGrades);
+				setSaveStatus(`Berhasil mengimpor nilai untuk ${importedCount} mahasiswa.`);
+				setTimeout(() => setSaveStatus(""), 4000);
+			} catch (err) {
+				console.error(err);
+				setSaveStatus("Gagal membaca file Excel.");
+				setTimeout(() => setSaveStatus(""), 4000);
+			}
+		};
+		reader.readAsBinaryString(file);
+		e.target.value = "";
+	};
+
 	return (
 		<div className="animate-fade-in">
 			<div className="d-flex justify-content-between align-items-center mb-4">
@@ -318,12 +371,26 @@ export default function DosenNilai() {
 						<div className="p-4 border-top d-flex justify-content-between align-items-center bg-light rounded-bottom-4">
 							<div>
 								{saveStatus && (
-									<span className="small fw-bold text-success">
+									<span className={`small fw-bold ${saveStatus.includes("Gagal") ? "text-danger" : "text-success"}`}>
 										{saveStatus}
 									</span>
 								)}
 							</div>
 							<div className="d-flex gap-2">
+								<input 
+									type="file" 
+									accept=".xlsx, .xls" 
+									id="import-excel" 
+									style={{ display: "none" }}
+									onChange={handleImportExcel} 
+								/>
+								<label
+									htmlFor="import-excel"
+									className={`btn btn-outline-primary px-4 fw-bold ${mahasiswa.length === 0 ? "disabled" : ""}`}
+								>
+									<Upload size={18} className="me-2 mb-1" />
+									Import Excel
+								</label>
 								<button
 									className="btn btn-success px-4 fw-bold"
 									onClick={handleExportExcel}
