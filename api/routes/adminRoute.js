@@ -134,14 +134,17 @@ router.get('/khs/:mahasiswaId', [verifyToken, verifyRole(['admin'])], async (req
         avgTugas = Math.round(sum / tugasRows.length);
       }
       
-      let uts = "", uas = "";
-      const [gradeRows] = await query('SELECT nilai_uts, nilai_uas FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
+      let uts = "", uas = "", tugasOverride = null;
+      const [gradeRows] = await query('SELECT nilai_uts, nilai_uas, tugas_override FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
       if (gradeRows.length > 0) {
         uts = gradeRows[0].nilai_uts !== null ? gradeRows[0].nilai_uts : "";
         uas = gradeRows[0].nilai_uas !== null ? gradeRows[0].nilai_uas : "";
+        tugasOverride = gradeRows[0].tugas_override;
       }
       
-      const finalScore = Math.round((kehadiran * 0.1) + (avgTugas * 0.2) + (uts * 0.3) + (uas * 0.4));
+      const finalTugas = tugasOverride !== null ? tugasOverride : avgTugas;
+      
+      const finalScore = Math.round((kehadiran * 0.1) + (finalTugas * 0.2) + (uts * 0.3) + (uas * 0.4));
       
       result.push({
         course_code: s.code,
@@ -150,7 +153,7 @@ router.get('/khs/:mahasiswaId', [verifyToken, verifyRole(['admin'])], async (req
         semester: s.semester,
         dosen_name: s.dosen_name,
         kehadiran,
-        tugas: avgTugas,
+        tugas: finalTugas,
         uts,
         uas,
         final_score: finalScore

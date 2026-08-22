@@ -45,6 +45,7 @@ export default function DosenNilai() {
 						uas: m.uas !== null && m.uas !== undefined ? m.uas : "",
 						kehadiran: m.kehadiran !== null && m.kehadiran !== undefined ? m.kehadiran : "",
 						tugas: m.tugas !== null && m.tugas !== undefined ? m.tugas : "",
+						tugas_auto: m.tugas_auto !== null && m.tugas_auto !== undefined ? m.tugas_auto : 0,
 					};
 				});
 				setGradesData(initial);
@@ -107,9 +108,17 @@ export default function DosenNilai() {
 		if (!selectedSchedule) return;
 		setSaveStatus("Menyimpan nilai...");
 
+		const payload = {};
+		for (const [mhsId, data] of Object.entries(gradesData)) {
+			payload[mhsId] = {
+				...data,
+				tugas_override: data.tugas !== data.tugas_auto ? data.tugas : null,
+			};
+		}
+
 		try {
 			await api.put(`/grades/${selectedSchedule}`, {
-				grades: gradesData,
+				grades: payload,
 			});
 			setSaveStatus("Berhasil disimpan!");
 			setTimeout(() => setSaveStatus(""), 4000);
@@ -235,8 +244,8 @@ export default function DosenNilai() {
 													<td className="text-center text-muted bg-light border-end">
 														{studentGrades.kehadiran}
 													</td>
-													<td className={`text-center border-end ${studentGrades.tugas !== "" && studentGrades.tugas < 60 ? "" : "text-muted bg-light"}`}>
-														{studentGrades.tugas !== "" && studentGrades.tugas < 60 ? (
+													<td className={`text-center border-end ${studentGrades.tugas_auto < 60 ? "" : "text-muted bg-light"}`}>
+														{studentGrades.tugas_auto < 60 ? (
 															<input
 																type="number"
 																className="form-control form-control-sm text-center fw-bold border-warning"
@@ -250,7 +259,7 @@ export default function DosenNilai() {
 																		e.target.value,
 																	)
 																}
-																title="Nilai tugas < 60, bisa diedit manual"
+																title="Nilai sistem < 60, bisa diubah manual"
 															/>
 														) : (
 															studentGrades.tugas

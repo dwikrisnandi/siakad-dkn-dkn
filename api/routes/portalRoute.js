@@ -374,20 +374,26 @@ router.get('/grades/:scheduleId', [verifyToken], async (req, res) => {
         avgTugas = Math.round(sumNilai / totalAssignments);
       }
 
-      let uts = "", uas = "";
-      const [gradeRows] = await query('SELECT nilai_uts, nilai_uas FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
+      let uts = "", uas = "", tugasOverride = null;
+      const [gradeRows] = await query('SELECT nilai_uts, nilai_uas, tugas_override FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
       if (gradeRows.length > 0) { 
         uts = gradeRows[0].nilai_uts !== null ? gradeRows[0].nilai_uts : ""; 
         uas = gradeRows[0].nilai_uas !== null ? gradeRows[0].nilai_uas : ""; 
+        tugasOverride = gradeRows[0].tugas_override;
       }
 
-      const baseScore = (kehadiran * 0.1) + (avgTugas * 0.2) + (isUtsExist ? (uts || 0) * 0.3 : 0) + (isUasExist ? (uas || 0) * 0.4 : 0);
+      // Gunakan tugas_override jika ada, kalau tidak pakai rata-rata otomatis
+      const finalTugas = tugasOverride !== null ? tugasOverride : avgTugas;
+
+      const baseScore = (kehadiran * 0.1) + (finalTugas * 0.2) + (isUtsExist ? (uts || 0) * 0.3 : 0) + (isUasExist ? (uas || 0) * 0.4 : 0);
       result.push({
         mahasiswa_id: mhsId,
         mahasiswa_nim: st.mahasiswa_nim,
         mahasiswa_name: st.mahasiswa_name,
         kehadiran,
-        tugas: avgTugas,
+        tugas: finalTugas,
+        tugas_auto: avgTugas,
+        tugas_override: tugasOverride,
         uts,
         uas,
         final_score: Math.round(baseScore / totalWeight)
@@ -406,7 +412,12 @@ router.put('/grades/:scheduleId', [verifyToken, verifyRole(['dosen'])], async (r
     const { grades } = req.body;
     for (const [mhsId, data] of Object.entries(grades)) {
       await run('DELETE FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
-      await run('INSERT INTO course_grades (schedule_id, mahasiswa_id, nilai_uts, nilai_uas) VALUES (?, ?, ?, ?)', [scheduleId, mhsId, data.uts === "" ? null : (data.uts || 0), data.uas === "" ? null : (data.uas || 0)]);
+      await run('INSERT INTO course_grades (schedule_id, mahasiswa_id, nilai_uts, nilai_uas, tugas_override) VALUES (?, ?, ?, ?, ?)', [
+        scheduleId, mhsId, 
+        data.uts === "" ? null : (data.uts || 0), 
+        data.uas === "" ? null : (data.uas || 0),
+        data.tugas_override !== undefined && data.tugas_override !== null ? data.tugas_override : null
+      ]);
     }
     res.json({ message: 'Grades saved successfully' });
   } catch (error) {
