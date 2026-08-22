@@ -138,11 +138,11 @@ export default function DosenNilai() {
 			["LAPORAN PRESTASI KULIAH"],
 			["SUBJECT PERFORMANCE REPORT"],
 			[],
-			[null, "Kelas", `: ${scheduleInfo ? scheduleInfo.course_code : "-"}`],
-			[null, "Mata Kuliah", `: ${scheduleInfo ? scheduleInfo.course_name : "-"}`],
-			[null, "Dosen", `: ${scheduleInfo ? scheduleInfo.dosen_name : "-"}`],
-			[null, "Pertemuan", `: 16 kali pertemuan`],
-			[null, "Semester", `: ${scheduleInfo ? scheduleInfo.semester : "Ganjil"}`, `Tahun : ${new Date().getFullYear()}`],
+			[null, null, null, null, "Kelas", `: ${scheduleInfo ? scheduleInfo.course_code : "-"}`],
+			[null, null, null, null, "Mata Kuliah", `: ${scheduleInfo ? scheduleInfo.course_name : "-"}`],
+			[null, null, null, null, "Dosen", `: ${scheduleInfo ? scheduleInfo.dosen_name : "-"}`],
+			[null, null, null, null, "Pertemuan", `: 16 kali pertemuan`],
+			[null, null, null, null, "Semester", `: ${scheduleInfo?.semester || "Ganjil"}`, `Tahun : ${new Date().getFullYear()}`],
 			[],
 			[
 				"NPM", "NAMA MAHASISWA", "KEHADIRAN", "TUGAS", "UTS", "UAS", "NILAI AKHIR", "HURUF MUTU"
