@@ -180,27 +180,27 @@ export default function DosenNilai() {
 		const dateStr = `Karawang, ${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
 
 		aoa.push([
-			"Partisipasi = Nilai Kehadiran & Keaktifan = 10 %", null, null, 
-			"AM = Angka Mutu", "HM = Huruf Mutu", "Ket.", 
+			null, null, null, 
+			"AM = Angka\nMutu", "HM = Huruf\nMutu", "Ket.", 
 			null, dateStr
 		]);
 		aoa.push([
-			"TGS = Tugas = 20 %", null, null, 
+			"Partisipasi = Nilai Kehadiran & Keaktifan = 10 %", null, null, 
 			"80 - 100", "A", "Baik Sekali", 
 			null, "Dosen Mata Kuliah"
 		]);
 		aoa.push([
-			"UTS = Ujian Tengah Semester = 30 %", null, null, 
+			"TGS = Tugas = 20 %", null, null, 
 			"70 - 79", "B", "Baik", 
 			null, null
 		]);
 		aoa.push([
-			"UAS = Ujian Akhir Semester = 40 %", null, null, 
+			"UTS = Ujian Tengah Semester = 30 %", null, null, 
 			"60 - 69", "C", "Cukup", 
 			null, null
 		]);
 		aoa.push([
-			null, null, null, 
+			"UAS = Ujian Akhir Semester = 40 %", null, null, 
 			"50 - 59", "D", "Kurang", 
 			null, null
 		]);
@@ -248,11 +248,11 @@ export default function DosenNilai() {
 					const rowOffset = R - footerStartR;
 					
 					if (C === 0 || C === 1) {
-						if (rowOffset <= 3) {
+						if (rowOffset >= 1 && rowOffset <= 4) {
 							style.alignment = { vertical: "center", horizontal: "left" };
 							style.border = {};
-							if (rowOffset === 0) style.border.top = { style: "thin", color: { rgb: "000000" } };
-							if (rowOffset === 3) style.border.bottom = { style: "thin", color: { rgb: "000000" } };
+							if (rowOffset === 1) style.border.top = { style: "thin", color: { rgb: "000000" } };
+							if (rowOffset === 4) style.border.bottom = { style: "thin", color: { rgb: "000000" } };
 							if (C === 0) style.border.left = { style: "thin", color: { rgb: "000000" } };
 							if (C === 1) style.border.right = { style: "thin", color: { rgb: "000000" } };
 						}
@@ -268,6 +268,7 @@ export default function DosenNilai() {
 						if (rowOffset === 0) {
 							style.fill = { fgColor: { rgb: "E0E0E0" } };
 							style.font = { bold: true };
+							style.alignment = { vertical: "center", horizontal: "center", wrapText: true };
 						}
 					}
 
@@ -296,10 +297,10 @@ export default function DosenNilai() {
 		ws["!merges"] = [
 			{ s: {r:0, c:0}, e: {r:0, c:7} },
 			{ s: {r:1, c:0}, e: {r:1, c:7} },
-			{ s: {r:footerStartR, c:0}, e: {r:footerStartR, c:1} },
 			{ s: {r:footerStartR+1, c:0}, e: {r:footerStartR+1, c:1} },
 			{ s: {r:footerStartR+2, c:0}, e: {r:footerStartR+2, c:1} },
-			{ s: {r:footerStartR+3, c:0}, e: {r:footerStartR+3, c:1} }
+			{ s: {r:footerStartR+3, c:0}, e: {r:footerStartR+3, c:1} },
+			{ s: {r:footerStartR+4, c:0}, e: {r:footerStartR+4, c:1} }
 		];
 
 		const wb = XLSX.utils.book_new();
