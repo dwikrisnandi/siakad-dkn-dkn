@@ -145,14 +145,14 @@ export default function DosenNilai() {
 			[null, null, null, null, null, null, null, null, "Semester", `: ${scheduleInfo ? scheduleInfo.semester : "Ganjil"}`, `Tahun : ${new Date().getFullYear()}`],
 			[
 				"NPM", "NAMA MAHASISWA", "RINCIAN NILAI", null, null, null, null, null, 
-				"PROSENTASE PERHITUNGAN NILAI", null, null, null, null, "KET"
+				"PROSENTASE PERHITUNGAN NILAI", null, null, null, null, null, "KET"
 			],
 			[
 				null, null, "PARTISIPASI", "TUGAS", null, "RATA-RATA TUGAS", "UJIAN", null, 
-				"NHD", "TGS", "UTS", "UAS", "NILAI AKHIR"
+				"NHD", "TGS", "UTS", "UAS", "NILAI AKHIR", null, null
 			],
 			[
-				null, null, null, 1, 2, null, "UTS", "UAS", null, null, null, null, "AM", "HM"
+				null, null, null, 1, 2, null, "UTS", "UAS", null, null, null, null, "AM", "HM", null
 			]
 		];
 
@@ -169,10 +169,10 @@ export default function DosenNilai() {
 			aoa.push([
 				m.mahasiswa_nim,
 				m.mahasiswa_name,
-				100, // Partisipasi (Fallback)
-				100, // Tugas 1
-				100, // Tugas 2
-				100, // Rata-Rata Tugas
+				studentGrades.kehadiran || 0, // Partisipasi
+				"", // Tugas 1
+				"", // Tugas 2
+				studentGrades.tugas || 0, // Rata-Rata Tugas
 				studentGrades.uts || 0,
 				studentGrades.uas || 0,
 				Number(((studentGrades.kehadiran || 0) * 0.1).toFixed(1)),
@@ -180,20 +180,21 @@ export default function DosenNilai() {
 				Number(((studentGrades.uts || 0) * 0.3).toFixed(1)),
 				Number(((studentGrades.uas || 0) * 0.4).toFixed(1)),
 				letterGrade === "BL" ? 0 : finalScore,
-				letterGrade
+				letterGrade,
+				"" // KET
 			]);
 		});
 
 		const ws = XLSX.utils.aoa_to_sheet(aoa);
 
 		ws["!merges"] = [
-			{ s: {r:0, c:0}, e: {r:0, c:13} },
-			{ s: {r:1, c:0}, e: {r:1, c:13} },
+			{ s: {r:0, c:0}, e: {r:0, c:14} },
+			{ s: {r:1, c:0}, e: {r:1, c:14} },
 			{ s: {r:8, c:0}, e: {r:10, c:0} },
 			{ s: {r:8, c:1}, e: {r:10, c:1} },
 			{ s: {r:8, c:2}, e: {r:8, c:7} },
-			{ s: {r:8, c:8}, e: {r:8, c:12} },
-			{ s: {r:8, c:13}, e: {r:9, c:13} },
+			{ s: {r:8, c:8}, e: {r:8, c:13} },
+			{ s: {r:8, c:14}, e: {r:10, c:14} },
 			{ s: {r:9, c:2}, e: {r:10, c:2} },
 			{ s: {r:9, c:3}, e: {r:9, c:4} },
 			{ s: {r:9, c:5}, e: {r:10, c:5} },
@@ -202,7 +203,7 @@ export default function DosenNilai() {
 			{ s: {r:9, c:9}, e: {r:10, c:9} },
 			{ s: {r:9, c:10}, e: {r:10, c:10} },
 			{ s: {r:9, c:11}, e: {r:10, c:11} },
-			{ s: {r:9, c:12}, e: {r:9, c:12} }
+			{ s: {r:9, c:12}, e: {r:9, c:13} }
 		];
 
 		const wb = XLSX.utils.book_new();
