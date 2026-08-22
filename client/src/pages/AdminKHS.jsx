@@ -47,11 +47,19 @@ export default function AdminKHS() {
 			m.nidn_nim.includes(searchQuery),
 	);
 
-	const getLetterGrade = (score) => {
-		if (score >= 85) return { letter: "A", mutu: 4.0, color: "success" };
-		if (score >= 75) return { letter: "B", mutu: 3.0, color: "primary" };
-		if (score >= 65) return { letter: "C", mutu: 2.0, color: "warning" };
-		if (score >= 55) return { letter: "D", mutu: 1.0, color: "danger" };
+	const getLetterGrade = (item) => {
+		const isBL = item.kehadiran === "" || item.kehadiran === null || item.kehadiran === undefined ||
+					 item.tugas === "" || item.tugas === null || item.tugas === undefined ||
+					 item.uts === "" || item.uts === null || item.uts === undefined ||
+					 item.uas === "" || item.uas === null || item.uas === undefined;
+
+		if (isBL) return { letter: "BL", mutu: 0.0, color: "secondary" };
+		
+		const score = item.final_score;
+		if (score >= 80) return { letter: "A", mutu: 4.0, color: "success" };
+		if (score >= 70) return { letter: "B", mutu: 3.0, color: "primary" };
+		if (score >= 60) return { letter: "C", mutu: 2.0, color: "warning" };
+		if (score >= 50) return { letter: "D", mutu: 1.0, color: "danger" };
 		return { letter: "E", mutu: 0.0, color: "dark" };
 	};
 
@@ -190,7 +198,7 @@ export default function AdminKHS() {
 										</thead>
 										<tbody>
 											{khsData.map((item, idx) => {
-												const grade = getLetterGrade(item.final_score);
+												const grade = getLetterGrade(item);
 												return (
 													<tr key={idx}>
 														<td className="ps-4 py-3">
@@ -236,7 +244,7 @@ export default function AdminKHS() {
 														khsData.reduce(
 															(acc, curr) =>
 																acc +
-																getLetterGrade(curr.final_score).mutu *
+																getLetterGrade(curr).mutu *
 																	curr.sks,
 															0,
 														) /

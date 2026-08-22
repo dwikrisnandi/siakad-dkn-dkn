@@ -1,4 +1,5 @@
-import { Award, Save } from "lucide-react";
+import { Award, Save, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
@@ -40,10 +41,10 @@ export default function DosenNilai() {
 				const initial = {};
 				res.data.forEach((m) => {
 					initial[m.mahasiswa_id] = {
-						uts: m.uts,
-						uas: m.uas,
-						kehadiran: m.kehadiran,
-						tugas: m.tugas,
+						uts: m.uts !== null && m.uts !== undefined ? m.uts : "",
+						uas: m.uas !== null && m.uas !== undefined ? m.uas : "",
+						kehadiran: m.kehadiran !== null && m.kehadiran !== undefined ? m.kehadiran : "",
+						tugas: m.tugas !== null && m.tugas !== undefined ? m.tugas : "",
 					};
 				});
 				setGradesData(initial);
@@ -61,7 +62,7 @@ export default function DosenNilai() {
 			...prev,
 			[mhsId]: {
 				...prev[mhsId],
-				[field]: parseInt(value) || 0,
+				[field]: value === "" ? "" : parseInt(value) || 0,
 			},
 		}));
 	};
@@ -86,15 +87,19 @@ export default function DosenNilai() {
 		return Math.round(baseScore / totalWeight);
 	};
 
-	const getLetter = (score) => {
-		if (score >= 85) return "A";
-		if (score >= 80) return "A-";
-		if (score >= 75) return "B+";
+	const getLetter = (grades) => {
+		const isBL = grades.kehadiran === "" || grades.kehadiran === null || grades.kehadiran === undefined ||
+					 grades.tugas === "" || grades.tugas === null || grades.tugas === undefined ||
+					 grades.uts === "" || grades.uts === null || grades.uts === undefined ||
+					 grades.uas === "" || grades.uas === null || grades.uas === undefined;
+
+		if (isBL) return "BL";
+
+		const score = calculateFinal(grades);
+		if (score >= 80) return "A";
 		if (score >= 70) return "B";
-		if (score >= 65) return "B-";
-		if (score >= 60) return "C+";
-		if (score >= 55) return "C";
-		if (score >= 40) return "D";
+		if (score >= 60) return "C";
+		if (score >= 50) return "D";
 		return "E";
 	};
 
@@ -113,6 +118,43 @@ export default function DosenNilai() {
 			setSaveStatus("Gagal menyimpan nilai.");
 			setTimeout(() => setSaveStatus(""), 4000);
 		}
+	};
+
+	const handleExportExcel = () => {
+		if (!selectedSchedule || mahasiswa.length === 0) return;
+
+		const scheduleInfo = schedules.find((s) => s.id === parseInt(selectedSchedule));
+		const sheetData = mahasiswa.map((m) => {
+			const studentGrades = gradesData[m.mahasiswa_id] || {
+				kehadiran: 0,
+				tugas: 0,
+				uts: 0,
+				uas: 0,
+			};
+			const finalScore = calculateFinal(studentGrades);
+			const letterGrade = getLetter(studentGrades);
+
+			return {
+				"NIM": m.mahasiswa_nim,
+				"Nama Mahasiswa": m.mahasiswa_name,
+				"Kehadiran (10%)": studentGrades.kehadiran,
+				"Tugas (20%)": studentGrades.tugas,
+				"UTS (30%)": studentGrades.uts,
+				"UAS (40%)": studentGrades.uas,
+				"Nilai Akhir": letterGrade === "BL" ? "BL" : finalScore,
+				"Huruf Mutu": letterGrade,
+			};
+		});
+
+		const ws = XLSX.utils.json_to_sheet(sheetData);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, "Nilai");
+
+		const fileName = scheduleInfo 
+			? `Nilai_${scheduleInfo.course_code}_${scheduleInfo.course_name}.xlsx` 
+			: "Nilai_Mahasiswa.xlsx";
+			
+		XLSX.writeFile(wb, fileName);
 	};
 
 	return (
@@ -182,7 +224,7 @@ export default function DosenNilai() {
 												uas: 0,
 											};
 											const finalScore = calculateFinal(studentGrades);
-											const letterGrade = getLetter(finalScore);
+											const letterGrade = getLetter(studentGrades);
 
 											return (
 												<tr key={m.mahasiswa_id}>
@@ -229,11 +271,11 @@ export default function DosenNilai() {
 														/>
 													</td>
 													<td className="text-center fw-bold text-primary fs-5">
-														{finalScore}
+														{letterGrade === "BL" ? "-" : finalScore}
 													</td>
 													<td className="pe-4 text-center">
 														<span
-															className={`badge ${letterGrade.includes("A") || letterGrade.includes("B") ? "bg-success" : "bg-danger"} fs-6`}
+															className={`badge ${letterGrade.includes("A") || letterGrade.includes("B") ? "bg-success" : (letterGrade === "BL" ? "bg-secondary" : "bg-danger")} fs-6`}
 														>
 															{letterGrade}
 														</span>
@@ -254,14 +296,24 @@ export default function DosenNilai() {
 									</span>
 								)}
 							</div>
-							<button
-								className="btn btn-primary px-4 fw-bold"
-								onClick={handleSave}
-								disabled={mahasiswa.length === 0}
-							>
-								<Save size={18} className="me-2 mb-1" />
-								Simpan Nilai Akhir
-							</button>
+							<div className="d-flex gap-2">
+								<button
+									className="btn btn-success px-4 fw-bold"
+									onClick={handleExportExcel}
+									disabled={mahasiswa.length === 0}
+								>
+									<Download size={18} className="me-2 mb-1" />
+									Export Excel
+								</button>
+								<button
+									className="btn btn-primary px-4 fw-bold"
+									onClick={handleSave}
+									disabled={mahasiswa.length === 0}
+								>
+									<Save size={18} className="me-2 mb-1" />
+									Simpan Nilai Akhir
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

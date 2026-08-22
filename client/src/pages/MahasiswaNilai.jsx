@@ -13,11 +13,19 @@ export default function MahasiswaNilai() {
 
 	const calculateFinal = (g) =>
 		Math.round(g.kehadiran * 0.1 + g.tugas * 0.2 + g.uts * 0.3 + g.uas * 0.4);
-	const getLetterGrade = (score) => {
-		if (score >= 85) return { letter: "A", mutu: 4.0, color: "success" };
-		if (score >= 75) return { letter: "B", mutu: 3.0, color: "primary" };
-		if (score >= 65) return { letter: "C", mutu: 2.0, color: "warning" };
-		if (score >= 55) return { letter: "D", mutu: 1.0, color: "danger" };
+	const getLetterGrade = (grades) => {
+		const isBL = grades.kehadiran === "" || grades.kehadiran === null || grades.kehadiran === undefined ||
+					 grades.tugas === "" || grades.tugas === null || grades.tugas === undefined ||
+					 grades.uts === "" || grades.uts === null || grades.uts === undefined ||
+					 grades.uas === "" || grades.uas === null || grades.uas === undefined;
+
+		if (isBL) return { letter: "BL", mutu: 0.0, color: "secondary" };
+
+		const score = grades.final_score || calculateFinal(grades);
+		if (score >= 80) return { letter: "A", mutu: 4.0, color: "success" };
+		if (score >= 70) return { letter: "B", mutu: 3.0, color: "primary" };
+		if (score >= 60) return { letter: "C", mutu: 2.0, color: "warning" };
+		if (score >= 50) return { letter: "D", mutu: 1.0, color: "danger" };
 		return { letter: "E", mutu: 0.0, color: "dark" };
 	};
 
@@ -45,18 +53,18 @@ export default function MahasiswaNilai() {
 				const mine = res.data.find((g) => g.mahasiswa_id === user.id);
 				if (mine) {
 					setMyGrades({
-						kehadiran: mine.kehadiran || 0,
-						tugas: mine.tugas || 0,
-						uts: mine.uts || 0,
-						uas: mine.uas || 0,
+						kehadiran: mine.kehadiran !== null && mine.kehadiran !== undefined ? mine.kehadiran : "",
+						tugas: mine.tugas !== null && mine.tugas !== undefined ? mine.tugas : "",
+						uts: mine.uts !== null && mine.uts !== undefined ? mine.uts : "",
+						uas: mine.uas !== null && mine.uas !== undefined ? mine.uas : "",
 						final_score: mine.final_score || 0,
 					});
 				} else {
 					setMyGrades({
-						kehadiran: 0,
-						tugas: 0,
-						uts: 0,
-						uas: 0,
+						kehadiran: "",
+						tugas: "",
+						uts: "",
+						uas: "",
 						final_score: 0,
 					});
 				}
@@ -83,7 +91,7 @@ export default function MahasiswaNilai() {
 	}, []);
 
 	const finalScore = myGrades ? calculateFinal(myGrades) : 0;
-	const letterGrade = getLetterGrade(finalScore);
+	const letterGrade = myGrades ? getLetterGrade(myGrades) : { letter: "-", mutu: 0.0, color: "secondary" };
 
 	if (edomCompleted === false) {
 		return (
@@ -222,13 +230,9 @@ export default function MahasiswaNilai() {
 					<div className="card shadow-sm border-0 rounded-4">
 						<div className="card-body p-4">
 							<h5 className="fw-bold mb-4">Rincian Komponen Nilai</h5>
-							{myGrades &&
-								myGrades.kehadiran === 0 &&
-								myGrades.tugas === 0 &&
-								myGrades.uts === 0 &&
-								myGrades.uas === 0 && (
+							{myGrades && letterGrade.letter === "BL" && (
 									<p className="text-muted small mb-4">
-										⚠️ Data nilai belum diinput oleh dosen.
+										⚠️ Data nilai belum lengkap diinput oleh dosen (Nilai saat ini: BL).
 									</p>
 								)}
 							{loading ? (

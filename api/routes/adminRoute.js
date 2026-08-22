@@ -134,11 +134,11 @@ router.get('/khs/:mahasiswaId', [verifyToken, verifyRole(['admin'])], async (req
         avgTugas = Math.round(sum / tugasRows.length);
       }
       
-      let uts = 0, uas = 0;
+      let uts = "", uas = "";
       const [gradeRows] = await query('SELECT nilai_uts, nilai_uas FROM course_grades WHERE schedule_id = ? AND mahasiswa_id = ?', [scheduleId, mhsId]);
       if (gradeRows.length > 0) {
-        uts = gradeRows[0].nilai_uts;
-        uas = gradeRows[0].nilai_uas;
+        uts = gradeRows[0].nilai_uts !== null ? gradeRows[0].nilai_uts : "";
+        uas = gradeRows[0].nilai_uas !== null ? gradeRows[0].nilai_uas : "";
       }
       
       const finalScore = Math.round((kehadiran * 0.1) + (avgTugas * 0.2) + (uts * 0.3) + (uas * 0.4));
