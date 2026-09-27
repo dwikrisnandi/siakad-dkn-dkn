@@ -38,9 +38,16 @@ async function withKeyRotation(modelName, systemInstruction, fn) {
       } catch (err) {
         const status = err?.status || err?.httpError?.status || 0;
 
+        if (status === 500 || (err.message && err.message.includes('500'))) {
+          if (modelName === 'gemma-4-31b-it') {
+            console.warn(`Model gemma-4-31b-it error 500. Fallback otomatis ke gemma-4-21b-a4b-it...`);
+            modelName = 'gemma-4-21b-a4b-it';
+          }
+        }
+
         // 429=Quota, 403=Invalid, 503=Overloaded, 500=Internal Error.
         if (status >= 500 || status === 429 || status === 403 || status === 401 || (err.message && (err.message.includes('503') || err.message.includes('500')))) {
-          console.warn(`Key API rotasi (Status: ${status || '503'}), mencoba key selanjutnya...`);
+          console.warn(`Key API rotasi (Status: ${status || '503'}, Model: ${modelName}), mencoba key selanjutnya...`);
           lastError = err;
           continue;
         }
