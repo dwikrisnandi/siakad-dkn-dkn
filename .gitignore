@@ -77,3 +77,8 @@ deploy.js
 client/dist.zip
 scratch/
 *.xlsx
+
+# Test files
+*test_*.js
+*test*.cjs
+api/test_*.js
