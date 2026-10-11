@@ -26,7 +26,7 @@ import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 
 export default function LandingPage() {
-	const { user } = useAuth();
+	const { user, login } = useAuth();
 	const navigate = useNavigate();
 	const { t, i18n } = useTranslation();
 
@@ -35,6 +35,23 @@ export default function LandingPage() {
 		return localStorage.getItem("theme") === "dark";
 	});
 	const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+	const [demoLoading, setDemoLoading] = useState(null); // 'admin', 'dosen', 'mahasiswa'
+
+	const handleDemoLogin = async (role) => {
+		setDemoLoading(role);
+		try {
+			let nidn_nim = 'admin.demo';
+			if (role === 'dosen') nidn_nim = 'dosen.demo';
+			if (role === 'mahasiswa') nidn_nim = 'mhs.demo';
+
+			const loggedUser = await login(nidn_nim, 'demouser123', 'demo');
+			navigate(`/${loggedUser.role}`);
+		} catch (err) {
+			alert('Gagal masuk akun demo: ' + err);
+		} finally {
+			setDemoLoading(null);
+		}
+	};
 
 	useEffect(() => {
 		localStorage.setItem("theme", isDark ? "dark" : "light");
@@ -401,6 +418,55 @@ export default function LandingPage() {
 							>
 								Buka SPMB
 							</a>
+						</div>
+
+						{/* Live Demo Ujicoba Card untuk Calon Penyewa */}
+						<div 
+							className="p-3 mb-4 rounded-3 border"
+							style={{ 
+								maxWidth: "540px", 
+								backgroundColor: "var(--card-bg)", 
+								borderColor: "rgba(37, 99, 235, 0.4)",
+								boxShadow: "0 8px 24px rgba(37, 99, 235, 0.08)"
+							}}
+						>
+							<div className="d-flex align-items-center justify-content-between mb-2">
+								<div className="d-flex align-items-center gap-2">
+									<span className="badge bg-primary px-2 py-1 rounded-pill">🧪 LIVE DEMO</span>
+									<strong className="text-primary-custom" style={{ fontSize: "14px" }}>
+										Universitas Artha Virddhi Sampada
+									</strong>
+								</div>
+								<span className="badge bg-success bg-opacity-10 text-success fw-bold" style={{ fontSize: "11px" }}>
+									Siap Ujicoba
+								</span>
+							</div>
+							<p className="text-secondary-custom small mb-3">
+								Coba langsung semua fitur tanpa registrasi. Klik role yang ingin Anda uji:
+							</p>
+							<div className="d-flex flex-wrap gap-2">
+								<button 
+									className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"
+									onClick={() => handleDemoLogin('admin')}
+									disabled={demoLoading !== null}
+								>
+									{demoLoading === 'admin' ? 'Masuk...' : '👔 Admin Kampus'}
+								</button>
+								<button 
+									className="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"
+									onClick={() => handleDemoLogin('dosen')}
+									disabled={demoLoading !== null}
+								>
+									{demoLoading === 'dosen' ? 'Masuk...' : '👨‍🏫 Dosen Pengajar'}
+								</button>
+								<button 
+									className="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"
+									onClick={() => handleDemoLogin('mahasiswa')}
+									disabled={demoLoading !== null}
+								>
+									{demoLoading === 'mahasiswa' ? 'Masuk...' : '🎓 Mahasiswa Aktif'}
+								</button>
+							</div>
 						</div>
 
 						<div className="d-flex flex-wrap gap-3">

@@ -36,8 +36,11 @@ export const AuthProvider = ({ children }) => {
 		}
 	}, []);
 
-	const login = async (nidn_nim, password) => {
+	const login = async (nidn_nim, password, tenantSlug = null) => {
 		try {
+			if (tenantSlug) {
+				localStorage.setItem("tenant_slug", tenantSlug);
+			}
 			const response = await api.post("/auth/login", { nidn_nim, password });
 			const { token, ...userData } = response.data;
 			localStorage.setItem("token", token);

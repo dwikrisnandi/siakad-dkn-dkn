@@ -137,6 +137,37 @@ export default function Login() {
 						<span>🎓 Pendaftaran Mahasiswa Baru (SPMB)</span>
 					</a>
 				</div>
+
+				{/* Quick Demo Login Buttons */}
+				<div className="mt-3 p-3 rounded-3 border bg-light text-center">
+					<small className="fw-bold text-muted d-block mb-2">🧪 AKUN UJICOBA (LIVE DEMO UAVS)</small>
+					<div className="d-flex justify-content-center gap-2">
+						<button 
+							type="button"
+							className="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
+							style={{ fontSize: "11px" }}
+							onClick={() => { setNidnNim('admin.demo'); setPassword('demouser123'); }}
+						>
+							Admin
+						</button>
+						<button 
+							type="button"
+							className="btn btn-sm btn-outline-success rounded-pill px-2 py-1"
+							style={{ fontSize: "11px" }}
+							onClick={() => { setNidnNim('dosen.demo'); setPassword('demouser123'); }}
+						>
+							Dosen
+						</button>
+						<button 
+							type="button"
+							className="btn btn-sm btn-outline-info rounded-pill px-2 py-1"
+							style={{ fontSize: "11px" }}
+							onClick={() => { setNidnNim('mhs.demo'); setPassword('demouser123'); }}
+						>
+							Mahasiswa
+						</button>
+					</div>
+				</div>
 				
 				<div className="text-center mt-4 pt-3 border-top">
 					<p className="text-muted small mb-0">Platform Cerdas Pendidikan &copy; 2026</p>
