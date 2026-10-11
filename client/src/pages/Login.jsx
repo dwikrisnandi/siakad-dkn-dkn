@@ -38,6 +38,7 @@ export default function Login() {
 			if (u.role === "admin") navigate("/admin");
 			else if (u.role === "dosen") navigate("/dosen");
 			else if (u.role === "mahasiswa") navigate("/mahasiswa");
+			else if (u.role === "superadmin") navigate("/superadmin");
 		} catch (err) {
 			setError(err);
 		} finally {

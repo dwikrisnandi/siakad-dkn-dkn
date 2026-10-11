@@ -11,6 +11,7 @@ import {
 	LayoutGrid,
 	PenTool,
 	Smartphone,
+	Target,
 	UserSquare2,
 	Users,
 } from "lucide-react";
@@ -45,6 +46,11 @@ import React from "react";
 					path: "/superadmin/plans",
 					icon: <BookOpen size={size} className="nav-icon" />,
 				},
+				{
+					name: "Database Manager",
+					path: "/superadmin/database",
+					icon: <Database size={size} className="nav-icon" />,
+				},
 			];
 		case "admin":
 			return [
@@ -57,6 +63,11 @@ import React from "react";
 					name: "menu.program_studi",
 					path: "/admin/programs",
 					icon: <Database size={size} className="nav-icon" />,
+				},
+				{
+					name: "Visi Misi & CPL",
+					path: "/admin/pillars",
+					icon: <Target size={size} className="nav-icon" />,
 				},
 				{
 					name: "menu.kurikulum",

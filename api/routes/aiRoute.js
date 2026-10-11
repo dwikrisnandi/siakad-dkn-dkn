@@ -5,76 +5,104 @@ const fs = require('fs');
 const { query } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
 const { sendPushNotification } = require('../utils/fcm');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 // =====================================================
 // API KEY ROTATION SETUP
 // =====================================================
-const GEMINI_KEYS = [
-  process.env.GEMINI_API_KEY_1,
-  process.env.GEMINI_API_KEY_2,
-  process.env.GEMINI_API_KEY_3,
-  process.env.GEMINI_API_KEY_4,
-  process.env.GEMINI_API_KEY_5,
-].filter(k => k && k !== 'YOUR_SECOND_API_KEY_HERE' && k !== 'YOUR_THIRD_API_KEY_HERE'
-  && k !== 'YOUR_FOURTH_API_KEY_HERE' && k !== 'YOUR_FIFTH_API_KEY_HERE' && k.length > 10);
+const GEMINI_KEYS = [];
+for (let i = 1; i <= 50; i++) {
+  const k = process.env[`GEMINI_API_KEY_${i}`];
+  if (k && k.startsWith('AIza') && k.length > 10) GEMINI_KEYS.push(k);
+}
+console.log(`🔑 Loaded ${GEMINI_KEYS.length} Gemini API key(s).`);
 
-async function withKeyRotation(modelName, systemInstruction, fn) {
+/**
+ * withKeyRotation — Coba semua API key secara bergilir.
+ * Flow: Semua key dicoba pakai model utama (gemma-4-31b-it) dulu.
+ *       Kalau SEMUA key error 500, baru fallback ke gemini-3.5-flash-lite.
+ * @param {string} modelName - Nama model (e.g. 'gemma-4-31b-it')
+ * @param {Function} fn - Callback yang menerima (ai, modelName) di mana ai = GoogleGenAI instance
+ */
+async function withKeyRotation(modelName, fn) {
   if (GEMINI_KEYS.length === 0) throw new Error('Tidak ada API key yang dikonfigurasi.');
 
-  const MAX_RETRIES = 3;
+  const FALLBACK_MODEL = 'gemini-3.5-flash-lite';
+  const modelsToTry = [modelName];
+  // Tambah fallback hanya jika model utama bukan fallback itu sendiri
+  if (modelName !== FALLBACK_MODEL) modelsToTry.push(FALLBACK_MODEL);
+
   let lastError;
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+  for (const currentModel of modelsToTry) {
+    let all500 = true; // Track apakah semua key error 500
+
     const startIdx = Math.floor(Math.random() * GEMINI_KEYS.length);
     for (let i = 0; i < GEMINI_KEYS.length; i++) {
       const key = GEMINI_KEYS[(startIdx + i) % GEMINI_KEYS.length];
       try {
-        const genAI = new GoogleGenerativeAI(key);
-        const cfg = { model: modelName };
-        if (systemInstruction) cfg.systemInstruction = systemInstruction;
-        const model = genAI.getGenerativeModel(cfg);
-        return await fn(model);
+        const ai = new GoogleGenAI({ apiKey: key });
+        return await fn(ai, currentModel);
       } catch (err) {
-        const status = err?.status || err?.httpError?.status || 0;
+        const status = err?.status || err?.httpError?.status || err?.code || 0;
+        const is500 = status === 500 || (err.message && err.message.includes('500'));
+        const is503 = status === 503 || (err.message && err.message.includes('503'));
 
-        if (status === 500 || (err.message && err.message.includes('500'))) {
-          if (modelName === 'gemma-4-31b-it') {
-            console.warn(`Model gemma-4-31b-it error 500. Fallback otomatis ke gemma-4-21b-a4b-it...`);
-            modelName = 'gemma-4-21b-a4b-it';
-          }
-        }
+        if (!is500) all500 = false;
 
-        // 429=Quota, 403=Invalid, 503=Overloaded, 500=Internal Error.
-        if (status >= 500 || status === 429 || status === 403 || status === 401 || (err.message && (err.message.includes('503') || err.message.includes('500')))) {
-          console.warn(`Key API rotasi (Status: ${status || '503'}, Model: ${modelName}), mencoba key selanjutnya...`);
+        // Retryable errors: 429, 401, 403, 500, 503
+        if (is500 || is503 || status === 429 || status === 403 || status === 401) {
+          console.warn(`Key API rotasi (Status: ${status || 'unknown'}, Model: ${currentModel}, Key: ${i + 1}/${GEMINI_KEYS.length})`);
           lastError = err;
           continue;
         }
 
-        throw err; // Jika error syntax/bad request, stop total
+        throw err; // Non-retryable (syntax error, bad request, dll)
       }
     }
 
-    // Jika sampai di sini, artinya KELIMA API KEY sudah dicoba semua dan semuanya GAGAL.
-    // Jika kegagalan terakhirnya adalah 503 (Google benar-benar padat secara global):
-    if (lastError && (lastError.status === 503 || lastError.message.includes('503'))) {
-      if (attempt < MAX_RETRIES) {
-        const delayMs = attempt * 3000;
-        console.warn(`[503] Kelima API key membalas Sibuk. Menunggu ${delayMs / 1000} detik sebelum mengulang (Percobaan ${attempt}/${MAX_RETRIES})...`);
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-        continue;
+    // Semua key habis untuk model ini
+    if (all500 && currentModel !== FALLBACK_MODEL) {
+      console.warn(`⚠️ Semua ${GEMINI_KEYS.length} key error 500 pada model ${currentModel}. Fallback ke ${FALLBACK_MODEL}...`);
+      continue; // Lanjut ke fallback model
+    }
+
+    // Kalau 503 (overloaded), coba delay 1x sebelum menyerah
+    if (lastError && (lastError.status === 503 || (lastError.message && lastError.message.includes('503')))) {
+      console.warn(`[503] Semua key sibuk pada model ${currentModel}. Menunggu 3 detik...`);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Retry sekali lagi
+      const retryIdx = Math.floor(Math.random() * GEMINI_KEYS.length);
+      try {
+        const ai = new GoogleGenAI({ apiKey: GEMINI_KEYS[retryIdx] });
+        return await fn(ai, currentModel);
+      } catch (retryErr) {
+        lastError = retryErr;
       }
-    } else {
-      // Berarti semua 5 key gagal bukan karena 503 (misal ke-5 nya habis kuota 429), tidak perlu retry jeda
-      break;
     }
   }
 
-  if (lastError && (lastError.status === 503 || lastError.message.includes('503'))) {
-    throw new Error(`Kelima server API Google (model ${modelName}) sedang antre saat ini. Silakan coba lagi sebentar lagi.`);
+  if (lastError && (lastError.status === 503 || (lastError.message && lastError.message.includes('503')))) {
+    throw new Error(`Semua server API Google sedang sibuk saat ini. Silakan coba lagi sebentar lagi.`);
   }
   throw lastError || new Error('Semua API key gagal/habis kuota.');
+}
+
+/**
+ * Helper: Ekstrak teks dari response SDK baru.
+ * SDK baru: response.text adalah properti langsung.
+ * Fallback ke candidates jika perlu filter thinking parts.
+ */
+function extractText(response) {
+  // Coba langsung .text dulu
+  if (response.text) return response.text.trim();
+  // Fallback: manual candidates parsing (filter thinking parts)
+  try {
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    return parts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
+  } catch (_) { }
+  return '';
 }
 
 // =====================================================
@@ -170,19 +198,44 @@ router.post('/chat', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) 
       }
     }
 
-    const result = await withKeyRotation('gemma-4-31b-it', null, (model) => {
-      const chat = model.startChat({ history: safeHistory });
-      return chat.sendMessage(message.trim());
+    const result = await withKeyRotation('gemma-4-31b-it', (ai, model) => {
+      const chat = ai.chats.create({
+        model: model,
+        history: safeHistory,
+      });
+      return chat.sendMessage({ message: message.trim() });
     });
 
-    let finalText = '';
-    try {
-      const parts = result.response.candidates?.[0]?.content?.parts || [];
-      finalText = parts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
-    } catch (_) { }
-    if (!finalText) finalText = result.response.text().trim();
+    let finalText = extractText(result);
+    if (!finalText) finalText = 'Maaf, Bapak tidak bisa memproses permintaan ini saat ini.';
 
-    const plain = finalText.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#+\s+/gm, '').replace(/^\s*[-*+]\s+/gm, '- ').replace(/\n\n+/g, '\n\n').trim();
+    const plain = finalText
+      // LaTeX math: $\rightarrow$ → →, $\times$ → ×, dll
+      .replace(/\$\\rightarrow\$/g, '→')
+      .replace(/\$\\leftarrow\$/g, '←')
+      .replace(/\$\\times\$/g, '×')
+      .replace(/\$\\div\$/g, '÷')
+      .replace(/\$\\neq\$/g, '≠')
+      .replace(/\$\\leq\$/g, '≤')
+      .replace(/\$\\geq\$/g, '≥')
+      .replace(/\$\\infty\$/g, '∞')
+      .replace(/\$[^$]+\$/g, '')           // Hapus sisa LaTeX lain
+      // Markdown bold/italic
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      // Markdown headers
+      .replace(/^#+\s+/gm, '')
+      // Inline code backticks
+      .replace(/`([^`]+)`/g, '$1')
+      // Code blocks
+      .replace(/```[\s\S]*?```/g, '')
+      // Markdown horizontal rules
+      .replace(/^---+$/gm, '')
+      // Markdown bullet cleanup (keep dash format)
+      .replace(/^\s*[-*+]\s+/gm, '- ')
+      // Multiple newlines → max 2
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
     res.json({ reply: plain });
 
   } catch (error) {
@@ -207,7 +260,7 @@ Tugas kamu ada DUA:
 PENTING: Balas HANYA dalam format JSON ini (tanpa teks lain):
 {"skor": 85, "feedback": "Feedback di sini", "ai_terindikasi": false, "ai_keterangan": "Alasan singkat"}`;
 
-    const parts = [{ text: systemPrompt }, { text: `\n\nJudul Tugas: ${assignment_title}\nInstruksi: ${assignment_description?.replace(/<[^>]+>/g, '') || '-'}\nNama Mahasiswa: ${student_name || 'Mahasiswa'}` }];
+    const contents = [{ text: systemPrompt }, { text: `\n\nJudul Tugas: ${assignment_title}\nInstruksi: ${assignment_description?.replace(/<[^>]+>/g, '') || '-'}\nNama Mahasiswa: ${student_name || 'Mahasiswa'}` }];
 
     let useImageModel = false;
 
@@ -223,33 +276,34 @@ PENTING: Balas HANYA dalam format JSON ini (tanpa teks lain):
             let mimeType = 'image/jpeg';
             if (ext === '.png') mimeType = 'image/png';
             else if (ext === '.webp') mimeType = 'image/webp';
-            parts.push({ inlineData: { mimeType, data: buffer.toString('base64') } });
+            contents.push({ inlineData: { mimeType, data: buffer.toString('base64') } });
             useImageModel = true;
           }
         } catch (e) { console.error("Error loading image:", e); }
       }
-      if (useImageModel) parts.push({ text: '\n(Gambar-gambar di atas disertakan dalam jawaban mahasiswa)\n' });
-      parts.push({ text: `\n\nJawaban Mahasiswa (Teks):\n${submission_text.replace(/<[^>]+>/g, '')}` });
+      if (useImageModel) contents.push({ text: '\n(Gambar-gambar di atas disertakan dalam jawaban mahasiswa)\n' });
+      contents.push({ text: `\n\nJawaban Mahasiswa (Teks):\n${submission_text.replace(/<[^>]+>/g, '')}` });
     }
 
     if (file_data?.startsWith('data:image')) {
       const [header, base64Data] = file_data.split(',');
-      parts.push({ inlineData: { mimeType: header.match(/:(.*?);/)[1], data: base64Data } });
-      parts.push({ text: '\n(Gambar di atas adalah screenshot tugas mahasiswa)' });
+      contents.push({ inlineData: { mimeType: header.match(/:(.*?);/)[1], data: base64Data } });
+      contents.push({ text: '\n(Gambar di atas adalah screenshot tugas mahasiswa)' });
       useImageModel = true;
     }
 
-    parts.push({ text: '\n\nBerikan penilaian dalam format JSON sekarang:' });
+    contents.push({ text: '\n\nBerikan penilaian dalam format JSON sekarang:' });
 
-    const selectedModel = useImageModel ? 'gemini-3.1-flash-lite' : 'gemma-4-31b-it';
-    const result = await withKeyRotation(selectedModel, null, (model) => model.generateContent(parts));
+    const selectedModel = useImageModel ? 'gemini-3.5-flash-lite' : 'gemma-4-31b-it';
+    const result = await withKeyRotation(selectedModel, (ai, model) =>
+      ai.models.generateContent({
+        model: model,
+        contents: contents,
+      })
+    );
 
-    let responseText = '';
-    try {
-      const resParts = result.response.candidates?.[0]?.content?.parts || [];
-      responseText = resParts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
-    } catch (_) { }
-    if (!responseText) responseText = result.response.text().trim();
+    let responseText = extractText(result);
+    if (!responseText) responseText = '';
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return res.status(500).json({ error: 'AI tidak memberikan format yang valid. Coba lagi.' });
@@ -291,15 +345,15 @@ Berikan juga feedback super singkat (maksimal 1-2 kalimat) yang membangun.
 PENTING: Balas HANYA dengan format JSON valid berikut (tanpa Markdown):
 {"skor": (angka), "feedback": "(teks singkat)"}`;
 
-    const parts = [{ text: systemPrompt }];
-    const result = await withKeyRotation('gemma-4-31b-it', null, (model) => model.generateContent(parts));
+    const result = await withKeyRotation('gemma-4-31b-it', (ai, model) =>
+      ai.models.generateContent({
+        model: model,
+        contents: [{ text: systemPrompt }],
+      })
+    );
 
-    let responseText = '';
-    try {
-      const resParts = result.response.candidates?.[0]?.content?.parts || [];
-      responseText = resParts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
-    } catch (_) { }
-    if (!responseText) responseText = result.response.text().trim();
+    let responseText = extractText(result);
+    if (!responseText) responseText = '';
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return res.status(500).json({ error: 'AI tidak memberikan format yang valid. Coba lagi.' });
@@ -374,10 +428,13 @@ router.post('/ai-generate-material', [verifyToken, verifyRole(['dosen', 'admin']
     }, 15000);
 
     try {
-      // Step 1: Gemini 3.1 Flash-Lite — Ekstrak CPMK, Referensi, dan Silabus dari PDF RPS
-      const readerResult = await withKeyRotation('gemini-3.1-flash-lite', null, (model) => model.generateContent([
-        {
-          text: `Kamu adalah AI Pengekstrak Dokumen Akademik.
+      // Step 1: Gemini 3.5 Flash-Lite — Ekstrak CPMK, Referensi, dan Silabus dari PDF RPS (multimodal, perlu model Gemini bukan Gemma)
+      const readerResult = await withKeyRotation('gemini-3.5-flash-lite', (ai, model) =>
+        ai.models.generateContent({
+          model: model,
+          contents: [
+            {
+              text: `Kamu adalah AI Pengekstrak Dokumen Akademik.
 Baca dokumen PDF RPS terlampir dengan sangat seksama. Tugasmu HANYA mengekstrak dan melaporkan 3 hal berikut secara struktural:
 
 1. CPMK (Capaian Pembelajaran Mata Kuliah):
@@ -399,10 +456,12 @@ FORMAT LAPORAN:
 
 == GARIS BESAR TOPIK ==
 [Ringkasan silabus untuk topik "${topic_title}" di sini]`
-        },
-        { inlineData: { mimeType: 'application/pdf', data: base64Data } }
-      ]));
-      const extractedContext = readerResult.response.text() || 'Informasi dari RPS telah diekstrak.';
+            },
+            { inlineData: { mimeType: 'application/pdf', data: base64Data } }
+          ],
+        })
+      );
+      const extractedContext = extractText(readerResult) || 'Informasi dari RPS telah diekstrak.';
 
       // Ekstrak nomor pertemuan dari topic_title (misal: "Pertemuan 5: ..." → "5")
       const meetingMatch = topic_title.match(/pertemuan\s*(\d+)/i);
@@ -471,28 +530,24 @@ ${extractedContext}
 ${chapterContext}
 Setiap pertemuan wajib diubah menjadi SATU BAB UTUH skala buku teks akademik.`;
 
-      const generatedHtml = await withKeyRotation('gemma-4-31b-it', null, async (model) => {
-        const chat = model.startChat({
+      const generatedHtml = await withKeyRotation('gemma-4-31b-it', async (ai, model) => {
+        const chat = ai.chats.create({
+          model: model,
           history: [
             { role: 'user', parts: [{ text: systemContext }] },
             { role: 'model', parts: [{ text: 'Siap, saya mengerti konteks RPS dan peran saya sebagai Profesor penulisan buku akademik STMIK Pamitran. Silakan instruksikan struktur penulisan bab dari materi spesifik tersebut.' }] }
           ]
         });
 
-        const extractHtml = (result) => {
-          let txt = '';
-          try {
-            const parts = result.response.candidates?.[0]?.content?.parts || [];
-            txt = parts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
-          } catch (_) { }
-          if (!txt) txt = result.response.text().trim();
+        const extractHtmlFromChat = (result) => {
+          let txt = extractText(result);
           return txt.replace(/^```html/i, '').replace(/```$/g, '').trim();
         };
 
         let fullHtml = CSS_TEMPLATE + '\n';
 
         // TAHAP 1: Header + Capaian + Pendahuluan
-        const res1 = await chat.sendMessage(`Tuliskan BAGIAN 1 dari ${chapterLabel}.
+        const res1 = await chat.sendMessage({ message: `Tuliskan BAGIAN 1 dari ${chapterLabel}.
 
 ATURAN KETAT: Output harus berupa SATU BLOK HTML lengkap, dimulai dengan:
 <div class="container"><header><h1>${chapterLabel}: [Judul Topik]</h1><p>[Sub-judul atau deskripsi singkat bab]</p></header><div class="content">
@@ -506,11 +561,11 @@ Lanjutkan isi dengan:
 Gunakan class CSS berikut yang sudah tersedia: container, header, content, objective-box, table-responsive, alert, alert-info, alert-warning, alert-danger, step-card.
 
 JANGAN tutup tag </div></body></html> — biarkan terbuka karena akan dilanjutkan di bagian berikutnya.
-ATURAN OUTPUT: FULL HTML murni. LANGSUNG output tanpa markdown fence!`);
-        fullHtml += extractHtml(res1) + '\n\n';
+ATURAN OUTPUT: FULL HTML murni. LANGSUNG output tanpa markdown fence!` });
+        fullHtml += extractHtmlFromChat(res1) + '\n\n';
 
         // TAHAP 2: Materi Inti + Praktik + Latihan + Referensi + Penutup
-        const res2 = await chat.sendMessage(`Lanjutkan melengkapi BAGIAN 2 dari ${chapterLabel}. Ini adalah sambungan dari HTML sebelumnya, jadi JANGAN tulis ulang tag <html> atau <head>.
+        const res2 = await chat.sendMessage({ message: `Lanjutkan melengkapi BAGIAN 2 dari ${chapterLabel}. Ini adalah sambungan dari HTML sebelumnya, jadi JANGAN tulis ulang tag <html> atau <head>.
 
 Tulis isi berikut dengan class CSS yang tersedia:
 1. MATERI INTI & ALGORITMA:
@@ -526,8 +581,8 @@ Tulis isi berikut dengan class CSS yang tersedia:
 
 Akhiri dengan menutup tag: </div></div></body></html>
 
-ATURAN OUTPUT: FULL HTML murni. LANGSUNG output tanpa markdown fence!`);
-        fullHtml += extractHtml(res2);
+ATURAN OUTPUT: FULL HTML murni. LANGSUNG output tanpa markdown fence!` });
+        fullHtml += extractHtmlFromChat(res2);
 
         return fullHtml;
       });
@@ -582,20 +637,21 @@ router.post('/ai-generate-exam', [verifyToken, verifyRole(['dosen', 'admin'])], 
       }
 
       const systemPrompt = `Kamu adalah dosen ahli pembuat soal ujian akademik.\n${typePrompt}\n\nPENTING: Balas HANYA dalam format JSON array yang valid, tanpa teks awalan/akhiran, tanpa format markdown.`;
-      const parts = [
+      const contents = [
         { text: systemPrompt },
         { text: `\n\nMATERI REFERENSI:\n${materialText}\n\nBerikan soal ujian dalam format JSON array SEKARANG:` }
       ];
 
       try {
-        const result = await withKeyRotation('gemma-4-31b-it', null, (model) => model.generateContent(parts));
+        const result = await withKeyRotation('gemma-4-31b-it', (ai, model) =>
+          ai.models.generateContent({
+            model: model,
+            contents: contents,
+          })
+        );
 
-        let responseText = '';
-        try {
-          const resParts = result.response.candidates?.[0]?.content?.parts || [];
-          responseText = resParts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
-        } catch (_) { }
-        if (!responseText) responseText = result.response.text().trim();
+        let responseText = extractText(result);
+        if (!responseText) responseText = '';
 
         const jsonMatch = responseText.match(/\[[\s\S]*\]/);
         if (!jsonMatch) return [];
@@ -669,15 +725,15 @@ Keluarkan HANYA format HTML <table> dengan class "table table-bordered table-str
 Daftar Soal:
 ${soalText}`;
 
-    const parts = [{ text: systemPrompt }];
-    const result = await withKeyRotation('gemma-4-31b-it', null, (model) => model.generateContent(parts));
+    const result = await withKeyRotation('gemma-4-31b-it', (ai, model) =>
+      ai.models.generateContent({
+        model: model,
+        contents: [{ text: systemPrompt }],
+      })
+    );
 
-    let responseText = '';
-    try {
-      const resParts = result.response.candidates?.[0]?.content?.parts || [];
-      responseText = resParts.filter(p => !p.thought).map(p => p.text || '').join('').trim();
-    } catch (_) { }
-    if (!responseText) responseText = result.response.text().trim();
+    let responseText = extractText(result);
+    if (!responseText) responseText = '';
 
     responseText = responseText.replace(/\`\`\`html/g, '').replace(/\`\`\`/g, '').trim();
 
@@ -693,4 +749,3 @@ ${soalText}`;
 });
 
 module.exports = router;
-

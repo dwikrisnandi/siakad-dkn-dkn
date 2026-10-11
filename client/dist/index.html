@@ -9,9 +9,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SIAKAD DKN">
     <meta name="theme-color" content="#3b80ffff" />
-    <title>SIAKAD DKN</title>
-    <meta name="description" content="Sistem Informasi Akademik Terpadu (SIAKAD) DKN - Kelola administrasi akademik, KRS, KHS, Skripsi, dan Transkrip secara efisien.">
-    
+    <title>Bikin SIAKAD Kampus - SIAKAD DKN</title>
+    <meta name="description" content="Jasa pembuatan dan penyedia Sistem Informasi Akademik (SIAKAD) terpadu. Ingin bikin SIAKAD kampus? Kelola KRS, KHS, Skripsi, dan Transkrip secara modern.">
+    <meta name="keywords" content="bikin siakad, jasa pembuatan siakad, sistem informasi akademik, siakad kampus, aplikasi siakad, siakad dkn, siakad online, developer siakad">
+    <meta property="og:title" content="Bikin SIAKAD Kampus - SIAKAD DKN">
+    <meta property="og:description" content="Jasa pembuatan dan penyedia Sistem Informasi Akademik (SIAKAD) terpadu. Kelola kampus Anda dengan mudah, modern, dan profesional.">
+    <meta property="og:url" content="https://siakad.arthavirddhisampada.online/">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://siakad.arthavirddhisampada.online/">
     <!-- Preconnect untuk CDN -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +28,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=swap">
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Theme style (AdminLTE - Critical) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
 
@@ -43,15 +51,57 @@
 
       gtag('config', '%VITE_GA_ID%');
     </script>
-    <script type="module" crossorigin src="/assets/index-Cexy7JUQ.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/jsx-runtime-DIAExeAg.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-DZ5UMy6E.css">
+    <title>SIAKAD DKN</title>
+
+    <!-- Google Translate Script (Hidden Widget) -->
+    <style>
+      /* Hide the Google Translate widget and top frame */
+      .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame { display: none !important; }
+      body { top: 0px !important; position: static !important; }
+      html { top: 0px !important; position: static !important; }
+      #google_translate_element { display: none !important; }
+      .skiptranslate > iframe.goog-te-banner-frame { display: none !important; }
+      body > .skiptranslate { display: none !important; }
+    </style>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({pageLanguage: 'id', autoDisplay: false}, 'google_translate_element');
+      }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="module" crossorigin src="/assets/index-Cbfc-iM1.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/jsx-runtime-M08KVw1M.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-FmEolJlY.css">
   </head>
-  <body class="hold-transition sidebar-mini">
+  <body class="hold-transition sidebar-mini layout-fixed">
+    <div id="google_translate_element"></div>
     <div id="root"></div>
     
     <!-- Perlindungan Hak Cipta -->
     <div style="display:none;" id="dkn-cr">Copyright &copy; 2026 SIAKAD DKN. Hak cipta milik Dwi Krisnandi.</div>
+    
+    <!-- Mencegah Crash React akibat Google Translate -->
+    <script>
+      if (typeof Node === 'function' && Node.prototype) {
+        const originalRemoveChild = Node.prototype.removeChild;
+        Node.prototype.removeChild = function(child) {
+          if (child.parentNode !== this) {
+            console.warn('React Google Translate Crash Prevented (removeChild)', child, this);
+            return child;
+          }
+          return originalRemoveChild.apply(this, arguments);
+        };
+
+        const originalInsertBefore = Node.prototype.insertBefore;
+        Node.prototype.insertBefore = function(newNode, referenceNode) {
+          if (referenceNode && referenceNode.parentNode !== this) {
+            console.warn('React Google Translate Crash Prevented (insertBefore)', referenceNode, this);
+            return newNode;
+          }
+          return originalInsertBefore.apply(this, arguments);
+        };
+      }
+    </script>
     
     <!-- REQUIRED SCRIPTS FOR ADMINLTE -->
     <!-- jQuery -->

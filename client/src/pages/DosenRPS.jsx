@@ -4,6 +4,7 @@ import {
 	Eye,
 	FileText,
 	RefreshCw,
+	Sparkles,
 	Trash2,
 	UploadCloud,
 } from "lucide-react";
@@ -24,6 +25,14 @@ export default function DosenRPS() {
 	const [formTitle, setFormTitle] = useState("");
 	const [selectedFile, setSelectedFile] = useState(null);
 	const fileInputRef = useRef();
+
+	// AI Generate states
+	const [showAiModal, setShowAiModal] = useState(false);
+	const [aiGenerating, setAiGenerating] = useState(false);
+	const [aiDescription, setAiDescription] = useState("");
+	const [aiCredits, setAiCredits] = useState("3");
+	const [aiSemester, setAiSemester] = useState("1");
+	const [aiPreview, setAiPreview] = useState("");
 
 	useEffect(() => {
 		const fetchCourses = async () => {
@@ -72,6 +81,14 @@ export default function DosenRPS() {
 		setSelectedFile(null);
 		if (fileInputRef.current) fileInputRef.current.value = "";
 		setShowModal(true);
+	};
+
+	const openAiModal = () => {
+		setAiDescription("");
+		setAiCredits("3");
+		setAiSemester("1");
+		setAiPreview("");
+		setShowAiModal(true);
 	};
 
 	const handleFileChange = (e) => {
@@ -141,6 +158,63 @@ export default function DosenRPS() {
 			}
 		};
 		reader.readAsDataURL(selectedFile);
+	};
+
+	const handleAiGenerate = async () => {
+		if (!selectedCourse) return;
+		setAiGenerating(true);
+		setAiPreview("");
+		try {
+			const res = await api.post("/rps-builder/generate-ai", {
+				course_name: selectedCourse.course_name,
+				course_description: aiDescription || `Mata kuliah ${selectedCourse.course_name}`,
+				credits: parseInt(aiCredits) || 3,
+				semester: parseInt(aiSemester) || 1,
+				selected_cpl_ids: [],
+				selected_cpmk_ids: [],
+			});
+			if (res.data?.html) {
+				setAiPreview(res.data.html);
+			} else {
+				alert("AI tidak menghasilkan output. Coba lagi.");
+			}
+		} catch (err) {
+			console.error("AI RPS Error:", err);
+			alert(err.response?.data?.error || "Gagal generate RPS dengan AI. Coba lagi.");
+		} finally {
+			setAiGenerating(false);
+		}
+	};
+
+	const handleSaveAiRps = async () => {
+		if (!aiPreview || !selectedCourse) return;
+		setUploading(true);
+		try {
+			// Simpan HTML sebagai RPS content (bukan PDF, tapi disimpan sebagai data)
+			if (rps) await api.delete(`/rps/${rps.id}`);
+			
+			// Buat Blob PDF-like dari HTML untuk disimpan
+			const htmlBlob = new Blob([`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RPS ${selectedCourse.course_name}</title></head><body>${aiPreview}</body></html>`], { type: 'text/html' });
+			const dataUrl = await new Promise((resolve) => {
+				const reader = new FileReader();
+				reader.onload = (e) => resolve(e.target.result);
+				reader.readAsDataURL(htmlBlob);
+			});
+
+			await api.post("/rps", {
+				course_id: selectedCourse.course_id,
+				title: `RPS ${selectedCourse.course_name} (AI Generated)`,
+				file_data: dataUrl,
+			});
+			setShowAiModal(false);
+			setAiPreview("");
+			fetchRPS(selectedCourse);
+			alert("RPS berhasil disimpan!");
+		} catch (err) {
+			alert("Gagal menyimpan RPS. Coba lagi.");
+		} finally {
+			setUploading(false);
+		}
 	};
 
 	return (
@@ -215,14 +289,22 @@ export default function DosenRPS() {
 							<UploadCloud size={52} className="text-muted mb-3 opacity-50" />
 							<h5 className="fw-bold">RPS Belum Diunggah</h5>
 							<p className="text-muted mb-4">
-								Upload 1 file PDF RPS yang mencakup seluruh 16 pertemuan.
+								Upload file PDF RPS atau generate otomatis menggunakan AI.
 							</p>
-							<button
-								className="btn btn-primary rounded-pill px-4"
-								onClick={openModal}
-							>
-								<UploadCloud size={18} className="me-2" /> Upload PDF RPS
-							</button>
+							<div className="d-flex justify-content-center gap-3 flex-wrap">
+								<button
+									className="btn btn-primary rounded-pill px-4"
+									onClick={openModal}
+								>
+									<UploadCloud size={18} className="me-2" /> Upload PDF RPS
+								</button>
+								<button
+									className="btn btn-outline-primary rounded-pill px-4 d-inline-flex align-items-center gap-2"
+									onClick={openAiModal}
+								>
+									<Sparkles size={18} /> Generate dengan AI
+								</button>
+							</div>
 						</div>
 					) : (
 						<div className="p-4">
@@ -258,6 +340,12 @@ export default function DosenRPS() {
 											<RefreshCw size={14} /> Ganti PDF
 										</button>
 										<button
+											className="btn btn-outline-primary rounded-pill px-3 d-inline-flex align-items-center gap-2"
+											onClick={openAiModal}
+										>
+											<Sparkles size={14} /> Generate Ulang (AI)
+										</button>
+										<button
 											className="btn btn-outline-danger rounded-pill px-3 d-inline-flex align-items-center gap-2"
 											onClick={handleDelete}
 										>
@@ -271,7 +359,7 @@ export default function DosenRPS() {
 				</div>
 			)}
 
-			{/* Modal */}
+			{/* Modal Upload PDF */}
 			{showModal && (
 				<>
 					<div className="modal-backdrop fade show"></div>
@@ -362,6 +450,145 @@ export default function DosenRPS() {
 									</button>
 								</div>
 							</form>
+						</div>
+					</div>
+				</>
+			)}
+
+			{/* Modal AI Generate RPS */}
+			{showAiModal && (
+				<>
+					<div className="modal-backdrop fade show"></div>
+					<div className="modal fade show d-block" tabIndex="-1">
+						<div className={`modal-dialog modal-dialog-centered ${aiPreview ? 'modal-xl' : ''}`}>
+							<div className="modal-content border-0 shadow-lg rounded-4">
+								<div className="modal-header border-0 pb-0">
+									<h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+										<Sparkles size={20} className="text-primary" />
+										Generate RPS dengan AI
+									</h5>
+									<button
+										type="button"
+										className="btn-close"
+										onClick={() => { setShowAiModal(false); setAiPreview(""); }}
+										disabled={aiGenerating}
+									></button>
+								</div>
+								<div className="modal-body">
+									{!aiPreview ? (
+										<>
+											<div
+												className="alert border-0 rounded-3 p-3 mb-3 d-flex align-items-center gap-2"
+												style={{ background: "linear-gradient(135deg, #e8f4fd, #f0e6ff)" }}
+											>
+												<Sparkles size={16} className="text-primary flex-shrink-0" />
+												<small>
+													AI akan membuat draft RPS lengkap (14 pertemuan) berdasarkan informasi mata kuliah.
+													Anda bisa mengedit hasilnya sebelum menyimpan.
+												</small>
+											</div>
+
+											<div className="mb-3">
+												<label className="form-label fw-semibold">Mata Kuliah</label>
+												<input
+													type="text"
+													className="form-control bg-light"
+													value={selectedCourse?.course_name || ""}
+													disabled
+												/>
+											</div>
+
+											<div className="mb-3">
+												<label className="form-label fw-semibold">Deskripsi Mata Kuliah</label>
+												<textarea
+													className="form-control"
+													rows={3}
+													value={aiDescription}
+													onChange={(e) => setAiDescription(e.target.value)}
+													placeholder="Jelaskan secara singkat tentang mata kuliah ini, fokus materi, dan tujuan pembelajaran..."
+												/>
+											</div>
+
+											<div className="row g-3">
+												<div className="col-6">
+													<label className="form-label fw-semibold">Bobot SKS</label>
+													<select className="form-select" value={aiCredits} onChange={(e) => setAiCredits(e.target.value)}>
+														<option value="2">2 SKS</option>
+														<option value="3">3 SKS</option>
+														<option value="4">4 SKS</option>
+													</select>
+												</div>
+												<div className="col-6">
+													<label className="form-label fw-semibold">Semester</label>
+													<select className="form-select" value={aiSemester} onChange={(e) => setAiSemester(e.target.value)}>
+														{[1,2,3,4,5,6,7,8].map(s => (
+															<option key={s} value={s}>Semester {s}</option>
+														))}
+													</select>
+												</div>
+											</div>
+										</>
+									) : (
+										<>
+											<div className="alert alert-success border-0 rounded-3 p-3 mb-3 d-flex align-items-center gap-2">
+												<Sparkles size={16} />
+												<small className="fw-bold">RPS berhasil di-generate! Review hasilnya di bawah, lalu simpan jika sudah sesuai.</small>
+											</div>
+											<div
+												className="border rounded-3 p-4 bg-white"
+												style={{ maxHeight: "60vh", overflowY: "auto" }}
+												dangerouslySetInnerHTML={{ __html: aiPreview }}
+											/>
+										</>
+									)}
+								</div>
+								<div className="modal-footer border-0 pt-0">
+									<button
+										type="button"
+										className="btn btn-light rounded-pill px-4"
+										onClick={() => { setShowAiModal(false); setAiPreview(""); }}
+										disabled={aiGenerating}
+									>
+										Batal
+									</button>
+									{aiPreview ? (
+										<>
+											<button
+												type="button"
+												className="btn btn-outline-primary rounded-pill px-4"
+												onClick={() => setAiPreview("")}
+											>
+												<RefreshCw size={14} className="me-1" /> Generate Ulang
+											</button>
+											<button
+												type="button"
+												className="btn btn-primary rounded-pill px-4"
+												onClick={handleSaveAiRps}
+												disabled={uploading}
+											>
+												{uploading ? (
+													<><span className="spinner-border spinner-border-sm me-2"></span>Menyimpan...</>
+												) : (
+													"Simpan RPS"
+												)}
+											</button>
+										</>
+									) : (
+										<button
+											type="button"
+											className="btn btn-primary rounded-pill px-4 d-inline-flex align-items-center gap-2"
+											onClick={handleAiGenerate}
+											disabled={aiGenerating}
+										>
+											{aiGenerating ? (
+												<><span className="spinner-border spinner-border-sm"></span> Generating...</>
+											) : (
+												<><Sparkles size={16} /> Generate RPS</>
+											)}
+										</button>
+									)}
+								</div>
+							</div>
 						</div>
 					</div>
 				</>

@@ -329,6 +329,7 @@ app.use('/api',       require('./routes/portalRoute'));
 app.use('/api',       require('./routes/aiRoute'));
 app.use('/api',       require('./routes/examRoute'));
 app.use('/api/rps-builder', require('./routes/rpsBuilderRoute'));
+app.use('/api/superadmin', require('./routes/superadminRoute'));
 
 // ── SERVE STATIC FILES ───────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../client/dist'), {

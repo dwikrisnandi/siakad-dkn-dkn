@@ -3,6 +3,13 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
+const SuperAdminDashboard = React.lazy(() => import("./pages/SuperAdminDashboard"));
+const SuperAdminTenants = React.lazy(() => import("./pages/SuperAdminTenants"));
+const SuperAdminSubscriptions = React.lazy(() => import("./pages/SuperAdminSubscriptions"));
+const SuperAdminMonitoring = React.lazy(() => import("./pages/SuperAdminMonitoring"));
+const SuperAdminPlans = React.lazy(() => import("./pages/SuperAdminPlans"));
+const SuperAdminDatabase = React.lazy(() => import("./pages/SuperAdminDatabase"));
+const AdminPillars = React.lazy(() => import("./pages/AdminPillars"));
 const Login = React.lazy(() => import("./pages/Login"));
 
 import MainLayout from "./components/MainLayout";
@@ -103,11 +110,12 @@ function AppContent() {
 							path="/superadmin"
 							element={<MainLayout allowedRoles={["superadmin"]} />}
 						>
-							<Route index element={<div className="p-4"><h3>SaaS Dashboard (Dalam Pengembangan)</h3></div>} />
-							<Route path="tenants" element={<div className="p-4"><h3>Manajemen Universitas</h3></div>} />
-							<Route path="subscriptions" element={<div className="p-4"><h3>Status Sewa & Penagihan</h3></div>} />
-							<Route path="monitoring" element={<div className="p-4"><h3>Monitoring Performa</h3></div>} />
-							<Route path="plans" element={<div className="p-4"><h3>Manajemen Paket & Harga</h3></div>} />
+							<Route index element={<SuperAdminDashboard />} />
+							<Route path="tenants" element={<SuperAdminTenants />} />
+							<Route path="subscriptions" element={<SuperAdminSubscriptions />} />
+							<Route path="monitoring" element={<SuperAdminMonitoring />} />
+							<Route path="plans" element={<SuperAdminPlans />} />
+							<Route path="database" element={<SuperAdminDatabase />} />
 						</Route>
 
 						{/* Admin Routes */}
@@ -116,6 +124,7 @@ function AppContent() {
 							element={<MainLayout allowedRoles={["admin"]} />}
 						>
 							<Route index element={<AdminDashboard />} />
+							<Route path="pillars" element={<AdminPillars />} />
 							<Route path="subscription" element={<div className="p-4"><h3>Berlangganan & Kuota (Dalam Pengembangan)</h3></div>} />
 							<Route path="programs" element={<AdminPrograms />} />
 							<Route path="curriculums" element={<AdminCurriculums />} />

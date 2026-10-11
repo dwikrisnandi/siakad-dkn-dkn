@@ -1,4 +1,5 @@
 const { get } = require('../db');
+const { tenantStorage } = require('../tenantContext');
 
 const tenantMiddleware = async (req, res, next) => {
   // 1. Ambil slug dari header
@@ -20,11 +21,13 @@ const tenantMiddleware = async (req, res, next) => {
     req.tenant_id = tenant.id;
     req.tenant = tenant; // Menyimpan info tenant lengkap jika dibutuhkan
     
-    next();
+    tenantStorage.run({ tenantId: tenant.id, tenantSlug: tenant.slug }, () => {
+      next();
+    });
   } catch (error) {
     console.error('Tenant Middleware Error:', error);
     return res.status(500).json({ error: 'Internal server error while resolving tenant.' });
   }
 };
 
-module.exports = { tenantMiddleware };
+module.exports = { tenantMiddleware, tenantStorage };

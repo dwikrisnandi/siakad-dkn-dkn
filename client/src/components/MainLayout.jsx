@@ -52,10 +52,9 @@ export default function MainLayout({ allowedRoles }) {
 				</section>
 			</div>
 			<footer className="main-footer d-none d-md-block">
-				<div className="float-end d-none d-sm-inline">Versi 10 Juni 2026</div>
+				<div className="float-end d-none d-sm-inline">Versi 11 Oktober 2026 jam 09.10</div>
 				<strong id="dkn-cr">
-					Copyright &copy; 2026 <a href="#">SIAKAD DKN</a>. Hak cipta milik Dwi
-					Krisnandi.
+					Copyright &copy; 2026 <a href="#">SIAKAD DKN</a>. Hak cipta milik Dwi Krisnandi.
 				</strong>
 			</footer>
 			<BottomNav />

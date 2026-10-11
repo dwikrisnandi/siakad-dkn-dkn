@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { query, run, get } = require('../db');
 const { verifyToken, verifyRole } = require('../middlewares/auth');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 // Inisialisasi API Key dari rotasi di aiRoute (atau ambil dari env)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY });
 
 // ── 1. GET Program Study Pillars ──
 router.get('/pillars', verifyToken, async (req, res) => {
@@ -140,7 +140,7 @@ CAPAIAN PEMBELAJARAN MATA KULIAH (CPMK):
 ${cpmkText || '- (Belum ada CPMK dipilih)'}
 
 INSTRUKSI OUTPUT:
-Keluarkan output STRICTLY dalam format HTML yang langsung bisa dirender (tanpa tag \`\`\`html atau markdown). Gunakan tag <h1>, <h2>, <table>, <tr>, <th>, <td>, <ul>, <li>.
+Keluarkan output STRICTLY dalam format HTML yang langsung bisa dirender (tanpa tag backtick html atau markdown). Gunakan tag <h1>, <h2>, <table>, <tr>, <th>, <td>, <ul>, <li>.
 Struktur RPS:
 1. Identitas Mata Kuliah
 2. Deskripsi Singkat Mata Kuliah
@@ -150,15 +150,16 @@ Struktur RPS:
 Pastikan tabelnya memiliki border collapse dan padding yang rapi (berikan inline style sederhana: style="border-collapse: collapse; width: 100%;" dan style="border: 1px solid #ccc; padding: 8px;").
 `;
 
-    // Kita gunakan gemini-1.5-flash-latest sebagai standar cepat, karena gemma mungkin belum disupport via SDK yang sama tanpa endpoint khusus.
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-    const result = await model.generateContent(prompt);
-    let htmlContent = result.response.text();
+    const result = await ai.models.generateContent({
+      model: 'gemma-4-31b-it',
+      contents: prompt,
+    });
+    let htmlContent = result.text || '';
     
     // Potong 1 poin AI karena sukses
     await run('UPDATE tenants SET ai_points = ai_points - 1 WHERE id = ?', [req.tenant_id]);
     
-    // Bersihkan markdown markdown artifacts jika LLM masih nakal membungkus dengan ```html
+    // Bersihkan markdown artifacts jika LLM masih nakal membungkus dengan backtick html
     htmlContent = htmlContent.replace(/```html/g, '').replace(/```/g, '').trim();
 
     res.json({ html: htmlContent });
