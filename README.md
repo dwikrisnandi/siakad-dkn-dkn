@@ -117,4 +117,5 @@ npm run dev
 ## 📜 Lisensi & Pengembang
 
 Dikembangkan dan diarsiteki oleh **Dwi Krisnandi**.  
-Untuk konsultasi implementasi, kebutuhan white-label institusi, atau deployment kampus, silakan hubungi pengembang melalui GitHub Issues atau kontak resmi.
+Untuk konsultasi implementasi, kebutuhan white-label institusi, atau deployment kampus, silakan hubungi pengembang melalui:  
+🌐 **Website / Kontak:** [https://arthavirddhisampada.online/](https://arthavirddhisampada.online/)
