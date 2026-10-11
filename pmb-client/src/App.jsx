@@ -40,19 +40,29 @@ export default function App() {
   const fetchInfo = async () => {
     try {
       const res = await axios.get(`${API_BASE}/info`);
-      setInfo(res.data);
-      if (res.data.jalur.length > 0 && !regForm.jalur_id) {
-        setRegForm(prev => ({ ...prev, jalur_id: res.data.jalur[0].id }));
+      const payload = res.data || {};
+      const safeJalur = Array.isArray(payload.jalur) ? payload.jalur : [];
+      const safeProdi = Array.isArray(payload.prodi) ? payload.prodi : [];
+      
+      setInfo({
+        tenant: payload.tenant || {},
+        jalur: safeJalur,
+        prodi: safeProdi
+      });
+
+      if (safeJalur.length > 0 && !regForm.jalur_id) {
+        setRegForm(prev => ({ ...prev, jalur_id: safeJalur[0].id }));
       }
-      if (res.data.prodi.length > 0 && !regForm.prodi_pilihan_1) {
+      if (safeProdi.length > 0 && !regForm.prodi_pilihan_1) {
         setRegForm(prev => ({ 
           ...prev, 
-          prodi_pilihan_1: res.data.prodi[0].id,
-          prodi_pilihan_2: res.data.prodi.length > 1 ? res.data.prodi[1].id : res.data.prodi[0].id
+          prodi_pilihan_1: safeProdi[0].id,
+          prodi_pilihan_2: safeProdi.length > 1 ? safeProdi[1].id : safeProdi[0].id
         }));
       }
     } catch (e) {
       console.error('Fetch info error:', e);
+      setInfo({ tenant: {}, jalur: [], prodi: [] });
     }
   };
 
