@@ -80,10 +80,15 @@ app.use(cors({
   origin: [
     'https://siakad.arthavirddhisampada.online',
     'http://siakad.arthavirddhisampada.online',
+    'https://pmb.arthavirddhisampada.online',
+    'http://pmb.arthavirddhisampada.online',
     'http://192.168.30.4',
     'http://192.168.30.4:7542',
+    'http://192.168.30.4:7543',
     'http://localhost:5173',
-    'http://localhost:7542'
+    'http://localhost:5174',
+    'http://localhost:7542',
+    'http://localhost:7543'
   ],
   credentials: true
 }));
@@ -311,6 +316,7 @@ const { tenantMiddleware } = require('./middlewares/tenant');
 
 // Rute Publik (Pendaftaran SaaS, tanpa butuh x-tenant-slug)
 app.use('/api/public/tenant', require('./routes/tenantRoute'));
+app.use('/api/pmb',           require('./routes/pmbRoute'));
 
 // Terapkan tenantMiddleware ke semua endpoint API internal untuk memastikan isolasi data
 app.use('/api', tenantMiddleware);

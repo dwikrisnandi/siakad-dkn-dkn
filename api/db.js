@@ -10,7 +10,8 @@ const TABLES_WITH_TENANT = new Set([
   'academic_years', 'attendance', 'classes', 'course_grades', 
   'curriculums', 'edom_questions', 'exams', 'exam_questions', 
   'invoices', 'materials', 'program_study_pillars', 'question_bank', 
-  'rps', 'schedules', 'skripsi', 'users'
+  'rps', 'schedules', 'skripsi', 'users',
+  'pmb_jalur', 'pmb_pendaftar', 'pmb_berkas', 'pmb_pembayaran'
 ]);
 
 const injectTenantId = (sql, params) => {
