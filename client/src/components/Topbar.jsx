@@ -114,7 +114,7 @@ export default function Topbar() {
 				{/* SPMB Link */}
 				<li className="nav-item me-2">
 					<a 
-						href="http://192.168.30.4:7543" 
+						href="https://spmb.arthavirddhisampada.online/" 
 						target="_blank" 
 						rel="noreferrer"
 						className="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"

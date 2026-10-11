@@ -124,7 +124,7 @@ export default function Login() {
 				{/* SPMB Online Registration Portal Button */}
 				<div className="pt-2 text-center">
 					<a
-						href="http://192.168.30.4:7543"
+						href="https://spmb.arthavirddhisampada.online/"
 						target="_blank"
 						rel="noreferrer"
 						className="btn btn-outline-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-bold shadow-sm"

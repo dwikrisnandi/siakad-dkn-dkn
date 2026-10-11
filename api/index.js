@@ -80,6 +80,8 @@ app.use(cors({
   origin: [
     'https://siakad.arthavirddhisampada.online',
     'http://siakad.arthavirddhisampada.online',
+    'https://spmb.arthavirddhisampada.online',
+    'http://spmb.arthavirddhisampada.online',
     'https://pmb.arthavirddhisampada.online',
     'http://pmb.arthavirddhisampada.online',
     'http://192.168.30.4',

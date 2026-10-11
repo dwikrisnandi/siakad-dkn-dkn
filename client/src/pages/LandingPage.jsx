@@ -302,7 +302,7 @@ export default function LandingPage() {
 						</ul>
 					</div>
 					<a
-						href="http://192.168.30.4:7543"
+						href="https://spmb.arthavirddhisampada.online/"
 						target="_blank"
 						rel="noreferrer"
 						className="btn btn-outline-primary rounded-pill px-3 py-2 px-md-3 fw-bold d-flex align-items-center gap-2 btn-sm shadow-sm"
@@ -344,7 +344,7 @@ export default function LandingPage() {
 								<span className="fw-medium">{t('landing.badge')}</span>
 							</div>
 							<a
-								href="http://192.168.30.4:7543"
+								href="https://spmb.arthavirddhisampada.online/"
 								target="_blank"
 								rel="noreferrer"
 								className="badge shadow-sm px-3 py-2 d-inline-flex align-items-center gap-2 text-decoration-none"
@@ -394,7 +394,7 @@ export default function LandingPage() {
 								</div>
 							</div>
 							<a 
-								href="http://192.168.30.4:7543" 
+								href="https://spmb.arthavirddhisampada.online/" 
 								target="_blank" 
 								rel="noreferrer" 
 								className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold"
@@ -411,7 +411,7 @@ export default function LandingPage() {
 								{t('landing.start')} <ArrowRight size={20} />
 							</Link>
 							<a
-								href="http://192.168.30.4:7543"
+								href="https://spmb.arthavirddhisampada.online/"
 								target="_blank"
 								rel="noreferrer"
 								className="btn btn-outline-academic rounded-pill px-4 py-3 fs-6 fw-bold d-flex align-items-center gap-2"
