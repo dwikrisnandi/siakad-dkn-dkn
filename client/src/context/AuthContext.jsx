@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }) => {
 
 	const logout = () => {
 		localStorage.removeItem("token");
+		localStorage.setItem("tenant_slug", "artha");
 		setUser(null);
 	};
 

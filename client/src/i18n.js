@@ -12,6 +12,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en', // Jika terjemahan tidak ditemukan, kembali ke bahasa Inggris
+    load: 'languageOnly', // en-US -> en, id-ID -> id
     debug: false,
     
     // Konfigurasi detektor bahasa

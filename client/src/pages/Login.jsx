@@ -33,7 +33,8 @@ export default function Login() {
 		setLoading(true);
 
 		try {
-			const u = await login(nidn_nim, password);
+			const targetSlug = nidn_nim.endsWith('.demo') ? 'demo' : 'artha';
+			const u = await login(nidn_nim, password, targetSlug);
 			// Route based on role
 			if (u.role === "admin") navigate("/admin");
 			else if (u.role === "dosen") navigate("/dosen");
@@ -146,7 +147,7 @@ export default function Login() {
 							type="button"
 							className="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
 							style={{ fontSize: "11px" }}
-							onClick={() => { setNidnNim('admin.demo'); setPassword('demouser123'); }}
+							onClick={() => { localStorage.setItem('tenant_slug', 'demo'); setNidnNim('admin.demo'); setPassword('demouser123'); }}
 						>
 							Admin
 						</button>
@@ -154,7 +155,7 @@ export default function Login() {
 							type="button"
 							className="btn btn-sm btn-outline-success rounded-pill px-2 py-1"
 							style={{ fontSize: "11px" }}
-							onClick={() => { setNidnNim('dosen.demo'); setPassword('demouser123'); }}
+							onClick={() => { localStorage.setItem('tenant_slug', 'demo'); setNidnNim('dosen.demo'); setPassword('demouser123'); }}
 						>
 							Dosen
 						</button>
@@ -162,7 +163,7 @@ export default function Login() {
 							type="button"
 							className="btn btn-sm btn-outline-info rounded-pill px-2 py-1"
 							style={{ fontSize: "11px" }}
-							onClick={() => { setNidnNim('mhs.demo'); setPassword('demouser123'); }}
+							onClick={() => { localStorage.setItem('tenant_slug', 'demo'); setNidnNim('mhs.demo'); setPassword('demouser123'); }}
 						>
 							Mahasiswa
 						</button>
