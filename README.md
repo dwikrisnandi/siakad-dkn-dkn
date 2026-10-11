@@ -58,29 +58,6 @@ Panel kontrol pusat tingkat platform untuk mengelola ekosistem institusi:
 
 ---
 
-## 📂 Struktur Repositori
-
-```text
-├── api/                       # Backend Express & REST API
-│   ├── config/                # Konfigurasi aplikasi & database
-│   ├── controllers/           # Business logic controller
-│   ├── middleware/            # Auth JWT, tenantContext, & RBAC middleware
-│   ├── routes/                # Route API (termasuk superadminRoute.js)
-│   ├── utils/                 # Helper & AI prompt processors
-│   └── db.js                  # PostgreSQL client pool & tenant context proxy
-├── client/                    # Frontend React SPA (Vite)
-│   ├── src/
-│   │   ├── components/        # Komponen UI, Layout, Footer & Navbar
-│   │   ├── pages/             # Halaman aplikasi & SuperAdmin suite
-│   │   ├── context/           # React Auth & Tenant State Context
-│   │   └── utils/             # Helper formatters & API client
-│   └── package.json
-├── CATATAN_PEMBARUAN.md       # Log riwayat rilis & pembaruan versi
-└── README.md                  # Dokumentasi proyek
-```
-
----
-
 ## 🚀 Panduan Menjalankan Sistem
 
 ### Kebutuhan Sistem
