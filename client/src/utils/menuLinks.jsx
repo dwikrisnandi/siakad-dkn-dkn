@@ -7,6 +7,7 @@ import {
 	ClipboardList,
 	Database,
 	FileText,
+	GraduationCap,
 	Home,
 	LayoutGrid,
 	PenTool,
@@ -133,6 +134,11 @@ import React from "react";
 					name: "menu.keuangan_spp",
 					path: "/admin/invoices",
 					icon: <CheckSquare size={size} className="nav-icon" />,
+				},
+				{
+					name: "Kelola SPMB",
+					path: "/admin/pmb",
+					icon: <GraduationCap size={size} className="nav-icon" />,
 				},
 				{
 					name: "menu.berlangganan_and_kuota",

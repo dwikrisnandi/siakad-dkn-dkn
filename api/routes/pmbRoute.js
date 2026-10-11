@@ -33,23 +33,51 @@ const upload = multer({
   }
 });
 
-// Middleware Helper: Ambil Tenant ID dari Header/Query atau Default 1
+// Middleware Helper: Ambil Tenant ID dari Host Header, Query, Slug, atau Default 1
 const resolveTenantId = async (req, res, next) => {
-  const tenantSlug = req.headers['x-tenant-slug'] || req.query.tenant_slug;
-  if (tenantSlug) {
-    try {
-      const tenantRes = await db.query('SELECT id, status FROM tenants WHERE slug = $1 LIMIT 1', [tenantSlug]);
+  try {
+    const rawHost = (req.headers['x-forwarded-host'] || req.headers.host || '').split(':')[0].toLowerCase();
+    
+    // 1. Cek dari Custom Domain SPMB
+    if (rawHost && rawHost !== 'localhost' && rawHost !== '127.0.0.1') {
+      const dRes = await db.query('SELECT id FROM tenants WHERE custom_domain_spmb = $1 OR custom_domain_siakad = $1 LIMIT 1', [rawHost]);
+      if (dRes.rows.length > 0) {
+        req.tenantId = dRes.rows[0].id;
+        return next();
+      }
+
+      // 2. Cek dari Subdomain Slug (misal: "unimandiri.spmb.domain.com")
+      if (rawHost.includes('.')) {
+        const parts = rawHost.split('.');
+        const subCandidate = parts[0];
+        if (subCandidate && subCandidate !== 'spmb' && subCandidate !== 'siakad' && subCandidate !== 'www') {
+          const sRes = await db.query('SELECT id FROM tenants WHERE slug = $1 LIMIT 1', [subCandidate]);
+          if (sRes.rows.length > 0) {
+            req.tenantId = sRes.rows[0].id;
+            return next();
+          }
+        }
+      }
+    }
+
+    // 3. Cek dari Header eksplisit x-tenant-slug atau query string
+    const tenantSlug = req.headers['x-tenant-slug'] || req.query.tenant_slug;
+    if (tenantSlug) {
+      const tenantRes = await db.query('SELECT id FROM tenants WHERE slug = $1 LIMIT 1', [tenantSlug]);
       if (tenantRes.rows.length > 0) {
         req.tenantId = tenantRes.rows[0].id;
         return next();
       }
-    } catch (e) {
-      console.error('Resolve tenant error:', e.message);
     }
+
+    // 4. Fallback ke x-tenant-id atau Tenant ID: 1
+    req.tenantId = req.headers['x-tenant-id'] ? parseInt(req.headers['x-tenant-id'], 10) : 1;
+    next();
+  } catch (e) {
+    console.error('Resolve tenant error in PMB:', e.message);
+    req.tenantId = 1;
+    next();
   }
-  // Fallback
-  req.tenantId = req.headers['x-tenant-id'] ? parseInt(req.headers['x-tenant-id'], 10) : 1;
-  next();
 };
 
 // Middleware: Otentikasi Calon Mahasiswa (JWT Khusus PMB)
@@ -336,6 +364,156 @@ router.post('/upload-pembayaran', verifyPmbToken, upload.single('bukti'), async 
     res.json({
       message: 'Bukti pembayaran berhasil dikirim. Menunggu verifikasi admin.',
       pembayaran: payRes.rows[0]
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── 7. ADMIN KAMPUS PMB: KELOLA JALUR PENDAFTARAN ─────────────────────────────
+const { verifyToken, verifyRole } = require('../middlewares/auth');
+
+// Ambil semua jalur pendaftaran milik tenant
+router.get('/admin/jalur', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  try {
+    const tenantId = req.headers['x-tenant-id'] || 1;
+    const jalur = await db.query(
+      'SELECT * FROM pmb_jalur WHERE tenant_id = $1 ORDER BY gelombang ASC, id ASC',
+      [tenantId]
+    );
+    res.json(jalur.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Tambah jalur baru
+router.post('/admin/jalur', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  const { nama_jalur, gelombang, tgl_buka, tgl_tutup, biaya_pendaftaran, is_active } = req.body;
+  const tenantId = req.headers['x-tenant-id'] || 1;
+  try {
+    const insertRes = await db.query(`
+      INSERT INTO pmb_jalur (tenant_id, nama_jalur, gelombang, tgl_buka, tgl_tutup, biaya_pendaftaran, is_active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+    `, [tenantId, nama_jalur, gelombang || 1, tgl_buka, tgl_tutup, biaya_pendaftaran || 0, is_active ?? true]);
+    res.json({ message: 'Jalur pendaftaran berhasil ditambahkan', jalur: insertRes.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update jalur
+router.put('/admin/jalur/:id', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  const { nama_jalur, gelombang, tgl_buka, tgl_tutup, biaya_pendaftaran, is_active } = req.body;
+  const tenantId = req.headers['x-tenant-id'] || 1;
+  try {
+    await db.query(`
+      UPDATE pmb_jalur SET
+        nama_jalur = COALESCE($1, nama_jalur),
+        gelombang = COALESCE($2, gelombang),
+        tgl_buka = COALESCE($3, tgl_buka),
+        tgl_tutup = COALESCE($4, tgl_tutup),
+        biaya_pendaftaran = COALESCE($5, biaya_pendaftaran),
+        is_active = COALESCE($6, is_active)
+      WHERE id = $7 AND tenant_id = $8
+    `, [nama_jalur, gelombang, tgl_buka, tgl_tutup, biaya_pendaftaran, is_active, req.params.id, tenantId]);
+    res.json({ message: 'Jalur pendaftaran berhasil diperbarui' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Hapus jalur
+router.delete('/admin/jalur/:id', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  const tenantId = req.headers['x-tenant-id'] || 1;
+  try {
+    await db.query('DELETE FROM pmb_jalur WHERE id = $1 AND tenant_id = $2', [req.params.id, tenantId]);
+    res.json({ message: 'Jalur pendaftaran berhasil dihapus' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── 8. ADMIN KAMPUS PMB: KELOLA CALON PENDAFTAR & VERIFIKASI ──────────────────
+router.get('/admin/pendaftar', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  const tenantId = req.headers['x-tenant-id'] || 1;
+  try {
+    const pRes = await db.query(`
+      SELECT p.*, j.nama_jalur, pr1.nama_prodi as nama_prodi_1, pr2.nama_prodi as nama_prodi_2,
+             (SELECT count(*) FROM pmb_berkas b WHERE b.pendaftar_id = p.id) as total_berkas
+      FROM pmb_pendaftar p
+      LEFT JOIN pmb_jalur j ON p.jalur_id = j.id
+      LEFT JOIN programs pr1 ON p.prodi_pilihan_1 = pr1.id
+      LEFT JOIN programs pr2 ON p.prodi_pilihan_2 = pr2.id
+      WHERE p.tenant_id = $1
+      ORDER BY p.id DESC
+    `, [tenantId]);
+    res.json(pRes.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update status pendaftar (pembayaran, berkas, seleksi/lulus)
+router.put('/admin/pendaftar/:id/status', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  const { status_pembayaran, status_berkas, status_kelulusan, catatan_admin } = req.body;
+  const tenantId = req.headers['x-tenant-id'] || 1;
+  try {
+    await db.query(`
+      UPDATE pmb_pendaftar SET
+        status_pembayaran = COALESCE($1, status_pembayaran),
+        status_berkas = COALESCE($2, status_berkas),
+        status_kelulusan = COALESCE($3, status_kelulusan),
+        catatan_admin = COALESCE($4, catatan_admin)
+      WHERE id = $5 AND tenant_id = $6
+    `, [status_pembayaran, status_berkas, status_kelulusan, catatan_admin, req.params.id, tenantId]);
+    res.json({ message: 'Status pendaftar berhasil diperbarui' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Promote pendaftar yang lulus menjadi Mahasiswa Resmi di SIAKAD
+router.post('/admin/pendaftar/:id/promote', [verifyToken, verifyRole(['admin', 'superadmin'])], async (req, res) => {
+  const tenantId = req.headers['x-tenant-id'] || 1;
+  const { nim, prodi_id } = req.body;
+
+  try {
+    const pRes = await db.query('SELECT * FROM pmb_pendaftar WHERE id = $1 AND tenant_id = $2', [req.params.id, tenantId]);
+    if (pRes.rows.length === 0) return res.status(404).json({ error: 'Pendaftar tidak ditemukan' });
+
+    const p = pRes.rows[0];
+    const targetNim = nim || `${new Date().getFullYear()}${Math.floor(10000 + Math.random() * 90000)}`;
+    const targetProdi = prodi_id || p.prodi_pilihan_1;
+
+    // Cek apakah NIM sudah dipakai
+    const existing = await db.query('SELECT id FROM users WHERE nidn_nim = $1 AND tenant_id = $2', [targetNim, tenantId]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: `NIM ${targetNim} sudah digunakan oleh mahasiswa lain!` });
+    }
+
+    // Insert ke tabel users sebagai mahasiswa
+    const passDefault = p.nik ? p.nik.slice(-6) : '123456';
+    const bcrypt = require('bcryptjs');
+    const hashed = await bcrypt.hash(passDefault, 10);
+
+    await db.query(`
+      INSERT INTO users (nidn_nim, name, role, password, program_id, tenant_id)
+      VALUES ($1, $2, 'mahasiswa', $3, $4, $5)
+    `, [targetNim, p.nama_lengkap, hashed, targetProdi, tenantId]);
+
+    // Update status di pmb_pendaftar
+    await db.query(`
+      UPDATE pmb_pendaftar SET 
+        status_kelulusan = 'passed',
+        nim_generated = $1
+      WHERE id = $2
+    `, [targetNim, req.params.id]);
+
+    res.json({
+      message: `Pendaftar ${p.nama_lengkap} berhasil dipromosikan menjadi Mahasiswa Aktif SIAKAD!`,
+      nim: targetNim,
+      password_default: passDefault
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -29,6 +29,7 @@ const AdminSkripsi = React.lazy(() => import("./pages/AdminSkripsi"));
 const AdminFeeder = React.lazy(() => import("./pages/AdminFeeder"));
 const AdminBKD = React.lazy(() => import("./pages/AdminBKD"));
 const AdminFCMTokens = React.lazy(() => import("./pages/AdminFCMTokens"));
+const AdminPMB = React.lazy(() => import("./pages/AdminPMB"));
 const AdminTahunAkademik = React.lazy(
 	() => import("./pages/AdminTahunAkademik"),
 );
@@ -146,6 +147,7 @@ function AppContent() {
 							<Route path="feeder" element={<AdminFeeder />} />
 							<Route path="bkd" element={<AdminBKD />} />
 							<Route path="invoices" element={<AdminInvoices />} />
+							<Route path="pmb" element={<AdminPMB />} />
 							<Route path="backup" element={<AdminBackup />} />
 							<Route path="fcm-tokens" element={<AdminFCMTokens />} />
 						</Route>

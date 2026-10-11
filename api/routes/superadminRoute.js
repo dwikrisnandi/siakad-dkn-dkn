@@ -35,7 +35,7 @@ router.get('/tenants', verifyToken, requireSuperadmin, async (req, res) => {
 // Create new tenant
 router.post('/tenants', verifyToken, requireSuperadmin, async (req, res) => {
     try {
-        const { name, slug, max_students, ai_points, admin_name, admin_username, admin_password } = req.body;
+        const { name, slug, max_students, ai_points, admin_name, admin_username, admin_password, custom_domain_siakad, custom_domain_spmb } = req.body;
         if (!name || !slug) {
             return res.status(400).json({ error: 'Nama kampus dan subdomain wajib diisi' });
         }
@@ -46,9 +46,9 @@ router.post('/tenants', verifyToken, requireSuperadmin, async (req, res) => {
         }
 
         const newTenant = await run(`
-            INSERT INTO tenants (name, slug, max_students, ai_points, subscription_status, is_ai_enabled)
-            VALUES (?, ?, ?, ?, 'active', true) RETURNING id
-        `, [name, slug, max_students || 1000, ai_points || 100]);
+            INSERT INTO tenants (name, slug, max_students, ai_points, subscription_status, is_ai_enabled, custom_domain_siakad, custom_domain_spmb)
+            VALUES (?, ?, ?, ?, 'active', true, ?, ?) RETURNING id
+        `, [name, slug, max_students || 1000, ai_points || 100, custom_domain_siakad || null, custom_domain_spmb || null]);
 
         const tenantId = newTenant.id;
 
@@ -71,16 +71,18 @@ router.post('/tenants', verifyToken, requireSuperadmin, async (req, res) => {
 router.put('/tenants/:id', verifyToken, requireSuperadmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, slug, max_students, theme_color, subscription_status } = req.body;
+        const { name, slug, max_students, theme_color, subscription_status, custom_domain_siakad, custom_domain_spmb } = req.body;
         await query(`
             UPDATE tenants 
             SET name = COALESCE(?, name),
                 slug = COALESCE(?, slug),
                 max_students = COALESCE(?, max_students),
                 theme_color = COALESCE(?, theme_color),
-                subscription_status = COALESCE(?, subscription_status)
+                subscription_status = COALESCE(?, subscription_status),
+                custom_domain_siakad = ?,
+                custom_domain_spmb = ?
             WHERE id = ?
-        `, [name, slug, max_students, theme_color, subscription_status, id]);
+        `, [name, slug, max_students, theme_color, subscription_status, custom_domain_siakad || null, custom_domain_spmb || null, id]);
         res.json({ message: 'Kampus berhasil diperbarui' });
     } catch (err) {
         console.error(err);
