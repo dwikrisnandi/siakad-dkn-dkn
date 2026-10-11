@@ -301,6 +301,16 @@ export default function LandingPage() {
 							<li><button className="dropdown-item py-2 text-primary-custom" style={{backgroundColor: "transparent"}} onClick={() => { changeLanguage('zh'); setLangDropdownOpen(false); }}>🇨🇳 中文 (ZH)</button></li>
 						</ul>
 					</div>
+					<a
+						href="http://192.168.30.4:7543"
+						target="_blank"
+						rel="noreferrer"
+						className="btn btn-outline-primary rounded-pill px-3 py-2 px-md-3 fw-bold d-flex align-items-center gap-2 btn-sm shadow-sm"
+						style={{ backgroundColor: "rgba(37, 99, 235, 0.08)", borderColor: "var(--accent)" }}
+					>
+						<GraduationCap size={18} className="text-primary" /> 
+						<span className="d-none d-sm-inline">Portal SPMB</span>
+					</a>
 					<Link
 						to="/register"
 						className="btn btn-outline-academic rounded-pill px-3 py-2 px-md-4 fw-semibold d-flex align-items-center gap-2 btn-sm"
@@ -325,12 +335,29 @@ export default function LandingPage() {
 				<div className="glow-blob-2"></div>
 				<div className="row align-items-center position-relative" style={{ zIndex: 1 }}>
 					<div className="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
-						<div
-							className="badge shadow-sm px-3 py-2 mb-4 d-inline-flex align-items-center gap-2 text-primary-custom"
-							style={{ borderRadius: "8px", background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
-						>
-							<ShieldCheck size={16} className="text-success" />
-							<span className="fw-medium">{t('landing.badge')}</span>
+						<div className="d-flex flex-wrap gap-2 mb-4">
+							<div
+								className="badge shadow-sm px-3 py-2 d-inline-flex align-items-center gap-2 text-primary-custom"
+								style={{ borderRadius: "8px", background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
+							>
+								<ShieldCheck size={16} className="text-success" />
+								<span className="fw-medium">{t('landing.badge')}</span>
+							</div>
+							<a
+								href="http://192.168.30.4:7543"
+								target="_blank"
+								rel="noreferrer"
+								className="badge shadow-sm px-3 py-2 d-inline-flex align-items-center gap-2 text-decoration-none"
+								style={{ 
+									borderRadius: "8px", 
+									background: "linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(59,130,246,0.1) 100%)", 
+									border: "1px solid rgba(59,130,246,0.3)",
+									color: "var(--accent)"
+								}}
+							>
+								<GraduationCap size={16} className="text-primary" />
+								<span className="fw-bold">✨ Terintegrasi SPMB Online Baru</span>
+							</a>
 						</div>
 						<h1
 							className="display-4 fw-bolder mb-4 lh-sm text-primary-custom"
@@ -341,11 +368,41 @@ export default function LandingPage() {
 							{t('landing.title3')}
 						</h1>
 						<p
-							className="fs-5 mb-5 text-secondary-custom"
+							className="fs-5 mb-4 text-secondary-custom"
 							style={{ maxWidth: "540px", lineHeight: "1.7" }}
 						>
 							{t('landing.subtitle')}
 						</p>
+
+						{/* Highlight Banner Integrasi SPMB */}
+						<div 
+							className="p-3 mb-4 rounded-3 border d-flex align-items-center justify-content-between"
+							style={{ 
+								maxWidth: "540px", 
+								backgroundColor: "var(--card-bg)", 
+								borderColor: "var(--card-border)",
+								boxShadow: "0 4px 12px rgba(0,0,0,0.03)"
+							}}
+						>
+							<div className="d-flex align-items-center gap-3">
+								<div className="p-2 rounded-circle bg-primary bg-opacity-10 text-primary">
+									<GraduationCap size={24} />
+								</div>
+								<div>
+									<strong className="d-block text-primary-custom fs-6">Sistem SPMB Terpadu Aktif</strong>
+									<small className="text-secondary-custom">Pendaftaran calon mahasiswa langsung terhubung ke basis data SIAKAD.</small>
+								</div>
+							</div>
+							<a 
+								href="http://192.168.30.4:7543" 
+								target="_blank" 
+								rel="noreferrer" 
+								className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold"
+							>
+								Buka SPMB
+							</a>
+						</div>
+
 						<div className="d-flex flex-wrap gap-3">
 							<Link
 								to="/register"
@@ -354,10 +411,12 @@ export default function LandingPage() {
 								{t('landing.start')} <ArrowRight size={20} />
 							</Link>
 							<a
-								href="mailto:arthavirddhisampada@gmail.com"
+								href="http://192.168.30.4:7543"
+								target="_blank"
+								rel="noreferrer"
 								className="btn btn-outline-academic rounded-pill px-4 py-3 fs-6 fw-bold d-flex align-items-center gap-2"
 							>
-								{t('landing.contact_us')}
+								<GraduationCap size={20} className="text-primary" /> Daftar SPMB
 							</a>
 						</div>
 					</div>
