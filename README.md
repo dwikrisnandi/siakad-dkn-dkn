@@ -1,75 +1,106 @@
-# SIAKAD DKN: Academic Information & CBT System 🎓
+# SIAKAD DKN: Multi-Tenant Academic Information, CBT & SaaS Platform 🎓⚡
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Multi--Tenant SaaS](https://img.shields.io/badge/Architecture-Multi--Tenant%20SaaS-00C49F?style=for-the-badge)
 
-A lightweight, production-ready Academic Information System (SIAKAD) paired with a Computer-Based Test (CBT) engine. Engineered with a focus on simplicity, raw performance, and practical AI integrations to streamline operations for lecturers and students.
+Sistem Informasi Akademik (SIAKAD) modern, berkinerja tinggi, dan berbasis arsitektur **Multi-Tenant SaaS (Software-as-a-Service)** dengan integrasi **Computer-Based Test (CBT)**, **Kecerdasan Buatan (Google Gemini AI)**, dan **Super Administrator Cloud Management Suite**.
 
-> **Status:** Active in production. Currently serving real-time examinations, attendance tracking, and student management for an active academic institution.
-
----
-
-## 📸 System Previews
-
-| Lecturer Dashboard | CBT & Anti-Cheat UI | AI Chatbot "Pak Dwi" |
-|:---:|:---:|:---:|
-| <img src="link_to_image1.png" width="250" alt="Lecturer Dashboard"/> | <img src="link_to_image2.png" width="250" alt="Student Interface"/> | <img src="link_to_image3.png" width="250" alt="AI Chatbot"/> |
+> **Status Sistem:** Aktif di lingkungan produksi (`Versi 11 Oktober 2026 jam 09.10`). Melayani institusi akademik multi-kampus secara terisolasi, aman, dan real-time.
 
 ---
 
-## ✨ Key Features & Architecture
+## 🌟 Fitur Unggulan Terbaru
 
-### 1. Computer-Based Test (CBT) & Exam Integrity
-Built to handle concurrent examination sessions with built-in academic integrity controls:
-- **Client-Side Request Jittering**: When hundreds of students press "Start Exam" at the exact same time, the frontend applies a randomized delay (jitter). This staggers the API calls, preventing Node.js event-loop bottlenecks and database connection exhaustion.
-- **Payload Sanitization**: Exam keys are strictly stripped from the JSON response at the Express route level. It is impossible for students to find the correct answers via DevTools or Network interception.
-- **Visibility-Based Anti-Cheat**: Utilizes the browser's Page Visibility API. If a student leaves the active exam tab (e.g., switching to Google or WhatsApp) more than a configured threshold (3 times), the system automatically force-submits their exam payload to the server.
+### 1. 🏢 Multi-Tenant Architecture & Data Isolation
+Dirancang untuk melayani banyak kampus/institusi dalam satu deployment server & basis data terpadu:
+- **Tenant Context Injection (AsyncLocalStorage)**: Backend Node.js secara otomatis menginjeksi `tenant_id` dari token otentikasi ke seluruh operasi database tanpa perlu hardcoding di setiap controller.
+- **Tenant Scoping & Data Isolation**: Seluruh 15+ tabel operasional (mahasiswa, dosen, kelas, jadwal, KRS, presensi, ujian, nilai, materi) terisolasi penuh per tenant.
+- **Auto-Tenant Default Fallback**: Default tenant fallback pada level DDL PostgreSQL menjamin integritas data bila parameter hilang.
 
-### 2. Pragmatic AI Integration
-Integrates the Google Gemini API to solve real operational bottlenecks, equipped with automatic API key-rotation to handle quota limits:
-- **Essay Auto-Grading**: Sends student essay answers alongside the lecturer's answer key to Gemini, returning a suggested score and brief contextual feedback.
-- **Curriculum to Content Generation**: Allows lecturers to bulk-generate reading materials and multiple-choice question drafts directly from syllabus (RPS) topics.
-- **Academic Chatbot**: A contextual assistant ("Pak Dwi") strictly prompted to guide students on coursework without outright giving them the answers to assignments.
+### 2. 👑 Super Administrator SaaS Suite
+Panel kontrol pusat tingkat platform untuk mengelola ekosistem institusi:
+- **Tenant & Multi-Admin Management (`/superadmin/tenants`)**: Registrasi kampus baru, konfigurasi subdomain/slug, kuota mahasiswa/dosen, serta manajemen multi-admin kampus (tambah admin, reset sandi, hapus admin).
+- **Subscription & Billing Engine (`/superadmin/subscriptions`)**: Manajemen langganan institusi dengan status siklus hidup (*Trial*, *Active*, *Expired*, *Suspended*), periode penagihan bulanan/tahunan, dan auto-status checker.
+- **Pricing Plans Tiering (`/superadmin/plans`)**: Pengaturan paket langganan dinamis (*Starter*, *Pro*, *Enterprise*) dengan batas kuota pengguna, penyimpanan, dan toggle fitur.
+- **Real-Time Windows Server Telemetry (`/superadmin/monitoring`)**: Monitor utilisasi CPU real-time (algoritma selisih tick multi-core Windows), penggunaan RAM, platform uptime, dan metrik sistem VPS.
+- **Built-in Database Explorer & SQL Console (`/superadmin/database`)**: Pengganti phpMyAdmin/pgAdmin internal yang aman. Memungkinkan inspeksi skema tabel, pagination data, dan eksekusi kueri terisolasi langsung dari dashboard.
 
-### 3. Deliberate Data Layer Design (No ORM)
-- **Raw SQL for Performance**: Instead of relying on heavy Object-Relational Mappers (ORMs), the application utilizes the native `pg` driver with raw, parameterized SQL queries. This deliberate choice eliminates abstraction overhead, allows for precise index tuning, and guarantees maximum query execution speed.
-- **Injection Prevention**: 100% of the queries use strict parameter binding (e.g., `WHERE id = $1`), categorically preventing SQL injection vectors without needing a complex query builder.
+### 3. 🎯 Computer-Based Test (CBT) & Integritas Ujian
+- **Client-Side Request Jittering**: Mencegah lonjakan trafik konkuren saat ratusan mahasiswa memulai ujian secara bersamaan.
+- **Payload Key Sanitization**: Kunci jawaban disaring ketat di backend sebelum dikirim ke frontend, mencegah kecurangan melalui inspect element / devtools.
+- **Visibility-Based Anti-Cheat**: Deteksi perpindahan tab browser via Page Visibility API dengan auto-submit saat melampaui batas pelanggaran.
+- **Offline-First Resilience**: Dukungan penyimpanan progres ujian lokal (IndexedDB & LocalStorage) saat koneksi terputus.
+
+### 4. 🤖 Integrasi AI Akademik (Google Gemini)
+- **Koreksi Esai Otomatis**: Analisis jawaban esai mahasiswa berbasis kunci jawaban dosen dengan output skor dan umpan balik kontekstual.
+- **Generator Soal & Materi RPS**: Generator bank soal pilihan ganda dan materi pembelajaran otomatis dari silabus mata kuliah.
+- **Asisten AI Dosen & Mahasiswa**: Chatbot interaktif ("Pak Dwi") yang diprogram khusus untuk bimbingan akademik tanpa memberikan jalan pintas tugas.
+
+### 5. ⚡ Arsitektur Performa Tinggi (Native SQL Driver)
+- **Zero ORM Overhead**: Menggunakan driver native `pg` dengan kueri SQL terparameterisasi penuh (`$1, $2, ...`) untuk performa maksimal dan proteksi 100% terhadap SQL Injection.
+- **Indexed Execution**: Kueri dirancang dengan indeks komposit pada `(tenant_id, ...)` menjamin respons kueri sub-milidetik.
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Frontend**
-* **Framework**: React.js (Vite) for fast HMR and optimized builds.
-* **Styling**: Bootstrap & Custom CSS (Glassmorphism UI).
-* **Caching**: IndexedDB & LocalStorage for offline-first exam persistence.
-
-**Backend**
-* **Runtime**: Node.js / Express.js.
-* **Database**: PostgreSQL (Native `pg` driver).
-* **Auth**: JSON Web Tokens (JWT) & bcryptjs for stateless authentication.
-* **Integrations**: `@google/generative-ai` for LLM features and `docx` for generating print-ready exam documents.
+| Layer | Teknologi |
+|---|---|
+| **Frontend** | React 18, Vite, Bootstrap 5, Custom Glassmorphism UI, Lucide Icons |
+| **Backend** | Node.js, Express.js, AsyncLocalStorage, JWT, bcryptjs |
+| **Database** | PostgreSQL (Native `pg` driver, Connection Pooler) |
+| **AI / LLM** | Google Gemini API (`@google/generative-ai`) dengan Auto-Key Rotation |
+| **Export Engine** | `docx` & PDF report generators |
+| **Monitoring** | Native OS CPU tick delta monitor & Memory metric analyzer |
 
 ---
 
-## 🚀 Local Development Setup
+## 📂 Struktur Repositori
 
-Ensure you have **Node.js (v18+)** and **PostgreSQL** installed on your local machine.
+```text
+├── api/                       # Backend Express & REST API
+│   ├── config/                # Konfigurasi aplikasi & database
+│   ├── controllers/           # Business logic controller
+│   ├── middleware/            # Auth JWT, tenantContext, & RBAC middleware
+│   ├── routes/                # Route API (termasuk superadminRoute.js)
+│   ├── utils/                 # Helper & AI prompt processors
+│   └── db.js                  # PostgreSQL client pool & tenant context proxy
+├── client/                    # Frontend React SPA (Vite)
+│   ├── src/
+│   │   ├── components/        # Komponen UI, Layout, Footer & Navbar
+│   │   ├── pages/             # Halaman aplikasi & SuperAdmin suite
+│   │   ├── context/           # React Auth & Tenant State Context
+│   │   └── utils/             # Helper formatters & API client
+│   └── package.json
+├── CATATAN_PEMBARUAN.md       # Log riwayat rilis & pembaruan versi
+└── README.md                  # Dokumentasi proyek
+```
 
-### 1. Clone the Repository
+---
+
+## 🚀 Panduan Menjalankan Sistem
+
+### Kebutuhan Sistem
+- **Node.js**: v18.x atau lebih baru
+- **PostgreSQL**: v14.x atau lebih baru
+- **NPM** atau **Yarn**
+
+### 1. Kloning Repositori
 ```bash
 git clone https://github.com/dwikrisnandi/siakad-dkn-dkn.git
 cd siakad-dkn-dkn
 ```
 
-### 2. Backend & Database Setup
+### 2. Setup Backend (API)
 ```bash
 cd api
 npm install
 ```
 
-Create a `.env` file in the `api` directory:
+Buat file konfigurasi `.env` pada direktori `api/`:
 ```env
 PORT=3000
 DB_HOST=localhost
@@ -77,27 +108,36 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=your_password
 DB_NAME=siakad_db
-JWT_SECRET=your_development_secret
-GEMINI_API_KEY_1=your_google_ai_studio_key
+JWT_SECRET=your_jwt_secret_key
+GEMINI_API_KEY_1=your_gemini_api_key
 ```
 
-Start the API:
+Jalankan server API:
 ```bash
 npm start
 ```
-*The API will be available at `http://localhost:3000`*
+*API berjalan pada: `http://localhost:3000`*
 
-### 3. Frontend Setup (Vite)
-Open a new terminal window:
+### 3. Setup Frontend (Client)
+Buka terminal baru:
 ```bash
 cd client
 npm install
 npm run dev
 ```
-*The React client (powered by Vite) will automatically run at `http://localhost:5173`*
+*Client React Vite berjalan pada: `http://localhost:5173`*
 
 ---
 
-## 📜 License
-Developed and architected by **Dwi Krisnandi**. 
-For business inquiries, deployment consultations, or white-label licensing, please reach out via GitHub issues or email.
+## 🔒 Keamanan & Praktik Terbaik
+
+- **Zero Hardcoded Secrets**: Seluruh kredensial database, API key, dan JWT secret dikelola murni via environment variable (`.env`) dan dikecualikan via `.gitignore`.
+- **Role-Based Access Control (RBAC)**: Pemisahan otoritas ketat antara `superadmin`, `admin`, `dosen`, dan `mahasiswa`.
+- **Integrity Verifier**: Dilengkapi Core Integrity Verifier (CIV) untuk perlindungan hak cipta dan lisensi perangkat lunak.
+
+---
+
+## 📜 Lisensi & Pengembang
+
+Dikembangkan dan diarsiteki oleh **Dwi Krisnandi**.  
+Untuk konsultasi implementasi, kebutuhan white-label institusi, atau deployment kampus, silakan hubungi pengembang melalui GitHub Issues atau kontak resmi.
