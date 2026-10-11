@@ -169,14 +169,17 @@ router.get('/khs/:mahasiswaId', [verifyToken, verifyRole(['admin'])], async (req
 
 router.get('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => {
   const { role } = req.query; // 'dosen' or 'mahasiswa'
+  const tenantId = req.tenant_id || 1;
+
   let sql = `
     SELECT u.id, u.nidn_nim, u.name, u.role, u.created_at, u.program_id, p.nama_prodi,
            u.dpa_id, dosen.name as dpa_name
     FROM users u 
     LEFT JOIN programs p ON u.program_id = p.id
     LEFT JOIN users dosen ON u.dpa_id = dosen.id
+    WHERE u.tenant_id = ?
   `;
-  const params = [];
+  const params = [tenantId];
 
   if (role === 'mahasiswa') {
     sql = `
@@ -188,10 +191,11 @@ router.get('/users', [verifyToken, verifyRole(['admin'])], async (req, res) => {
       LEFT JOIN classes c ON ce.class_id = c.id
       LEFT JOIN programs p ON u.program_id = p.id
       LEFT JOIN users dosen ON u.dpa_id = dosen.id
-      WHERE u.role = 'mahasiswa'
+      WHERE u.role = 'mahasiswa' AND u.tenant_id = ?
     `;
+    params[0] = tenantId;
   } else if (role) {
-    sql += ' WHERE u.role = ?';
+    sql += ' AND u.role = ?';
     params.push(role);
   }
 

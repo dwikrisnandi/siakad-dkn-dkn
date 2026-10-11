@@ -36,7 +36,12 @@ router.post('/login', async (req, res) => {
     if (!passwordIsValid) return res.status(401).json({ error: 'Invalid password' });
 
     // Generate token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ 
+      id: user.id, 
+      role: user.role, 
+      tenant_id: user.tenant_id, 
+      tenant_slug: req.tenant?.slug || (user.tenant_id === 2 ? 'demo' : 'artha') 
+    }, process.env.JWT_SECRET, {
       expiresIn: 86400 // 24 hours
     });
 

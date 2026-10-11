@@ -16,6 +16,9 @@ const verifyToken = (req, res, next) => {
     if (err) return res.status(401).json({ error: 'Unauthorized' });
     req.userId = decoded.id;
     req.userRole = decoded.role;
+    if (decoded.tenant_id) {
+      req.tenant_id = decoded.tenant_id;
+    }
     next();
   });
 };
