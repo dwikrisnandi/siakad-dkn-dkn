@@ -12,14 +12,16 @@ router.get('/krs/status', [verifyToken, verifyRole(['mahasiswa'])], async (req, 
   try {
     const mahasiswaId = req.userId;
     
-    // Get active academic year
-    const [yearRows] = await query('SELECT * FROM academic_years WHERE is_active = true LIMIT 1');
+    const tenantId = req.tenant_id || 1;
+    
+    // Get active academic year for this tenant
+    const [yearRows] = await query('SELECT * FROM academic_years WHERE is_active = true AND tenant_id = ? LIMIT 1', [tenantId]);
     if (yearRows.length === 0) return res.status(404).json({ error: 'Tidak ada tahun akademik aktif' });
     const activeYear = yearRows[0];
 
-    // Cek tagihan
+    // Cek tagihan (support status_lunas === true || status_lunas === 1)
     const [invoiceRows] = await query('SELECT * FROM invoices WHERE mahasiswa_id = ? AND academic_year_id = ?', [mahasiswaId, activeYear.id]);
-    const isLunas = invoiceRows.length > 0 && invoiceRows[0].status_lunas === 1;
+    const isLunas = invoiceRows.length > 0 && (invoiceRows[0].status_lunas === 1 || invoiceRows[0].status_lunas === true);
 
     // Cek existing KRS
     const [krsRows] = await query('SELECT * FROM krs WHERE mahasiswa_id = ? AND academic_year_id = ?', [mahasiswaId, activeYear.id]);
@@ -59,7 +61,8 @@ router.get('/krs/status', [verifyToken, verifyRole(['mahasiswa'])], async (req, 
 // Ambil jadwal yang tersedia untuk KRS
 router.get('/krs/available-schedules', [verifyToken, verifyRole(['mahasiswa'])], async (req, res) => {
   try {
-    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true LIMIT 1');
+    const tenantId = req.tenant_id || 1;
+    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true AND tenant_id = ? LIMIT 1', [tenantId]);
     if (yearRows.length === 0) return res.json([]);
     const activeYearId = yearRows[0].id;
 
@@ -75,8 +78,8 @@ router.get('/krs/available-schedules', [verifyToken, verifyRole(['mahasiswa'])],
       JOIN courses c ON s.course_id = c.id
       JOIN curriculums curr ON c.curriculum_id = curr.id
       JOIN users u ON s.dosen_id = u.id
-      WHERE s.academic_year_id = ? AND curr.program_id = ? AND curr.status_aktif = 1
-    `, [activeYearId, programId]);
+      WHERE s.academic_year_id = ? AND curr.program_id = ? AND (curr.status_aktif = 1 OR curr.status_aktif = true) AND s.tenant_id = ?
+    `, [activeYearId, programId, tenantId]);
 
     res.json(schedules);
   } catch (error) {
@@ -90,14 +93,16 @@ router.post('/krs/submit', [verifyToken, verifyRole(['mahasiswa'])], async (req,
   try {
     const { schedule_ids } = req.body;
     const mahasiswaId = req.userId;
+    const tenantId = req.tenant_id || 1;
 
-    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true LIMIT 1');
+    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true AND tenant_id = ? LIMIT 1', [tenantId]);
     if (yearRows.length === 0) return res.status(400).json({ error: 'Tidak ada tahun akademik aktif' });
     const activeYearId = yearRows[0].id;
 
     // Cek tagihan lagi untuk keamanan
     const [invoiceRows] = await query('SELECT status_lunas FROM invoices WHERE mahasiswa_id = ? AND academic_year_id = ?', [mahasiswaId, activeYearId]);
-    if (invoiceRows.length === 0 || invoiceRows[0].status_lunas !== 1) {
+    const isLunas = invoiceRows.length > 0 && (invoiceRows[0].status_lunas === 1 || invoiceRows[0].status_lunas === true);
+    if (!isLunas) {
       return res.status(403).json({ error: 'Anda harus melunasi tagihan keuangan terlebih dahulu' });
     }
 
@@ -135,9 +140,10 @@ router.post('/krs/submit', [verifyToken, verifyRole(['mahasiswa'])], async (req,
 router.get('/dpa/students', [verifyToken, verifyRole(['dosen'])], async (req, res) => {
   try {
     const dosenId = req.userId;
+    const tenantId = req.tenant_id || 1;
     
     // Ambil tahun akademik aktif
-    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true LIMIT 1');
+    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true AND tenant_id = ? LIMIT 1', [tenantId]);
     const activeYearId = yearRows.length > 0 ? yearRows[0].id : null;
 
     let sql = `
@@ -145,9 +151,9 @@ router.get('/dpa/students', [verifyToken, verifyRole(['dosen'])], async (req, re
              (SELECT status_approval FROM krs WHERE mahasiswa_id = u.id AND academic_year_id = ?) as krs_status
       FROM users u
       LEFT JOIN programs p ON u.program_id = p.id
-      WHERE u.dpa_id = ? AND u.role = 'mahasiswa'
+      WHERE u.dpa_id = ? AND u.role = 'mahasiswa' AND u.tenant_id = ?
     `;
-    const [students] = await query(sql, [activeYearId, dosenId]);
+    const [students] = await query(sql, [activeYearId, dosenId, tenantId]);
     res.json(students);
   } catch (error) {
     console.error(error);
@@ -159,12 +165,13 @@ router.get('/dpa/krs/:studentId', [verifyToken, verifyRole(['dosen'])], async (r
   try {
     const studentId = req.params.studentId;
     const dosenId = req.userId;
+    const tenantId = req.tenant_id || 1;
 
     // Verify anak wali
-    const [checkRows] = await query('SELECT id FROM users WHERE id = ? AND dpa_id = ?', [studentId, dosenId]);
+    const [checkRows] = await query('SELECT id FROM users WHERE id = ? AND dpa_id = ? AND tenant_id = ?', [studentId, dosenId, tenantId]);
     if (checkRows.length === 0) return res.status(403).json({ error: 'Mahasiswa ini bukan anak wali Anda' });
 
-    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true LIMIT 1');
+    const [yearRows] = await query('SELECT id FROM academic_years WHERE is_active = true AND tenant_id = ? LIMIT 1', [tenantId]);
     if (yearRows.length === 0) return res.status(404).json({ error: 'Tahun akademik belum aktif' });
     const activeYearId = yearRows[0].id;
 
