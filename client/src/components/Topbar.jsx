@@ -111,6 +111,19 @@ export default function Topbar() {
 
 			{/* Right navbar links */}
 			<ul className="navbar-nav ms-auto d-flex align-items-center">
+				{/* SPMB Link */}
+				<li className="nav-item me-2">
+					<a 
+						href="http://192.168.30.4:7543" 
+						target="_blank" 
+						rel="noreferrer"
+						className="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"
+						style={{ fontSize: "12px", backgroundColor: "rgba(37, 99, 235, 0.05)" }}
+					>
+						<span>🎓 Portal SPMB</span>
+					</a>
+				</li>
+
 				{/* Language Selector */}
 				<li className="nav-item dropdown me-2">
 					<button 

@@ -114,12 +114,29 @@ export default function Login() {
 					</div>
 					<button
 						type="submit"
-						className="btn-premium w-100 py-3"
+						className="btn-premium w-100 py-3 mb-3"
 						disabled={loading}
 					>
 						{loading ? t("auth.checking") : t("auth.login_btn")}
 					</button>
 				</form>
+
+				{/* SPMB Online Registration Portal Button */}
+				<div className="pt-2 text-center">
+					<a
+						href="http://192.168.30.4:7543"
+						target="_blank"
+						rel="noreferrer"
+						className="btn btn-outline-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-bold shadow-sm"
+						style={{
+							borderRadius: "var(--radius-md, 10px)",
+							backgroundColor: "rgba(37, 99, 235, 0.05)",
+							borderColor: "#93c5fd"
+						}}
+					>
+						<span>🎓 Pendaftaran Mahasiswa Baru (SPMB)</span>
+					</a>
+				</div>
 				
 				<div className="text-center mt-4 pt-3 border-top">
 					<p className="text-muted small mb-0">Platform Cerdas Pendidikan &copy; 2026</p>
